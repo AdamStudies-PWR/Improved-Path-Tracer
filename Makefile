@@ -1,5 +1,5 @@
 CC = g++
-CFLAGS = -g -Wall
+CFLAGS = -O3
 
 tracer: main.o
 	$(CC) $(CFLAGS) -o tracer main.o
