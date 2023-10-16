@@ -26,7 +26,7 @@ struct Vec
         return Vec(yy_*input.zz_ - zz_*input.yy_, zz_*input.xx_ - xx_*input.zz_, xx_*input.yy_ - yy_*input.xx_);
     }
 
-    Vec operator- (const Vec subtrahend) const
+    Vec operator- (const Vec& subtrahend) const
     {
         return Vec(xx_ - subtrahend.xx_, yy_ - subtrahend.yy_, zz_ - subtrahend.zz_);
     }
@@ -99,7 +99,7 @@ namespace
 int HEIGHT = 768;
 int WIDTH = 1024;
 int samps = 1250;
-Ray camera(Vec(50, 52, 285.6), Vec(0, -0.042612, -1).norm());
+Ray camera(Vec(50, 52, 295.6), Vec(0, -0.042612, -1).norm());
 
 std::vector<Sphere> spheres;
 
@@ -225,10 +225,14 @@ Vec radiance(const Ray& ray, int depth, uint16_t* xi)
 }
 
 // refactor this !!!
-std::vector<Vec> render()
+Vec* render()
 {
-    Vec cx=Vec(WIDTH*0.5135/HEIGHT), cy=(cx%camera.dd_).norm()*0.5135, r;
-    std::vector<Vec> c = std::vector<Vec>();
+    Vec cx = Vec(WIDTH*0.5135/HEIGHT);
+    Vec cy = (cx%camera.dd_).norm()*0.5135;
+    Vec r;
+    Vec* c = new Vec[WIDTH*HEIGHT];
+
+    #pragma omp parallel for schedule(dynamic, 1) private(r)
     for (int y=0; y<HEIGHT; y++)
     {
         fprintf(stderr,"\rRendering (%d spp) %5.2f%%",samps*4,100.*y/(HEIGHT-1));
@@ -246,9 +250,7 @@ std::vector<Vec> render()
                                 cy*( ( (sy+.5 + dy)/2 + y)/HEIGHT - .5) + camera.dd_;
                         r = r + radiance(Ray(camera.oo_+d*140,d.norm()), 0, Xi)*(1./samps);
                     } // Camera rays are pushed ^^^^^ forward to start in interior
-                std::cout << "dbg3.2" << std::endl;
-                c.push_back(c[i] + Vec(clamp(r.xx_),clamp(r.yy_),clamp(r.zz_))*0.25);
-                std::cout << "dbg3.3" << std::endl;
+                c[i] = c[i] + Vec(clamp(r.xx_), clamp(r.yy_), clamp(r.zz_))*0.25;
                 }
             }
         }
@@ -257,11 +259,11 @@ std::vector<Vec> render()
     return c;
 }
 
-std::vector<Vec> measure()
+Vec* measure()
 {
     std::cout << __func__ << " - Begining render..." << std::endl;
     auto start = std::chrono::high_resolution_clock::now();
-    auto image = render();
+    auto* image = render();
     auto stop = std::chrono::high_resolution_clock::now();
     std::cout << __func__ << " - Done" << std::endl;
     std::cout << __func__ << " - Render took: "
@@ -271,7 +273,7 @@ std::vector<Vec> measure()
 }
 
 // Refactor this
-void saveImage(std::vector<Vec> image)
+void saveImage(Vec* image)
 {
     std::cout << __func__ << " - saving render..." << std::endl;
 
@@ -286,7 +288,7 @@ void saveImage(std::vector<Vec> image)
 int main(int argc, char *argv[])
 {
     initScene();
-    auto image = measure();
+    auto* image = measure();
     saveImage(image);
 
     return 0;
