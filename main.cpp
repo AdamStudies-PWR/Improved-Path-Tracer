@@ -89,6 +89,9 @@ struct Sphere
         double b = op.dot(ray.dd_);
         double det = b*b - op.dot(op) + radius_*radius_;
 
+        if (det < 0) return 0;
+        else det = sqrt(det);
+
         return (temp = b - det) > eps ? temp : ((temp = b + det) > eps ? temp : 0);
     }
 };
@@ -98,8 +101,8 @@ namespace
 
 int HEIGHT = 768;
 int WIDTH = 1024;
-// int samps = 1250;
-int samps = 10;
+int samps = 1250;
+// int samps = 10;
 Ray camera(Vec(50, 52, 295.6), Vec(0, -0.042612, -1).norm());
 
 std::vector<Sphere> spheres;
@@ -138,15 +141,15 @@ void initScene()
 {
     std::cout << __func__ << " - Initilizing scene..." << std::endl;
 
-    spheres.emplace_back(1e5, Vec(1e5+1, 40.8, 81.6), Vec(), Vec(0.75, 0.25, 0.25), Diffuse);       // Left
-    spheres.emplace_back(1e5, Vec(-1e5+99, 40.8, 81.6), Vec(), Vec(0.25, 0.25, 0.75), Diffuse);     // Right
-    spheres.emplace_back(1e5, Vec(50, 40.8, 1e5), Vec(), Vec(0.75, 0.75, 0.75), Diffuse);           // Back
-    spheres.emplace_back(1e5, Vec(50, 40.8, -1e5+170), Vec(), Vec(), Diffuse);                      // Front
-    spheres.emplace_back(1e5, Vec(50, 1e5, 81.6), Vec(), Vec(0.75, 0.75, 0.75), Diffuse);           // Bottom
-    spheres.emplace_back(1e5, Vec(50, -1e5+81.6, 81.6), Vec(), Vec(0.75, 0.75, 0.75), Diffuse);     // Top
-    spheres.emplace_back(16.5, Vec(27, 16.5, 47), Vec(), Vec(1, 1, 1) * 0.999, Specular);           // Mirror
-    spheres.emplace_back(16.5, Vec(73, 16.5, 78), Vec(), Vec(1, 1, 1) * 0.999, Refractive);         // Glass
-    spheres.emplace_back(600, Vec(50, 681.6-.27, 81.6), Vec(12, 12, 12), Vec(), Diffuse);           // Lite (?)
+    spheres.emplace_back(1e5, Vec(1e5+1, 40.8, 81.6), Vec(), Vec(0.75, 0.25, 0.25), Diffuse);       // Left Wall
+    spheres.emplace_back(1e5, Vec(-1e5+99, 40.8, 81.6), Vec(), Vec(0.25, 0.25, 0.75), Diffuse);     // Right Wall
+    spheres.emplace_back(1e5, Vec(50, 40.8, 1e5), Vec(), Vec(0.75, 0.75, 0.75), Diffuse);           // Back Wall
+    spheres.emplace_back(1e5, Vec(50, 40.8, -1e5+170), Vec(), Vec(0, 0.44, 0), Diffuse);            // Wall behind camera?
+    spheres.emplace_back(1e5, Vec(50, 1e5, 81.6), Vec(), Vec(0.75, 0.75, 0.75), Diffuse);           // Floor
+    spheres.emplace_back(1e5, Vec(50, -1e5+81.6, 81.6), Vec(), Vec(0.75, 0.75, 0.75), Diffuse);     // Ceiling
+    spheres.emplace_back(16.5, Vec(27, 16.5, 47), Vec(), Vec(1, 1, 1) * 0.999, Specular);           // Left Orb (Mirror like)
+    spheres.emplace_back(16.5, Vec(73, 16.5, 78), Vec(), Vec(1, 1, 1) * 0.999, Refractive);         // Right Orb (Glass ?)
+    spheres.emplace_back(600, Vec(50, 681.6-.27, 81.6), Vec(12, 12, 12), Vec(), Diffuse);           // Light source
 
     std::cout << __func__ << " - Done" << std::endl;
 }
@@ -233,7 +236,7 @@ Vec* render()
     Vec r;
     Vec* c = new Vec[WIDTH*HEIGHT];
 
-    #pragma omp parallel for schedule(dynamic, 1) private(r)
+#pragma omp parallel for schedule(dynamic, 1) private(r)
     for (int y=0; y<HEIGHT; y++)
     {
         fprintf(stderr,"\rRendering (%d spp) %5.2f%%",samps*4,100.*y/(HEIGHT-1));
