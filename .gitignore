@@ -10,3 +10,6 @@ tracer
 
 # Enviroment
 .vscode
+
+# Output
+*.ppm

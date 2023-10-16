@@ -98,16 +98,17 @@ namespace
 
 int HEIGHT = 768;
 int WIDTH = 1024;
-int samps = 1250;
+// int samps = 1250;
+int samps = 10;
 Ray camera(Vec(50, 52, 295.6), Vec(0, -0.042612, -1).norm());
 
 std::vector<Sphere> spheres;
 
 inline bool intersect(const Ray& ray, double& temp, int& id)
 {
-    double n = sizeof(spheres)/sizeof(Sphere);
+    double n = spheres.size();
     double dd;
-    double inf=temp=1e20;
+    double inf = temp = 1e20;
 
     for(int i = int(n); i--;)
     {
@@ -123,12 +124,12 @@ inline bool intersect(const Ray& ray, double& temp, int& id)
 
 inline double clamp(double x)
 {
-    return x<0 ? 0 : x>1 ? 1 : x;
+    return x < 0 ? 0 : x > 1 ? 1 : x;
 }
 
 inline int toInt(double x)
 {
-    return int(pow(clamp(x),1/2.2)*255+.5);
+    return int(pow(clamp(x), 1/2.2) * 255 + 0.5);
 }
 
 }  // namespace
