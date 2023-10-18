@@ -1,11 +1,9 @@
-CC = g++
-CFLAGS = -O3
-
-tracer: main.o
-	$(CC) $(CFLAGS) -o tracer main.o
-
-main.o:
-	$(CC) $(CFLAGS) -c main.cpp
+compile:
+	rm -f tracer
+	cmake -B build -S .
+	$(MAKE) -C build
+	mv ./build/src/tracer .
 
 clean:
-	rm main.o tracer
+	rm -f tracer
+	rm -rf build
