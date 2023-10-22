@@ -5,14 +5,12 @@
 
 #include "utils/Vec.hpp"
 #include "renderer/Renderer.hpp"
+#include "scene/Scene.hpp"
 
 using namespace tracer;
 
 namespace
 {
-int HEIGHT = 768;
-int WIDTH = 1024;
-
 inline double clamp(double x)
 {
     return x < 0 ? 0 : x > 1 ? 1 : x;
@@ -38,13 +36,13 @@ utils::Vec* measure(std::function<utils::Vec*()> testable)
 }
 
 // Refactor this
-void saveImage(utils::Vec* image)
+void saveImage(utils::Vec* image, int height, int width)
 {
     std::cout << __func__ << " - saving render..." << std::endl;
 
     FILE *f = fopen("image.ppm", "w");         // Write image to PPM file.
-    fprintf(f, "P3\n%d %d\n%d\n", WIDTH, HEIGHT, 255);
-    for (int i=0; i<WIDTH*HEIGHT; i++)
+    fprintf(f, "P3\n%d %d\n%d\n", width, height, 255);
+    for (int i=0; i<(width*height); i++)
         fprintf(f,"%d %d %d ", toInt(image[i].xx_), toInt(image[i].yy_), toInt(image[i].zz_));
 
     std::cout << __func__ << " - Done" << std::endl;
@@ -52,15 +50,16 @@ void saveImage(utils::Vec* image)
 
 int main(int argc, char *argv[])
 {
-    std::shared_ptr<renderer::Renderer> renderer = std::make_shared<renderer::Renderer>();
-    renderer->initScene();
+    scene::Scene sceneData;
+    sceneData.initScene();
 
+    auto renderer = std::make_shared<renderer::Renderer>(sceneData, 720, 1280, 10); //760, 1024, 1250);
     auto wrappedRender = [renderer]() -> utils::Vec* {
         return renderer->render();
     };
 
     auto* image = measure(wrappedRender);
-    saveImage(image);
+    saveImage(image, 720, 1280);
 
     return 0;
 }

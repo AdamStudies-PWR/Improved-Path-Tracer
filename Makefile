@@ -1,7 +1,7 @@
 compile:
-	rm -f tracer
 	cmake -B build -S .
 	$(MAKE) -C build
+	rm -f tracer
 	mv ./build/src/tracer .
 
 clean:

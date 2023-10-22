@@ -1,7 +1,7 @@
-project(tracer-renderer)
+project(tracer-scene)
 
 set(SOURCES
-    Renderer.cpp
+    Scene.cpp
 )
 
 add_library(${PROJECT_NAME})
@@ -13,7 +13,6 @@ target_include_directories(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
-        tracer-utils
         tracer-objects
-        tracer-scene
+        tracer-utils
 )

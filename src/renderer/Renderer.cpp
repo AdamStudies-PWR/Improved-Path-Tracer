@@ -10,54 +10,18 @@ namespace tracer::renderer
 
 namespace
 {
-int HEIGHT = 768;
-int WIDTH = 1024;
-int samps = 1250;
-// int samps = 10;
-utils::Ray camera(utils::Vec(50, 52, 295.6), utils::Vec(0, -0.042612, -1).norm());
-
-std::vector<objects::Sphere> spheres;
-
-inline bool intersect(const utils::Ray& ray, double& temp, int& id)
-{
-    double n = spheres.size();
-    double dd;
-    double inf = temp = 1e20;
-
-    for(int i = int(n); i--;)
-    {
-        if ((dd = spheres[i].intersect(ray)) && dd < temp)
-        {
-            temp = dd;
-            id = i;
-        }
-    }
-
-    return temp < inf;
-}
-
 inline double clamp(double x)
 {
     return x < 0 ? 0 : x > 1 ? 1 : x;
 }
 }  // namespace
 
-void Renderer::initScene()
-{
-    std::cout << __func__ << " - Initilizing scene..." << std::endl;
-
-    spheres.emplace_back(1e5, utils::Vec(1e5+1, 40.8, 81.6), utils::Vec(), utils::Vec(0.75, 0.25, 0.25), objects::Diffuse);       // Left Wall
-    spheres.emplace_back(1e5, utils::Vec(-1e5+99, 40.8, 81.6), utils::Vec(), utils::Vec(0.25, 0.25, 0.75), objects::Diffuse);     // Right Wall
-    spheres.emplace_back(1e5, utils::Vec(50, 40.8, 1e5), utils::Vec(), utils::Vec(0.75, 0.75, 0.75), objects::Diffuse);           // Back Wall
-    spheres.emplace_back(1e5, utils::Vec(50, 40.8, -1e5+170), utils::Vec(), utils::Vec(0, 0.44, 0), objects::Diffuse);            // Wall behind camera?
-    spheres.emplace_back(1e5, utils::Vec(50, 1e5, 81.6), utils::Vec(), utils::Vec(0.75, 0.75, 0.75), objects::Diffuse);           // Floor
-    spheres.emplace_back(1e5, utils::Vec(50, -1e5+81.6, 81.6), utils::Vec(), utils::Vec(0.75, 0.75, 0.75), objects::Diffuse);     // Ceiling
-    spheres.emplace_back(16.5, utils::Vec(27, 16.5, 47), utils::Vec(), utils::Vec(1, 1, 1) * 0.999, objects::Specular);           // Left Orb (Mirror like)
-    spheres.emplace_back(16.5, utils::Vec(73, 16.5, 78), utils::Vec(), utils::Vec(1, 1, 1) * 0.999, objects::Refractive);         // Right Orb (Glass ?)
-    spheres.emplace_back(600, utils::Vec(50, 681.6-.27, 81.6), utils::Vec(12, 12, 12), utils::Vec(), objects::Diffuse);           // Light source
-
-    std::cout << __func__ << " - Done" << std::endl;
-}
+Renderer::Renderer(scene::Scene& sceneData, const int height, const int width, const int samples)
+    : height_(height)
+    , samples_(samples)
+    , width_(width)
+    , sceneData_(sceneData)
+{}
 
 utils::Vec Renderer::radiance(const utils::Ray& ray, int depth, short unsigned int* xi)
 {
@@ -69,7 +33,7 @@ utils::Vec Renderer::radiance(const utils::Ray& ray, int depth, short unsigned i
         return utils::Vec();
     }
 
-    const objects::Sphere& sphere = spheres[id];
+    const objects::Sphere& sphere = sceneData_.getObjectAt(id);
 
     utils::Vec xx = ray.oo_ + ray.dd_ * temp;
     utils::Vec nn = (xx - sphere.position_).norm();
@@ -136,28 +100,29 @@ utils::Vec Renderer::radiance(const utils::Ray& ray, int depth, short unsigned i
 // refactor this !!!
 utils::Vec* Renderer::render()
 {
-    utils::Vec cx = utils::Vec(WIDTH*0.5135/HEIGHT);
+    auto camera = sceneData_.getCamera();
+    utils::Vec cx = utils::Vec(width_*0.5135/height_);
     utils::Vec cy = (cx%camera.dd_).norm()*0.5135;
     utils::Vec r;
-    utils::Vec* c = new utils::Vec[WIDTH*HEIGHT];
+    utils::Vec* c = new utils::Vec[width_*height_];
 
 #pragma omp parallel for schedule(dynamic, 1) private(r)
-    for (int y=0; y<HEIGHT; y++)
+    for (int y=0; y<height_; y++)
     {
-        fprintf(stderr,"\rRendering (%d spp) %5.2f%%",samps*4,100.*y/(HEIGHT-1));
-        for (unsigned short x=0, Xi[3]={0,0,y*y*y}; x<WIDTH; x++)   // Loop cols
+        fprintf(stderr,"\rRendering (%d spp) %5.2f%%",samples_*4,100.*y/(height_-1));
+        for (unsigned short x=0, Xi[3]={0,0,y*y*y}; x<width_; x++)   // Loop cols
         {
-            for (int sy=0, i=(HEIGHT-y-1)*WIDTH+x; sy<2; sy++)     // 2x2 subpixel rows
+            for (int sy=0, i=(height_-y-1)*width_+x; sy<2; sy++)     // 2x2 subpixel rows
             {
                 for (int sx=0; sx<2; sx++, r=utils::Vec())
                 {        // 2x2 subpixel cols
-                    for (int s=0; s<samps; s++)
+                    for (int s=0; s<samples_; s++)
                     {
                         double r1=2*erand48(Xi), dx=r1<1 ? sqrt(r1)-1: 1-sqrt(2-r1);
                         double r2=2*erand48(Xi), dy=r2<1 ? sqrt(r2)-1: 1-sqrt(2-r2);
-                        utils::Vec d = cx*( ( (sx+.5 + dx)/2 + x)/WIDTH - .5) +
-                                cy*( ( (sy+.5 + dy)/2 + y)/HEIGHT - .5) + camera.dd_;
-                        r = r + radiance(utils::Ray(camera.oo_+d*140,d.norm()), 0, Xi)*(1./samps);
+                        utils::Vec d = cx*( ( (sx+.5 + dx)/2 + x)/width_ - .5) +
+                                cy*( ( (sy+.5 + dy)/2 + y)/height_ - .5) + camera.dd_;
+                        r = r + radiance(utils::Ray(camera.oo_+d*140,d.norm()), 0, Xi)*(1./samples_);
                     } // Camera rays are pushed ^^^^^ forward to start in interior
                 c[i] = c[i] + utils::Vec(clamp(r.xx_), clamp(r.yy_), clamp(r.zz_))*0.25;
                 }
@@ -166,6 +131,24 @@ utils::Vec* Renderer::render()
     }
 
     return c;
+}
+
+bool Renderer::intersect(const utils::Ray& ray, double& temp, int& id)
+{
+    const auto n = sceneData_.getObjectCount();
+    double dd;
+    double inf = temp = 1e20;
+
+    for(int i = n; i--;)
+    {
+        if ((dd = sceneData_.getObjectAt(i).intersect(ray)) && dd < temp)
+        {
+            temp = dd;
+            id = i;
+        }
+    }
+
+    return temp < inf;
 }
 
 }  // namespace tracer::renderer
