@@ -1,6 +1,6 @@
 #pragma once
 
-namespace tracer::utils
+namespace tracer::containers
 {
 
 class Vec
@@ -22,4 +22,4 @@ public:
     double zz_;
 };
 
-} // namespace tracer::utils
+} // namespace tracer::containers

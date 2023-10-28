@@ -1,8 +1,8 @@
 #pragma once
 
-#include "utils/Vec.hpp"
+#include "containers/Vec.hpp"
 
-namespace tracer::utils
+namespace tracer::containers
 {
 
 class Ray
@@ -14,4 +14,4 @@ public:
     Vec dd_;
 };
 
-}  // namespace tracer::utils
+}  // namespace tracer::containers

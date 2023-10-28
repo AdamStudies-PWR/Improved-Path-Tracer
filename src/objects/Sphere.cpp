@@ -5,7 +5,7 @@
 namespace tracer::objects
 {
 
-Sphere::Sphere(double radius, utils::Vec position, utils::Vec emission, utils::Vec color, EReflectionType relfection)
+Sphere::Sphere(double radius, containers::Vec position, containers::Vec emission, containers::Vec color, EReflectionType relfection)
     : radius_(radius)
     , position_(position)
     , emission_(emission)
@@ -13,9 +13,9 @@ Sphere::Sphere(double radius, utils::Vec position, utils::Vec emission, utils::V
     , relfection_(relfection)
 {}
 
-double Sphere::intersect(const utils::Ray& ray) const
+double Sphere::intersect(const containers::Ray& ray) const
 {
-    utils::Vec op = position_ - ray.oo_;
+    containers::Vec op = position_ - ray.oo_;
     double temp;
     double eps = 1e-4;
     double b = op.dot(ray.dd_);

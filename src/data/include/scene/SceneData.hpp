@@ -3,19 +3,19 @@
 #include <vector>
 
 #include "objects/Sphere.hpp"
-#include "utils/Ray.hpp"
-#include "utils/Vec.hpp"
+#include "containers/Ray.hpp"
+#include "containers/Vec.hpp"
 
-namespace tracer::scene
+namespace tracer::data
 {
 
-class Scene
+class SceneData
 {
 public:
-    Scene();
+    SceneData();
 
     void initScene();
-    utils::Ray getCamera();
+    containers::Ray getCamera();
     int getObjectCount();
     objects::Sphere getObjectAt(int id);
 
@@ -23,7 +23,7 @@ private:
     int height_;
     int width_;
     std::vector<objects::Sphere> spheres_;
-    utils::Ray camera_;
+    containers::Ray camera_;
 };
 
-}  // namespace tracer::scene
+}  // namespace tracer::data

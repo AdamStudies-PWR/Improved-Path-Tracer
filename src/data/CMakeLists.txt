@@ -1,8 +1,7 @@
-project(tracer-utils)
+project(tracer-data)
 
 set(SOURCES
-    Image.cpp
-    Measurements.cpp
+    SceneData.cpp
 )
 
 add_library(${PROJECT_NAME})
@@ -14,5 +13,6 @@ target_include_directories(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
+        tracer-objects
         tracer-containers
 )

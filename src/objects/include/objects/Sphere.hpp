@@ -1,8 +1,8 @@
 #pragma once
 
 #include "objects/EReflectionType.hpp"
-#include "utils/Ray.hpp"
-#include "utils/Vec.hpp"
+#include "containers/Ray.hpp"
+#include "containers/Vec.hpp"
 
 namespace tracer::objects
 {
@@ -10,14 +10,14 @@ namespace tracer::objects
 class Sphere
 {
 public:
-    Sphere(double radius, utils::Vec position, utils::Vec emission, utils::Vec color, EReflectionType relfection);
+    Sphere(double radius, containers::Vec position, containers::Vec emission, containers::Vec color, EReflectionType relfection);
 
-    double intersect(const utils::Ray& ray) const;
+    double intersect(const containers::Ray& ray) const;
 
     double radius_;
-    utils::Vec position_;
-    utils::Vec emission_;
-    utils::Vec color_;
+    containers::Vec position_;
+    containers::Vec emission_;
+    containers::Vec color_;
     EReflectionType relfection_;
 };
 

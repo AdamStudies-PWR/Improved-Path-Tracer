@@ -4,9 +4,9 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "utils/Vec.hpp"
-#include "utils/Ray.hpp"
-#include "scene/Scene.hpp"
+#include "containers/Vec.hpp"
+#include "containers/Ray.hpp"
+#include "scene/SceneData.hpp"
 
 namespace tracer::renderer
 {
@@ -14,19 +14,19 @@ namespace tracer::renderer
 class Renderer
 {
 public:
-   Renderer(scene::Scene& sceneData, const int height, const int width, const int samples);
+   Renderer(data::SceneData& sceneData, const int height, const int width, const int samples);
 
-   utils::Vec* render();
+   containers::Vec* render();
 
 private:
-   bool intersect(const utils::Ray& ray, double& temp, int& id);
+   bool intersect(const containers::Ray& ray, double& temp, int& id);
 
    const int height_;
    const int samples_;
    const int width_;
-   scene::Scene& sceneData_;
+   data::SceneData& sceneData_;
 
-   utils::Vec radiance(const utils::Ray& ray, int depth, short unsigned int* xi);
+   containers::Vec radiance(const containers::Ray& ray, int depth, short unsigned int* xi);
 };
 
 }  // namespace tracer::renderer

@@ -1,8 +1,8 @@
-#include "utils/Vec.hpp"
+#include "containers/Vec.hpp"
 
 #include <math.h>
 
-namespace tracer::utils
+namespace tracer::containers
 {
 
 Vec::Vec(double xx, double yy, double zz)
@@ -46,4 +46,4 @@ Vec Vec::operator% (Vec& input)
     return Vec(yy_*input.zz_ - zz_*input.yy_, zz_*input.xx_ - xx_*input.zz_, xx_*input.yy_ - yy_*input.xx_);
 }
 
-} // namespace tracer::utils
+} // namespace tracer::containers

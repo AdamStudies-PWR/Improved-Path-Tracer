@@ -1,6 +1,7 @@
+add_subdirectory(containers)
+add_subdirectory(data)
 add_subdirectory(objects)
 add_subdirectory(renderer)
-add_subdirectory(scene)
 add_subdirectory(utils)
 
 add_executable(tracer
@@ -9,8 +10,9 @@ add_executable(tracer
 
 target_link_libraries(tracer
     PRIVATE
+        tracer-containers
         tracer-renderer
-        tracer-scene
+        tracer-data
         tracer-utils
         tracer-objects
 )
