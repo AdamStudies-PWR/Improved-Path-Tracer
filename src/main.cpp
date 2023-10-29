@@ -7,15 +7,23 @@
 #include "scene/SceneData.hpp"
 #include "utils/Image.hpp"
 #include "utils/Measurements.hpp"
+#include "utils/InputParser.hpp"
 
 using namespace tracer;
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
+    utils::InputParser inputParser(argc, argv);
+
+    if (not inputParser.isInputValid())
+    {
+        return 0;
+    }
+
     data::SceneData sceneData;
     sceneData.initScene();
 
-    auto renderer = std::make_shared<renderer::Renderer>(sceneData, 720, 1280, 10); //760, 1024, 1250);
+    auto renderer = std::make_shared<renderer::Renderer>(sceneData, 720, 1280, 1250); //760, 1024, 10);
     auto wrappedRender = [renderer]() -> containers::Vec* {
         return renderer->render();
     };

@@ -2,6 +2,7 @@ project(tracer-utils)
 
 set(SOURCES
     Image.cpp
+    InputParser.cpp
     JsonUtils.cpp
     Measurements.cpp
 )
