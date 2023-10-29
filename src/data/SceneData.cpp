@@ -13,10 +13,10 @@ void SceneData::initScene()
 {
     std::cout << __func__ << " - Initilizing scene..." << std::endl;
 
-    spheres_.emplace_back(1e5, containers::Vec(1e5+1, 40.8, 81.6), containers::Vec(), containers::Vec(0.75, 0.25, 0.25), objects::Diffuse);       // Left Wall
-    spheres_.emplace_back(1e5, containers::Vec(-1e5+99, 40.8, 81.6), containers::Vec(), containers::Vec(0.25, 0.25, 0.75), objects::Diffuse);     // Right Wall
+    spheres_.emplace_back(1e5, containers::Vec(1e5-9, 40.8, 81.6), containers::Vec(), containers::Vec(0.75, 0.25, 0.25), objects::Diffuse);       // Left Wall
+    spheres_.emplace_back(1e5, containers::Vec(-1e5+109, 40.8, 81.6), containers::Vec(), containers::Vec(0.25, 0.25, 0.75), objects::Diffuse);     // Right Wall
     spheres_.emplace_back(1e5, containers::Vec(50, 40.8, 1e5), containers::Vec(), containers::Vec(0.75, 0.75, 0.75), objects::Diffuse);           // Back Wall
-    spheres_.emplace_back(1e5, containers::Vec(50, 40.8, -1e5+170), containers::Vec(), containers::Vec(0, 0.44, 0), objects::Diffuse);            // Wall behind camera?
+    spheres_.emplace_back(1e5, containers::Vec(50, 40.8, -1e5+175), containers::Vec(), containers::Vec(0, 0.44, 0), objects::Diffuse);            // Wall behind camera?
     spheres_.emplace_back(1e5, containers::Vec(50, 1e5, 81.6), containers::Vec(), containers::Vec(0.75, 0.75, 0.75), objects::Diffuse);           // Floor
     spheres_.emplace_back(1e5, containers::Vec(50, -1e5+81.6, 81.6), containers::Vec(), containers::Vec(0.75, 0.75, 0.75), objects::Diffuse);     // Ceiling
     spheres_.emplace_back(16.5, containers::Vec(27, 16.5, 47), containers::Vec(), containers::Vec(1, 1, 1) * 0.999, objects::Specular);           // Left Orb (Mirror like)

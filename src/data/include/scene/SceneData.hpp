@@ -19,10 +19,13 @@ public:
     int getObjectCount();
     objects::Sphere getObjectAt(int id);
 
+    // TEMP
+    std::vector<objects::Sphere> spheres_;
+
 private:
     int height_;
     int width_;
-    std::vector<objects::Sphere> spheres_;
+    // std::vector<objects::Sphere> spheres_;
     containers::Ray camera_;
 };
 

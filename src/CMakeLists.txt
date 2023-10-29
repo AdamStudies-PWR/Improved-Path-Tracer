@@ -10,6 +10,7 @@ add_executable(tracer
 
 target_link_libraries(tracer
     PRIVATE
+        nlohmann_json::nlohmann_json
         tracer-containers
         tracer-renderer
         tracer-data
