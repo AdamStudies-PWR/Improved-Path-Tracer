@@ -8,7 +8,7 @@ namespace tracer::containers
 class Ray
 {
 public:
-    Ray(Vec oo, Vec dd);
+    Ray(Vec oo=Vec(), Vec dd=Vec());
 
     Vec oo_;
     Vec dd_;

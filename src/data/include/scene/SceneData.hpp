@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <vector>
 
 #include "objects/Sphere.hpp"
@@ -12,9 +13,9 @@ namespace tracer::data
 class SceneData
 {
 public:
-    SceneData();
+    SceneData() = default;
 
-    void initScene();
+    void initScene(const std::string& jsonPath);
     containers::Ray getCamera();
     int getObjectCount();
     objects::Sphere getObjectAt(int id);

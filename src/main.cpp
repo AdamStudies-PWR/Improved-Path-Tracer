@@ -21,7 +21,7 @@ int main(int argc, char* argv[])
     }
 
     data::SceneData sceneData;
-    sceneData.initScene();
+    sceneData.initScene(inputParser.getScenePath());
 
     auto renderer = std::make_shared<renderer::Renderer>(sceneData, 720, 1280, inputParser.getSamplingRate());
     const auto wrappedRender = [renderer]() -> containers::Vec* {
