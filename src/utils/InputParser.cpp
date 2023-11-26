@@ -8,7 +8,9 @@ namespace tracer::utils
 
 namespace
 {
-const uint8_t EXPECTED_ARGUMENT_COUNT = 3;
+const uint8_t EXPECTED_ARGUMENT_COUNT = 2;
+const uint16_t MIN_SAMPLES = 4;
+const u_int16_t MAX_SAMPLES = 65535;
 }
 
 InputParser::InputParser(int argumentCount, char* argumentList[])
@@ -60,13 +62,13 @@ bool InputParser::validateSamples(std::string number)
         return false;
     }
 
-    if (temp <= 0 || temp > 65535)
+    if (temp < MIN_SAMPLES || temp > MAX_SAMPLES)
     {
         printErrorMessage("Number of samples out of range!");
         return false;
     }
 
-    sampleRate_ = (uint16_t)temp;
+    sampleRate_ = (uint16_t)temp / 4;
     return true;
 }
 
@@ -77,7 +79,8 @@ void InputParser::printErrorMessage(std::string error)
     std::cout << "Usage:" << std::endl;
     std::cout << "tracer [1] [2]" << std::endl;
     std::cout << "[1] - path to file containing scene data" << std::endl;
-    std::cout << "[2] - Number of samples for each traced path. Must be a number between 1 and 65535" << std::endl;
+    std::cout << "[2] - Number of samples for each traced path. Must be a number between " << MIN_SAMPLES << "and "
+              << MAX_SAMPLES << std::endl;
 }
 
 }  // namespace tracer::utils

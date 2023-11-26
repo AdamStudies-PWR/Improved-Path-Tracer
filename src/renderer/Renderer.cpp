@@ -102,7 +102,7 @@ containers::Vec* Renderer::render()
 #pragma omp parallel for schedule(dynamic, 1) private(r)
     for (int y=0; y<height_; y++)
     {
-        fprintf(stderr,"\rRendering (%d spp) %5.2f%%",samples_*4,100.*y/(height_-1));
+        fprintf(stderr,"\rRendering (%d samples) %5.2f%%",samples_*4,100.*y/(height_-1));
         for (unsigned short x=0, Xi[3]={0,0,y*y*y}; x<width_; x++)   // Loop cols
         {
             for (int sy=0, i=(height_-y-1)*width_+x; sy<2; sy++)     // 2x2 subpixel rows

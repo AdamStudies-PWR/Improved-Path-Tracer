@@ -13,7 +13,7 @@ using namespace tracer;
 
 int main(int argc, char* argv[])
 {
-    utils::InputParser inputParser(argc, argv);
+    utils::InputParser inputParser((argc - 1), argv);
 
     if (not inputParser.isInputValid())
     {
@@ -23,12 +23,12 @@ int main(int argc, char* argv[])
     data::SceneData sceneData;
     sceneData.initScene();
 
-    auto renderer = std::make_shared<renderer::Renderer>(sceneData, 720, 1280, 1250); //760, 1024, 10);
-    auto wrappedRender = [renderer]() -> containers::Vec* {
+    auto renderer = std::make_shared<renderer::Renderer>(sceneData, 720, 1280, inputParser.getSamplingRate()); //760, 1024, 10);
+    const auto wrappedRender = [renderer]() -> containers::Vec* {
         return renderer->render();
     };
 
-    auto* image = utils::measure(wrappedRender);
+    auto* image = utils::measure(std::move(wrappedRender));
     utils::saveImage(image, 720, 1280);
 
     return 0;
