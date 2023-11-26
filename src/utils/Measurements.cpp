@@ -14,9 +14,8 @@ using namespace std::chrono;
 const uint32_t HOUR_RATIO = 3600000;
 const uint32_t MINUTES_RATIO = 60000;
 const uint32_t SECONDS_RATIO = 1000;
-}
 
-std::string convertTimeUnitToString(uint16_t number)
+std::string convertTimeUnitToString(uint32_t number)
 {
     return (number == 0) ? "00" : (number < 10) ? "0" + std::to_string(number) : std::to_string(number);
 }
@@ -36,6 +35,7 @@ std::string getTimeString(uint64_t milliseconds)
     milliseconds = milliseconds - SECONDS_RATIO * seconds;
 
     return hourString + ":" + minutesString + ":" + secondsString + "." + std::to_string(milliseconds);
+}
 }
 
 containers::Vec* measure(std::function<containers::Vec*()> testable)

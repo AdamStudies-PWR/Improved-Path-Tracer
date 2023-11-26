@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <filesystem>
 
 namespace tracer::utils
 {
@@ -39,7 +40,17 @@ bool InputParser::validateInput(int argumentCount, char* argumentList[])
 
 bool InputParser::validatePath(std::string path)
 {
-    // TODO: check if provided path exist and we can read from it
+    if (not std::filesystem::exists(path))
+    {
+        printErrorMessage("File does not exist");
+        return false;
+    }
+    if (not std::filesystem::is_regular_file(path))
+    {
+        printErrorMessage("Not a file");
+        return false;
+    }
+
     scenePath_ = path;
     return true;
 }
@@ -79,7 +90,7 @@ void InputParser::printErrorMessage(std::string error)
     std::cout << "Usage:" << std::endl;
     std::cout << "tracer [1] [2]" << std::endl;
     std::cout << "[1] - path to file containing scene data" << std::endl;
-    std::cout << "[2] - Number of samples for each traced path. Must be a number between " << MIN_SAMPLES << "and "
+    std::cout << "[2] - Number of samples for each traced path. Must be a number between " << MIN_SAMPLES << " and "
               << MAX_SAMPLES << std::endl;
 }
 

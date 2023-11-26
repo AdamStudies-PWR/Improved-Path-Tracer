@@ -23,7 +23,7 @@ int main(int argc, char* argv[])
     data::SceneData sceneData;
     sceneData.initScene();
 
-    auto renderer = std::make_shared<renderer::Renderer>(sceneData, 720, 1280, inputParser.getSamplingRate()); //760, 1024, 10);
+    auto renderer = std::make_shared<renderer::Renderer>(sceneData, 720, 1280, inputParser.getSamplingRate());
     const auto wrappedRender = [renderer]() -> containers::Vec* {
         return renderer->render();
     };
