@@ -1,7 +1,6 @@
 add_subdirectory(containers)
-add_subdirectory(data)
-add_subdirectory(objects)
 add_subdirectory(renderer)
+add_subdirectory(scene)
 add_subdirectory(utils)
 
 add_executable(tracer
@@ -13,7 +12,6 @@ target_link_libraries(tracer
         nlohmann_json::nlohmann_json
         tracer-containers
         tracer-renderer
-        tracer-data
+        tracer-scene
         tracer-utils
-        tracer-objects
 )

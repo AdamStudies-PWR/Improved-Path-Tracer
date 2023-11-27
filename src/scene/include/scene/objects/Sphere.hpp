@@ -1,6 +1,6 @@
 #pragma once
 
-#include "objects/EReflectionType.hpp"
+#include "scene/objects/EReflectionType.hpp"
 #include "containers/Ray.hpp"
 #include "containers/Vec.hpp"
 

@@ -4,7 +4,7 @@
 #include <iostream>
 #include <algorithm>
 
-#include "objects/Sphere.hpp"
+#include "scene/objects/Sphere.hpp"
 
 namespace tracer::renderer
 {

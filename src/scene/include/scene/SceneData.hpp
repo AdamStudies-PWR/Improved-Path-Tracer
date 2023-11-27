@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-#include "objects/Sphere.hpp"
+#include "scene/objects/Sphere.hpp"
 #include "containers/Ray.hpp"
 #include "containers/Vec.hpp"
 

@@ -1,7 +1,8 @@
-project(tracer-objects)
+project(tracer-scene)
 
 set(SOURCES
-    Sphere.cpp
+    objects/Sphere.cpp
+    SceneData.cpp
 )
 
 add_library(${PROJECT_NAME})

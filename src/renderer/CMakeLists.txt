@@ -14,6 +14,5 @@ target_include_directories(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
         tracer-containers
-        tracer-objects
-        tracer-data
+        tracer-scene
 )

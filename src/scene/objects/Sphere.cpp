@@ -1,4 +1,4 @@
-#include "objects/Sphere.hpp"
+#include "scene/objects/Sphere.hpp"
 
 #include "math.h"
 
