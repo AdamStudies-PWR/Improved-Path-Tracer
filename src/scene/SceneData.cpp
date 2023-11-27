@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-namespace tracer::data
+namespace tracer::scene
 {
 
 void SceneData::initScene(const std::string& jsonPath)
@@ -28,4 +28,4 @@ containers::Ray SceneData::getCamera() { return camera_; }
 int SceneData::getObjectCount() { return spheres_.size(); }
 objects::Sphere SceneData::getObjectAt(int id) { return spheres_.at(id); }
 
-}  // namespace tracer::data
+}  // namespace tracer::scene

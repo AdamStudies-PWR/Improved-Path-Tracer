@@ -14,7 +14,7 @@ namespace tracer::renderer
 class Renderer
 {
 public:
-   Renderer(data::SceneData& sceneData, const int height, const int width, const int samples);
+   Renderer(scene::SceneData& sceneData, const int height, const int width, const int samples);
 
    containers::Vec* render();
 
@@ -24,7 +24,7 @@ private:
    const int height_;
    const int samples_;
    const int width_;
-   data::SceneData& sceneData_;
+   scene::SceneData& sceneData_;
 
    containers::Vec radiance(const containers::Ray& ray, int depth, short unsigned int* xi);
 };

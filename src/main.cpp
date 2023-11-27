@@ -20,7 +20,7 @@ int main(int argc, char* argv[])
         return 0;
     }
 
-    data::SceneData sceneData;
+    scene::SceneData sceneData;
     sceneData.initScene(inputParser.getScenePath());
 
     auto renderer = std::make_shared<renderer::Renderer>(sceneData, 720, 1280, inputParser.getSamplingRate());

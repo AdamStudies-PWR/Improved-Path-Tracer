@@ -1,6 +1,6 @@
 #pragma once
 
-namespace tracer::objects
+namespace tracer::scene::objects
 {
 
 enum EReflectionType
@@ -10,4 +10,4 @@ enum EReflectionType
     Refractive
 };
 
-}  // namespace tracer::objects
+}  // namespace tracer::scene::objects

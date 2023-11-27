@@ -4,7 +4,7 @@
 #include "containers/Ray.hpp"
 #include "containers/Vec.hpp"
 
-namespace tracer::objects
+namespace tracer::scene::objects
 {
 
 class Sphere
@@ -21,4 +21,4 @@ public:
     EReflectionType relfection_;
 };
 
-}  // namespace tracer::objects
+}  // namespace tracer::scene::objects

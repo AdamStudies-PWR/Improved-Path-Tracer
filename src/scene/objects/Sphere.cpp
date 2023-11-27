@@ -2,7 +2,7 @@
 
 #include "math.h"
 
-namespace tracer::objects
+namespace tracer::scene::objects
 {
 
 Sphere::Sphere(double radius, containers::Vec position, containers::Vec emission, containers::Vec color, EReflectionType relfection)
@@ -27,4 +27,4 @@ double Sphere::intersect(const containers::Ray& ray) const
     return (temp = b - det) > eps ? temp : ((temp = b + det) > eps ? temp : 0);
 }
 
-}  // namespace tracer::objects
+}  // namespace tracer::scene::objects

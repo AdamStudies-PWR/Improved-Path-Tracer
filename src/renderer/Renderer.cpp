@@ -9,7 +9,7 @@
 namespace tracer::renderer
 {
 
-Renderer::Renderer(data::SceneData& sceneData, const int height, const int width, const int samples)
+Renderer::Renderer(scene::SceneData& sceneData, const int height, const int width, const int samples)
     : height_(height)
     , samples_(samples)
     , width_(width)
@@ -26,7 +26,7 @@ containers::Vec Renderer::radiance(const containers::Ray& ray, int depth, short 
         return containers::Vec();
     }
 
-    const objects::Sphere& sphere = sceneData_.getObjectAt(id);
+    const scene::objects::Sphere& sphere = sceneData_.getObjectAt(id);
 
     containers::Vec xx = ray.oo_ + ray.dd_ * temp;
     containers::Vec nn = (xx - sphere.position_).norm();
@@ -43,7 +43,7 @@ containers::Vec Renderer::radiance(const containers::Ray& ray, int depth, short 
         else return sphere.emission_;
     }
 
-    if (sphere.relfection_ == objects::Diffuse)
+    if (sphere.relfection_ == scene::objects::Diffuse)
     {
         double r1 = 2*M_PI*erand48(xi);
         double r2 = erand48(xi);
@@ -56,7 +56,7 @@ containers::Vec Renderer::radiance(const containers::Ray& ray, int depth, short 
 
         return sphere.emission_ + ff.mult(radiance(containers::Ray(xx, dd), depth, xi));
     }
-    else if (sphere.relfection_ == objects::Specular)
+    else if (sphere.relfection_ == scene::objects::Specular)
     {
         return sphere.emission_ + ff.mult(radiance(containers::Ray(xx, ray.dd_ - nn*2*nn.dot(ray.dd_)), depth, xi));
     }

@@ -7,7 +7,7 @@
 #include "containers/Ray.hpp"
 #include "containers/Vec.hpp"
 
-namespace tracer::data
+namespace tracer::scene
 {
 
 class SceneData
@@ -30,4 +30,4 @@ private:
     containers::Ray camera_;
 };
 
-}  // namespace tracer::data
+}  // namespace tracer::scene
