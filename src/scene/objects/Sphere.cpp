@@ -1,21 +1,23 @@
-#include "scene/objects/Sphere.hpp"
+#include "Sphere.hpp"
 
 #include "math.h"
 
 namespace tracer::scene::objects
 {
 
-Sphere::Sphere(double radius, containers::Vec position, containers::Vec emission, containers::Vec color, EReflectionType relfection)
+namespace
+{
+using namespace containers;
+}
+
+Sphere::Sphere(double radius, Vec position, Vec emission, Vec color, EReflectionType reflection)
     : radius_(radius)
-    , position_(position)
-    , emission_(emission)
-    , color_(color)
-    , relfection_(relfection)
+    , AObject(position, emission, color, reflection)
 {}
 
-double Sphere::intersect(const containers::Ray& ray) const
+double Sphere::intersect(const Ray& ray) const
 {
-    containers::Vec op = position_ - ray.oo_;
+    Vec op = position_ - ray.oo_;
     double temp;
     double eps = 1e-4;
     double b = op.dot(ray.dd_);

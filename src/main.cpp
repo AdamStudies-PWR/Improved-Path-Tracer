@@ -9,27 +9,33 @@
 #include "utils/Measurements.hpp"
 #include "utils/InputParser.hpp"
 
-using namespace tracer;
+namespace
+{
+using namespace tracer::containers;
+using namespace tracer::renderer;
+using namespace tracer::scene;
+using namespace tracer::utils;
+}  // namespace
 
 int main(int argc, char* argv[])
 {
-    utils::InputParser inputParser((argc - 1), argv);
+    InputParser inputParser((argc - 1), argv);
 
     if (not inputParser.isInputValid())
     {
         return 0;
     }
 
-    scene::SceneData sceneData;
+    SceneData sceneData;
     sceneData.initScene(inputParser.getScenePath());
 
-    auto renderer = std::make_shared<renderer::Renderer>(sceneData, 720, 1280, inputParser.getSamplingRate());
-    const auto wrappedRender = [renderer]() -> containers::Vec* {
+    auto renderer = std::make_shared<Renderer>(sceneData, 720, 1280, inputParser.getSamplingRate());
+    const auto wrappedRender = [renderer]() -> Vec* {
         return renderer->render();
     };
 
-    auto* image = utils::measure(std::move(wrappedRender));
-    utils::saveImage(image, 720, 1280);
+    auto* image = measure(std::move(wrappedRender));
+    saveImage(image, 720, 1280);
 
     return 0;
 }
@@ -73,7 +79,7 @@ using json = nlohmann::json;
                 {"yy", obj.color_.yy_},
                 {"zz", obj.color_.zz_}
             }},
-            {"reflection", obj.relfection_}
+            {"reflection", obj.reflection_}
         };
 
         obj_array.push_back(temp);

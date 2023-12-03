@@ -14,13 +14,15 @@ namespace tracer::utils
 
 namespace
 {
+using namespace containers;
+
 inline int toInt(double x)
 {
     return int(pow(std::clamp(x, 0.0, 1.0), 1/2.2) * 255 + 0.5);
 }
 }  // namespace
 
-void saveImage(containers::Vec* image, int height, int width)
+void saveImage(Vec* image, int height, int width)
 {
     std::cout << __func__ << " - saving render..." << std::endl;
 

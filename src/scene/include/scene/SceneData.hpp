@@ -2,8 +2,9 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 
-#include "scene/objects/Sphere.hpp"
+#include "scene/objects/AObject.hpp"
 #include "containers/Ray.hpp"
 #include "containers/Vec.hpp"
 
@@ -18,15 +19,15 @@ public:
     void initScene(const std::string& jsonPath);
     containers::Ray getCamera();
     int getObjectCount();
-    objects::Sphere getObjectAt(int id);
+    std::shared_ptr<objects::AObject> getObjectAt(int id);
 
     // TEMP
-    std::vector<objects::Sphere> spheres_;
+    std::vector<std::shared_ptr<objects::AObject>> objects_;
 
 private:
     int height_;
     int width_;
-    // std::vector<objects::Sphere> spheres_;
+    // std::vector<objects::Sphere> objects_;
     containers::Ray camera_;
 };
 
