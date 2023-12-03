@@ -8,7 +8,7 @@ namespace tracer::scene::objects
 namespace
 {
 using namespace containers;
-}
+}  // namespace
 
 Sphere::Sphere(double radius, Vec position, Vec emission, Vec color, EReflectionType reflection)
     : radius_(radius)

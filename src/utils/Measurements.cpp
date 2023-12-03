@@ -36,7 +36,7 @@ std::string getTimeString(uint64_t milliseconds)
 
     return hourString + ":" + minutesString + ":" + secondsString + "." + std::to_string(milliseconds);
 }
-}
+}  // namespace
 
 containers::Vec* measure(std::function<containers::Vec*()> testable)
 {

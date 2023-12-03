@@ -14,7 +14,7 @@ namespace
 using namespace containers;
 using namespace scene;
 using namespace scene::objects;
-}
+}  // namespace
 
 Renderer::Renderer(SceneData& sceneData, const int height, const int width, const int samples)
     : height_(height)

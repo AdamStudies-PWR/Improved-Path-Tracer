@@ -14,9 +14,9 @@ namespace tracer::scene
 class SceneData
 {
 public:
-    SceneData() = default;
+    SceneData(const std::string& jsonPath);
 
-    void initScene(const std::string& jsonPath);
+    bool initScene();
     containers::Ray getCamera();
     int getObjectCount();
     std::shared_ptr<objects::AObject> getObjectAt(int id);
@@ -25,6 +25,7 @@ public:
     std::vector<std::shared_ptr<objects::AObject>> objects_;
 
 private:
+    const std::string jsonPath_;
     int height_;
     int width_;
     // std::vector<objects::Sphere> objects_;

@@ -12,7 +12,7 @@ namespace
 const uint8_t EXPECTED_ARGUMENT_COUNT = 2;
 const uint16_t MIN_SAMPLES = 4;
 const u_int16_t MAX_SAMPLES = 65535;
-}
+}  // namespace
 
 InputParser::InputParser(int argumentCount, char* argumentList[])
 {

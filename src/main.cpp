@@ -20,14 +20,16 @@ using namespace tracer::utils;
 int main(int argc, char* argv[])
 {
     InputParser inputParser((argc - 1), argv);
-
     if (not inputParser.isInputValid())
     {
         return 0;
     }
 
-    SceneData sceneData;
-    sceneData.initScene(inputParser.getScenePath());
+    SceneData sceneData(inputParser.getScenePath());
+    if (not sceneData.initScene())
+    {
+        return 0;
+    }
 
     auto renderer = std::make_shared<Renderer>(sceneData, 720, 1280, inputParser.getSamplingRate());
     const auto wrappedRender = [renderer]() -> Vec* {

@@ -6,7 +6,7 @@ namespace tracer::scene::objects
 namespace
 {
 using namespace containers;
-}
+}  // namespace
 
 AObject::AObject(Vec position, Vec emission, Vec color, EReflectionType relfection)
     : color_(color)
