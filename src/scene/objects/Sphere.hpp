@@ -9,7 +9,7 @@ class Sphere : public AObject
 {
 public:
     Sphere(double radius, containers::Vec position, containers::Vec emission, containers::Vec color,
-        EReflectionType relfection);
+        EReflectionType reflection);
 
     double intersect(const containers::Ray& ray) const override;
 

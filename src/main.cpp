@@ -31,7 +31,7 @@ int main(int argc, char* argv[])
         return 0;
     }
 
-    auto renderer = std::make_shared<Renderer>(sceneData, 720, 1280, inputParser.getSamplingRate());
+    auto renderer = std::make_shared<Renderer>(sceneData, inputParser.getSamplingRate());
     const auto wrappedRender = [renderer]() -> Vec* {
         return renderer->render();
     };
@@ -51,37 +51,37 @@ SCENE SAVING LOGIC
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
 
-    json j;
+   json j;
 
     j["width"] = 1280;
     j["height"] = 720;
 
     auto camera = sceneData.getCamera();
     j["camera"]["position"] = {{"xx", camera.oo_.xx_}, {"yy", camera.oo_.yy_}, {"zz", camera.oo_.zz_}};
-    j["camera"]["direction"] = {{"xx", camera.oo_.xx_}, {"yy", camera.oo_.yy_}, {"zz", camera.oo_.zz_}};
+    j["camera"]["direction"] = {{"xx", camera.dd_.xx_}, {"yy", camera.dd_.yy_}, {"zz", camera.dd_.zz_}};
 
     std::vector<json> obj_array;
-    for (const auto obj : sceneData.spheres_)
+    for (const auto obj : sceneData.objects_)
     {
         json temp = {
             {"type", "sphere"},
-            {"radius", obj.radius_},
+            {"radius", obj->radius_},
             {"position", {
-                {"xx", obj.position_.xx_},
-                {"yy", obj.position_.yy_},
-                {"zz", obj.position_.zz_}
+                {"xx", obj->getPosition().xx_},
+                {"yy", obj->getPosition().yy_},
+                {"zz", obj->getPosition().zz_}
             }},
             {"emission", {
-                {"xx", obj.emission_.xx_},
-                {"yy", obj.emission_.yy_},
-                {"zz", obj.emission_.zz_}
+                {"xx", obj->getEmission().xx_},
+                {"yy", obj->getEmission().yy_},
+                {"zz", obj->getEmission().zz_}
             }},
             {"color", {
-                {"xx", obj.color_.xx_},
-                {"yy", obj.color_.yy_},
-                {"zz", obj.color_.zz_}
+                {"xx", obj->getColor().xx_},
+                {"yy", obj->getColor().yy_},
+                {"zz", obj->getColor().zz_}
             }},
-            {"reflection", obj.reflection_}
+            {"reflection", obj->getReflectionType()}
         };
 
         obj_array.push_back(temp);

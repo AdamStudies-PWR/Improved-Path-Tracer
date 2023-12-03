@@ -16,10 +16,8 @@ using namespace scene;
 using namespace scene::objects;
 }  // namespace
 
-Renderer::Renderer(SceneData& sceneData, const int height, const int width, const int samples)
-    : height_(height)
-    , samples_(samples)
-    , width_(width)
+Renderer::Renderer(SceneData& sceneData, const int samples)
+    : samples_(samples)
     , sceneData_(sceneData)
 {}
 
@@ -101,18 +99,18 @@ Vec Renderer::radiance(const Ray& ray, int depth, short unsigned int* xi)
 Vec* Renderer::render()
 {
     auto camera = sceneData_.getCamera();
-    Vec cx = Vec(width_*0.5135/height_);
+    Vec cx = Vec(sceneData_.getWidth()*0.5135/sceneData_.getHeight());
     Vec cy = (cx%camera.dd_).norm()*0.5135;
     Vec r;
-    Vec* c = new Vec[width_*height_];
+    Vec* c = new Vec[sceneData_.getWidth()*sceneData_.getHeight()];
 
 #pragma omp parallel for schedule(dynamic, 1) private(r)
-    for (int y=0; y<height_; y++)
+    for (int y=0; y<sceneData_.getHeight(); y++)
     {
-        fprintf(stderr,"\rRendering (%d samples) %5.2f%%",samples_*4,100.*y/(height_-1));
-        for (unsigned short x=0, Xi[3]={0,0,y*y*y}; x<width_; x++)   // Loop cols
+        fprintf(stderr,"\rRendering (%d samples) %5.2f%%",samples_*4,100.*y/(sceneData_.getHeight()-1));
+        for (unsigned short x=0, Xi[3]={0,0,y*y*y}; x<sceneData_.getWidth(); x++)   // Loop cols
         {
-            for (int sy=0, i=(height_-y-1)*width_+x; sy<2; sy++)     // 2x2 subpixel rows
+            for (int sy=0, i=(sceneData_.getHeight()-y-1)*sceneData_.getWidth()+x; sy<2; sy++)     // 2x2 subpixel rows
             {
                 for (int sx=0; sx<2; sx++, r=Vec())
                 {        // 2x2 subpixel cols
@@ -120,11 +118,12 @@ Vec* Renderer::render()
                     {
                         double r1=2*erand48(Xi), dx=r1<1 ? sqrt(r1)-1: 1-sqrt(2-r1);
                         double r2=2*erand48(Xi), dy=r2<1 ? sqrt(r2)-1: 1-sqrt(2-r2);
-                        Vec d = cx*( ( (sx+.5 + dx)/2 + x)/width_ - .5) +
-                                cy*( ( (sy+.5 + dy)/2 + y)/height_ - .5) + camera.dd_;
+                        Vec d = cx*( ( (sx+.5 + dx)/2 + x)/sceneData_.getWidth() - .5) +
+                                cy*( ( (sy+.5 + dy)/2 + y)/sceneData_.getHeight() - .5) + camera.dd_;
                         r = r + radiance(Ray(camera.oo_+d*140,d.norm()), 0, Xi)*(1./samples_);
                     } // Camera rays are pushed ^^^^^ forward to start in interior
-                    c[i] = c[i] + Vec(std::clamp(r.xx_, 0.0, 1.0), std::clamp(r.yy_, 0.0, 1.0), std::clamp(r.zz_, 0.0, 1.0))*0.25;
+                    c[i] = c[i] + Vec(std::clamp(r.xx_, 0.0, 1.0), std::clamp(r.yy_, 0.0, 1.0),
+                        std::clamp(r.zz_, 0.0, 1.0))*0.25;
                 }
             }
         }

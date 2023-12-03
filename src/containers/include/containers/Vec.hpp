@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ostream>
+
 namespace tracer::containers
 {
 
@@ -16,6 +18,7 @@ public:
     Vec operator- (const Vec& subtrahend) const;
     Vec operator* (double number) const;
     Vec operator% (Vec& input);
+    friend std::ostream& operator<<(std::ostream& os, const Vec& vec);
 
     double xx_;
     double yy_;

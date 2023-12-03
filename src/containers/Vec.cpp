@@ -46,4 +46,9 @@ Vec Vec::operator% (Vec& input)
     return Vec(yy_*input.zz_ - zz_*input.yy_, zz_*input.xx_ - xx_*input.zz_, xx_*input.yy_ - yy_*input.xx_);
 }
 
+std::ostream& operator<<(std::ostream& os, const Vec& vec)
+{
+    return os << "x: " << vec.xx_ << ", y: " << vec.yy_ << ", z: " << vec.zz_;
+}
+
 } // namespace tracer::containers

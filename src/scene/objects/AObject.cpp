@@ -1,5 +1,7 @@
 #include "scene/objects/AObject.hpp"
 
+#include <iostream>
+
 namespace tracer::scene::objects
 {
 
@@ -8,11 +10,11 @@ namespace
 using namespace containers;
 }  // namespace
 
-AObject::AObject(Vec position, Vec emission, Vec color, EReflectionType relfection)
+AObject::AObject(Vec position, Vec emission, Vec color, EReflectionType reflection)
     : color_(color)
     , emission_(emission)
     , position_(position)
-    , reflection_(reflection_)
+    , reflection_(reflection)
 {}
 
 Vec AObject::getColor() const { return color_;}

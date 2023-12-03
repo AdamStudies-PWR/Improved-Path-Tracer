@@ -11,7 +11,7 @@ namespace tracer::scene::objects
 class AObject
 {
 public:
-    AObject(containers::Vec position, containers::Vec emission, containers::Vec color, EReflectionType relfection);
+    AObject(containers::Vec position, containers::Vec emission, containers::Vec color, EReflectionType reflection);
 
     virtual double intersect(const containers::Ray& ray) const = 0;
 

@@ -4,6 +4,8 @@
 #include <vector>
 #include <memory>
 
+#include <nlohmann/json.hpp>
+
 #include "scene/objects/AObject.hpp"
 #include "containers/Ray.hpp"
 #include "containers/Vec.hpp"
@@ -17,18 +19,23 @@ public:
     SceneData(const std::string& jsonPath);
 
     bool initScene();
-    containers::Ray getCamera();
-    int getObjectCount();
-    std::shared_ptr<objects::AObject> getObjectAt(int id);
-
-    // TEMP
-    std::vector<std::shared_ptr<objects::AObject>> objects_;
+    containers::Ray getCamera() const;
+    int getObjectCount() const;
+    std::shared_ptr<objects::AObject> getObjectAt(int id) const;
+    uint32_t getWidth() const;
+    uint32_t getHeight() const;
 
 private:
+    bool loadBasicSceneData(const nlohmann::json& jsonData);
+    bool loadCamera(const nlohmann::json& jsonData);
+    bool loadObjects(const nlohmann::json& jsonData);
+    bool addSpehere(const nlohmann::json& sphereData);
+
     const std::string jsonPath_;
-    int height_;
-    int width_;
-    // std::vector<objects::Sphere> objects_;
+
+    uint32_t height_;
+    uint32_t width_;
+    std::vector<std::shared_ptr<objects::AObject>> objects_;
     containers::Ray camera_;
 };
 
