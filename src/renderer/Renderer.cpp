@@ -4,6 +4,8 @@
 #include <iostream>
 #include <algorithm>
 
+#include <omp.h>
+
 #include "scene/objects/AObject.hpp"
 
 namespace tracer::renderer
@@ -104,11 +106,13 @@ Vec* Renderer::render()
     Vec r;
     Vec* c = new Vec[sceneData_.getWidth()*sceneData_.getHeight()];
 
-#pragma omp parallel for schedule(dynamic, 1) private(r)
-    for (int y=0; y<sceneData_.getHeight(); y++)
+    int counter = 0;
+    #pragma omp parallel for private(r)
+    for (uint32_t y=0; y < sceneData_.getHeight(); y++)
     {
-        fprintf(stderr,"\rRendering (%d samples) %5.2f%%",samples_*4,100.*y/(sceneData_.getHeight()-1));
-        for (unsigned short x=0, Xi[3]={0,0,y*y*y}; x<sceneData_.getWidth(); x++)   // Loop cols
+        // printf("Thread %d is running number %d\n", omp_get_thread_num(), y);
+        fprintf(stderr,"\rRendering (%d samples) %5.2f%%",samples_*4,100.*counter/(sceneData_.getHeight()-1));
+        for (unsigned short x=0, Xi[3]={0, 0, (unsigned short)(y*y*y)}; x<sceneData_.getWidth(); x++)   // Loop cols
         {
             for (int sy=0, i=(sceneData_.getHeight()-y-1)*sceneData_.getWidth()+x; sy<2; sy++)     // 2x2 subpixel rows
             {
@@ -127,6 +131,8 @@ Vec* Renderer::render()
                 }
             }
         }
+
+        counter++;
     }
 
     return c;

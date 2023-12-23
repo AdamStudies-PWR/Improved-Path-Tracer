@@ -19,11 +19,11 @@ InputParser::InputParser(int argumentCount, char* argumentList[])
     isValid_ = validateInput(argumentCount, argumentList);
 }
 
-bool InputParser::isInputValid() { return isValid_; }
-std::string InputParser::getScenePath() { return scenePath_; }
-uint16_t InputParser::getSamplingRate() { return sampleRate_; }
+bool InputParser::isInputValid() const { return isValid_; }
+std::string InputParser::getScenePath() const { return scenePath_; }
+uint16_t InputParser::getSamplingRate() const { return sampleRate_; }
 
-bool InputParser::validateInput(int argumentCount, char* argumentList[])
+bool InputParser::validateInput(const int argumentCount, char* argumentList[])
 {
     if (argumentCount != EXPECTED_ARGUMENT_COUNT)
     {
@@ -38,11 +38,11 @@ bool InputParser::validateInput(int argumentCount, char* argumentList[])
     return true;
 }
 
-bool InputParser::validatePath(std::string path)
+bool InputParser::validatePath(const std::string& path)
 {
     if (not std::filesystem::exists(path))
     {
-        printErrorMessage("File does not exist");
+        printErrorMessage("Path does not exist");
         return false;
     }
     if (not std::filesystem::is_regular_file(path))
@@ -55,7 +55,7 @@ bool InputParser::validatePath(std::string path)
     return true;
 }
 
-bool InputParser::validateSamples(std::string number)
+bool InputParser::validateSamples(const std::string& number)
 {
     int temp;
     try
@@ -83,7 +83,7 @@ bool InputParser::validateSamples(std::string number)
     return true;
 }
 
-void InputParser::printErrorMessage(std::string error)
+void InputParser::printErrorMessage(const std::string& error)
 {
     std::cout << "Error parsing input!" << std::endl;
     std::cout << "Cause: " << error << std::endl;

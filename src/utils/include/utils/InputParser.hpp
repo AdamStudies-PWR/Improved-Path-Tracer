@@ -11,15 +11,15 @@ class InputParser
 public:
     InputParser(int argumentCount, char* argumentList[]);
 
-    bool isInputValid();
-    std::string getScenePath();
-    uint16_t getSamplingRate();
+    bool isInputValid() const;
+    std::string getScenePath() const;
+    uint16_t getSamplingRate() const;
 
 private:
-    bool validateInput(int argumentCount, char* argumentList[]);
-    bool validatePath(std::string path);
-    bool validateSamples(std::string number);
-    void printErrorMessage(std::string error);
+    bool validateInput(const int argumentCount, char* argumentList[]);
+    bool validatePath(const std::string& path);
+    bool validateSamples(const std::string& number);
+    void printErrorMessage(const std::string& error);
 
     bool isValid_;
     std::string scenePath_;
