@@ -37,7 +37,7 @@ int main(int argc, char* argv[])
     };
 
     auto* image = measure(std::move(wrappedRender));
-    saveImage(image, 720, 1280);
+    saveImage(image, sceneData.getHeight(), sceneData.getWidth());
 
     return 0;
 }

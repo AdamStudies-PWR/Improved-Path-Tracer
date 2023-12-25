@@ -87,7 +87,7 @@ bool SceneData::initScene()
         return false;
     }
 
-    std::cout << "Data loaded successfully";
+    std::cout << "Data loaded successfully" << std::endl;
 
     return true;
 }
