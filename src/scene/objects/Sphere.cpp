@@ -10,14 +10,14 @@ namespace
 using namespace containers;
 }  // namespace
 
-Sphere::Sphere(double radius, Vec position, Vec emission, Vec color, EReflectionType reflection)
+Sphere::Sphere(double radius, Vec3 position, Vec3 emission, Vec3 color, EReflectionType reflection)
     : AObject(position, emission, color, reflection)
     , radius_(radius)
 {}
 
 double Sphere::intersect(const Ray& ray) const
 {
-    Vec op = position_ - ray.oo_;
+    Vec3 op = position_ - ray.oo_;
     double temp;
     double eps = 1e-4;
     double b = op.dot(ray.dd_);

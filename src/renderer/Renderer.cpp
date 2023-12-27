@@ -23,22 +23,22 @@ Renderer::Renderer(SceneData& sceneData, const int samples)
     , sceneData_(sceneData)
 {}
 
-Vec Renderer::radiance(const Ray& ray, int depth, short unsigned int* xi)
+Vec3 Renderer::radiance(const Ray& ray, int depth, short unsigned int* xi)
 {
     double temp;
     int id = 0;
 
     if (!intersect(ray, temp, id))
     {
-        return Vec();
+        return Vec3();
     }
 
     const auto object = sceneData_.getObjectAt(id);
 
-    Vec xx = ray.oo_ + ray.dd_ * temp;
-    Vec nn = (xx - object->getPosition()).norm();
-    Vec nl = nn.dot(ray.dd_) < 0 ? nn : nn * -1;
-    Vec ff = object->getColor();
+    Vec3 xx = ray.oo_ + ray.dd_ * temp;
+    Vec3 nn = (xx - object->getPosition()).norm();
+    Vec3 nl = nn.dot(ray.dd_) < 0 ? nn : nn * -1;
+    Vec3 ff = object->getColor();
 
     double pp = ff.xx_ > ff.yy_ && ff.xx_ > ff.zz_ ? ff.xx_ : ff.yy_ > ff.zz_ ? ff.yy_ : ff.zz_;
     if (++depth > 5)
@@ -56,10 +56,10 @@ Vec Renderer::radiance(const Ray& ray, int depth, short unsigned int* xi)
         double r2 = erand48(xi);
         double r2s = sqrt(r2);
 
-        Vec ww = nl;
-        Vec uu = ((fabs(ww.xx_) > 0.1 ? Vec(0, 1, 0) : Vec(1, 0, 0))%ww).norm();
-        Vec vv = ww%uu;
-        Vec dd = (uu*cos(r1)*r2s + vv*sin(r1)*r2s + ww*sqrt(1-r2)).norm();
+        Vec3 ww = nl;
+        Vec3 uu = ((fabs(ww.xx_) > 0.1 ? Vec3(0, 1, 0) : Vec3(1, 0, 0))%ww).norm();
+        Vec3 vv = ww%uu;
+        Vec3 dd = (uu*cos(r1)*r2s + vv*sin(r1)*r2s + ww*sqrt(1-r2)).norm();
 
         return object->getEmission() + ff.mult(radiance(Ray(xx, dd), depth, xi));
     }
@@ -81,7 +81,7 @@ Vec Renderer::radiance(const Ray& ray, int depth, short unsigned int* xi)
         return object->getEmission() + ff.mult(radiance(reflectedRay, depth, xi));
     }
 
-    Vec tdir = (ray.dd_*nnt - nn*((into ? 1 : -1) * (ddn*nnt+sqrt(cos2t)))).norm();
+    Vec3 tdir = (ray.dd_*nnt - nn*((into ? 1 : -1) * (ddn*nnt+sqrt(cos2t)))).norm();
     double aa = nt - nc;
     double bb = nt + nc;
     double R0 = aa*aa/(bb*bb);
@@ -98,13 +98,13 @@ Vec Renderer::radiance(const Ray& ray, int depth, short unsigned int* xi)
 }
 
 // refactor this !!!
-Vec* Renderer::render()
+Vec3* Renderer::render()
 {
     auto camera = sceneData_.getCamera();
-    Vec cx = Vec(sceneData_.getWidth()*0.5135/sceneData_.getHeight());
-    Vec cy = (cx%camera.dd_).norm()*0.5135;
-    Vec r;
-    Vec* c = new Vec[sceneData_.getWidth()*sceneData_.getHeight()];
+    Vec3 cx = Vec3(sceneData_.getWidth()*0.5135/sceneData_.getHeight());
+    Vec3 cy = (cx%camera.dd_).norm()*0.5135;
+    Vec3 r;
+    Vec3* c = new Vec3[sceneData_.getWidth()*sceneData_.getHeight()];
 
     int counter = 0;
     #pragma omp parallel for private(r)
@@ -116,17 +116,17 @@ Vec* Renderer::render()
         {
             for (int sy=0, i=(sceneData_.getHeight()-y-1)*sceneData_.getWidth()+x; sy<2; sy++)     // 2x2 subpixel rows
             {
-                for (int sx=0; sx<2; sx++, r=Vec())
+                for (int sx=0; sx<2; sx++, r=Vec3())
                 {        // 2x2 subpixel cols
                     for (int s=0; s<samples_; s++)
                     {
                         double r1=2*erand48(Xi), dx=r1<1 ? sqrt(r1)-1: 1-sqrt(2-r1);
                         double r2=2*erand48(Xi), dy=r2<1 ? sqrt(r2)-1: 1-sqrt(2-r2);
-                        Vec d = cx*( ( (sx+.5 + dx)/2 + x)/sceneData_.getWidth() - .5) +
+                        Vec3 d = cx*( ( (sx+.5 + dx)/2 + x)/sceneData_.getWidth() - .5) +
                                 cy*( ( (sy+.5 + dy)/2 + y)/sceneData_.getHeight() - .5) + camera.dd_;
                         r = r + radiance(Ray(camera.oo_+d*140,d.norm()), 0, Xi)*(1./samples_);
                     } // Camera rays are pushed ^^^^^ forward to start in interior
-                    c[i] = c[i] + Vec(std::clamp(r.xx_, 0.0, 1.0), std::clamp(r.yy_, 0.0, 1.0),
+                    c[i] = c[i] + Vec3(std::clamp(r.xx_, 0.0, 1.0), std::clamp(r.yy_, 0.0, 1.0),
                         std::clamp(r.zz_, 0.0, 1.0))*0.25;
                 }
             }

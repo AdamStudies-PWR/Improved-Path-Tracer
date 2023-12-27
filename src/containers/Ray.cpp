@@ -3,7 +3,7 @@
 namespace tracer::containers
 {
 
-Ray::Ray(Vec oo, Vec dd)
+Ray::Ray(Vec3 oo, Vec3 dd)
     : oo_(oo)
     , dd_(dd)
 {}

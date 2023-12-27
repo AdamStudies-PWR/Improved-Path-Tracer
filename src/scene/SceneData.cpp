@@ -28,7 +28,7 @@ json loadJsonFile(const std::string filename)
     return data;
 }
 
-bool validateVector(const json& vecData)
+bool validateVec3tor(const json& vecData)
 {
     return vecData.contains("xx") && vecData.contains("yy") && vecData.contains("yy");
 }
@@ -41,8 +41,8 @@ bool validateObject(const json& objectData)
         return false;
     }
 
-    if (not validateVector(objectData["color"]) || not validateVector(objectData["emission"])
-        || not validateVector(objectData["position"]))
+    if (not validateVec3tor(objectData["color"]) || not validateVec3tor(objectData["emission"])
+        || not validateVec3tor(objectData["position"]))
     {
         return false;
     }
@@ -130,14 +130,14 @@ bool SceneData::loadCamera(const nlohmann::json& jsonData)
     const auto directionData = cameraData["direction"];
     const auto positionData = cameraData["position"];
 
-    if (not validateVector(directionData) || not validateVector(positionData))
+    if (not validateVec3tor(directionData) || not validateVec3tor(positionData))
     {
         std::cout << "Damaged position or direction vector!" << std::endl;
         return false;
     }
 
-    camera_ = Ray(Vec(positionData["xx"], positionData["yy"], positionData["zz"]),
-                  Vec(directionData["xx"], directionData["yy"], directionData["zz"]));
+    camera_ = Ray(Vec3(positionData["xx"], positionData["yy"], positionData["zz"]),
+                  Vec3(directionData["xx"], directionData["yy"], directionData["zz"]));
 
     return true;
 }
@@ -188,9 +188,9 @@ bool SceneData::addSpehere(const json& sphereData)
     const auto emission = sphereData["emission"];
 
     objects_.push_back(std::make_shared<Sphere>(sphereData["radius"],
-                                                Vec(position["xx"], position["yy"], position["zz"]),
-                                                Vec(emission["xx"], emission["yy"], emission["zz"]),
-                                                Vec(color["xx"], color["yy"], color["zz"]),
+                                                Vec3(position["xx"], position["yy"], position["zz"]),
+                                                Vec3(emission["xx"], emission["yy"], emission["zz"]),
+                                                Vec3(color["xx"], color["yy"], color["zz"]),
                                                 EReflectionType(sphereData["reflection"])));
 
     return true;
@@ -198,13 +198,13 @@ bool SceneData::addSpehere(const json& sphereData)
 
 }  // namespace tracer::scene
 
-// camera_ = Ray(Vec(50, 52, 295.6), Vec(0, -0.042612, -1).norm());
-// objects_.push_back(std::make_shared<Sphere>(1e5, Vec(1e5-9, 40.8, 81.6), Vec(), Vec(0.75, 0.25, 0.25), Diffuse));       // Left Wall
-// objects_.push_back(std::make_shared<Sphere>(1e5, Vec(-1e5+109, 40.8, 81.6), Vec(), Vec(0.25, 0.25, 0.75), Diffuse));    // Right Wall
-// objects_.push_back(std::make_shared<Sphere>(1e5, Vec(50, 40.8, 1e5), Vec(), Vec(0.75, 0.75, 0.75), Diffuse));           // Back Wall
-// objects_.push_back(std::make_shared<Sphere>(1e5, Vec(50, 40.8, -1e5+175), Vec(), Vec(0, 0.44, 0), Diffuse));            // Wall behind camera?
-// objects_.push_back(std::make_shared<Sphere>(1e5, Vec(50, 1e5, 81.6), Vec(), Vec(0.75, 0.75, 0.75), Diffuse));           // Floor
-// objects_.push_back(std::make_shared<Sphere>(1e5, Vec(50, -1e5+81.6, 81.6), Vec(), Vec(0.75, 0.75, 0.75), Diffuse));     // Ceiling
-// objects_.push_back(std::make_shared<Sphere>(16.5, Vec(27, 16.5, 47), Vec(), Vec(1, 1, 1) * 0.999, Specular));           // Left Orb (Mirror like)
-// objects_.push_back(std::make_shared<Sphere>(16.5, Vec(73, 16.5, 78), Vec(), Vec(1, 1, 1) * 0.999, Refractive));         // Right Orb (Glass ?)
-// objects_.push_back(std::make_shared<Sphere>(600, Vec(50, 681.6-.27, 81.6), Vec(12, 12, 12), Vec(), Diffuse));           // Light source
+// camera_ = Ray(Vec3(50, 52, 295.6), Vec3(0, -0.042612, -1).norm());
+// objects_.push_back(std::make_shared<Sphere>(1e5, Vec3(1e5-9, 40.8, 81.6), Vec3(), Vec3(0.75, 0.25, 0.25), Diffuse));       // Left Wall
+// objects_.push_back(std::make_shared<Sphere>(1e5, Vec3(-1e5+109, 40.8, 81.6), Vec3(), Vec3(0.25, 0.25, 0.75), Diffuse));    // Right Wall
+// objects_.push_back(std::make_shared<Sphere>(1e5, Vec3(50, 40.8, 1e5), Vec3(), Vec3(0.75, 0.75, 0.75), Diffuse));           // Back Wall
+// objects_.push_back(std::make_shared<Sphere>(1e5, Vec3(50, 40.8, -1e5+175), Vec3(), Vec3(0, 0.44, 0), Diffuse));            // Wall behind camera?
+// objects_.push_back(std::make_shared<Sphere>(1e5, Vec3(50, 1e5, 81.6), Vec3(), Vec3(0.75, 0.75, 0.75), Diffuse));           // Floor
+// objects_.push_back(std::make_shared<Sphere>(1e5, Vec3(50, -1e5+81.6, 81.6), Vec3(), Vec3(0.75, 0.75, 0.75), Diffuse));     // Ceiling
+// objects_.push_back(std::make_shared<Sphere>(16.5, Vec3(27, 16.5, 47), Vec3(), Vec3(1, 1, 1) * 0.999, Specular));           // Left Orb (Mirror like)
+// objects_.push_back(std::make_shared<Sphere>(16.5, Vec3(73, 16.5, 78), Vec3(), Vec3(1, 1, 1) * 0.999, Refractive));         // Right Orb (Glass ?)
+// objects_.push_back(std::make_shared<Sphere>(600, Vec3(50, 681.6-.27, 81.6), Vec3(12, 12, 12), Vec3(), Diffuse));           // Light source

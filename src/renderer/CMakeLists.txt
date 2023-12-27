@@ -2,6 +2,7 @@ project(tracer-renderer)
 
 set(SOURCES
     Renderer.cpp
+    Renderer2.cpp
 )
 
 add_library(${PROJECT_NAME})

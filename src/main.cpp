@@ -2,8 +2,9 @@
 #include <iostream>
 #include <memory>
 
-#include "containers/Vec.hpp"
+#include "containers/Vec3.hpp"
 #include "renderer/Renderer.hpp"
+#include "renderer/Renderer2.hpp"
 #include "scene/SceneData.hpp"
 #include "utils/Image.hpp"
 #include "utils/Measurements.hpp"
@@ -31,12 +32,11 @@ int main(int argc, char* argv[])
         return 0;
     }
 
-    auto renderer = std::make_shared<Renderer>(sceneData, inputParser.getSamplingRate());
-    const auto wrappedRender = [renderer]() -> Vec* {
+    auto renderer = std::make_shared<Renderer2>(sceneData, inputParser.getSamplingRate());
+    const auto wrappedRender = [renderer]() -> const std::vector<Vec3> {
         return renderer->render();
     };
-
-    auto* image = measure(std::move(wrappedRender));
+    const auto image = measure(std::move(wrappedRender));
     saveImage(image, sceneData.getHeight(), sceneData.getWidth());
 
     return 0;

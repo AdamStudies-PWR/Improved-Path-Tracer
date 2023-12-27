@@ -10,6 +10,7 @@ namespace tracer::utils
 namespace
 {
 using namespace std::chrono;
+using namespace containers;
 
 const uint32_t HOUR_RATIO = 3600000;
 const uint32_t MINUTES_RATIO = 60000;
@@ -38,11 +39,11 @@ std::string getTimeString(uint64_t milliseconds)
 }
 }  // namespace
 
-containers::Vec* measure(std::function<containers::Vec*()> testable)
+const std::vector<Vec3> measure(std::function<std::vector<Vec3>()> testable)
 {
     std::cout << "Begining render..." << std::endl;
     auto start = high_resolution_clock::now();
-    auto* image = testable();
+    const auto image = testable();
     auto stop = high_resolution_clock::now();
     std::cout << " - Done" << std::endl;
     std::cout << "Render took: " << getTimeString(duration_cast<milliseconds>(stop - start).count()) << std::endl;;

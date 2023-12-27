@@ -8,7 +8,7 @@
 
 #include "scene/objects/AObject.hpp"
 #include "containers/Ray.hpp"
-#include "containers/Vec.hpp"
+#include "containers/Vec3.hpp"
 
 namespace tracer::scene
 {

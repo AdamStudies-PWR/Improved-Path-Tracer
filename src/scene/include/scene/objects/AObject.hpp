@@ -1,7 +1,7 @@
 #pragma once
 
 #include "containers/Ray.hpp"
-#include "containers/Vec.hpp"
+#include "containers/Vec3.hpp"
 
 #include "scene/objects/EReflectionType.hpp"
 
@@ -11,19 +11,19 @@ namespace tracer::scene::objects
 class AObject
 {
 public:
-    AObject(containers::Vec position, containers::Vec emission, containers::Vec color, EReflectionType reflection);
+    AObject(containers::Vec3 position, containers::Vec3 emission, containers::Vec3 color, EReflectionType reflection);
 
     virtual double intersect(const containers::Ray& ray) const = 0;
 
-    containers::Vec getColor() const;
-    containers::Vec getEmission() const;
-    containers::Vec getPosition() const;
+    containers::Vec3 getColor() const;
+    containers::Vec3 getEmission() const;
+    containers::Vec3 getPosition() const;
     EReflectionType getReflectionType() const;
 
 protected:
-    containers::Vec color_;
-    containers::Vec emission_;
-    containers::Vec position_;
+    containers::Vec3 color_;
+    containers::Vec3 emission_;
+    containers::Vec3 position_;
     EReflectionType reflection_;
 };
 

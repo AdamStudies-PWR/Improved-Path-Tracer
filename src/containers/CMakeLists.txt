@@ -2,7 +2,7 @@ project(tracer-containers)
 
 set(SOURCES
     Ray.cpp
-    Vec.cpp
+    Vec3.cpp
 )
 
 add_library(${PROJECT_NAME})
