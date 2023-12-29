@@ -21,7 +21,7 @@ double Sphere::intersect(const Ray& ray) const
 {
     double intersection = 0;
 
-    Vec3 op = position_ - ray.origin_;
+    Vec3 op = ray.origin_ - position_;
     double b = op.dot(ray.direction_);
     double delta = b*b - op.dot(op) + radius_*radius_;
 
