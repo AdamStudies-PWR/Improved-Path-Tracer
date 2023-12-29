@@ -8,6 +8,8 @@ namespace tracer::scene::objects
 namespace
 {
 using namespace containers;
+
+const double MARGIN = 1e-4;
 }  // namespace
 
 Sphere::Sphere(double radius, Vec3 position, Vec3 emission, Vec3 color, EReflectionType reflection)
@@ -17,16 +19,17 @@ Sphere::Sphere(double radius, Vec3 position, Vec3 emission, Vec3 color, EReflect
 
 double Sphere::intersect(const Ray& ray) const
 {
-    Vec3 op = position_ - ray.oo_;
-    double temp;
-    double eps = 1e-4;
-    double b = op.dot(ray.dd_);
-    double det = b*b - op.dot(op) + radius_*radius_;
+    double intersection = 0;
 
-    if (det < 0) return 0;
-    else det = sqrt(det);
+    Vec3 op = position_ - ray.origin_;
+    double b = op.dot(ray.direction_);
+    double delta = b*b - op.dot(op) + radius_*radius_;
 
-    return (temp = b - det) > eps ? temp : ((temp = b + det) > eps ? temp : 0);
+    if (delta < 0) return 0;
+    else delta = sqrt(delta);
+
+    return (intersection = -b - delta) > MARGIN
+        ? intersection : ((intersection = -b + delta) > MARGIN ? intersection : 0);
 }
 
 }  // namespace tracer::scene::objects

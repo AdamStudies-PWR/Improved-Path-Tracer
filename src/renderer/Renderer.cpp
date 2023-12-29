@@ -35,9 +35,9 @@ Vec3 Renderer::radiance(const Ray& ray, int depth, short unsigned int* xi)
 
     const auto object = sceneData_.getObjectAt(id);
 
-    Vec3 xx = ray.oo_ + ray.dd_ * temp;
+    Vec3 xx = ray.origin_ + ray.direction_ * temp;
     Vec3 nn = (xx - object->getPosition()).norm();
-    Vec3 nl = nn.dot(ray.dd_) < 0 ? nn : nn * -1;
+    Vec3 nl = nn.dot(ray.direction_) < 0 ? nn : nn * -1;
     Vec3 ff = object->getColor();
 
     double pp = ff.xx_ > ff.yy_ && ff.xx_ > ff.zz_ ? ff.xx_ : ff.yy_ > ff.zz_ ? ff.yy_ : ff.zz_;
@@ -65,15 +65,15 @@ Vec3 Renderer::radiance(const Ray& ray, int depth, short unsigned int* xi)
     }
     else if (object->getReflectionType() == Specular)
     {
-        return object->getEmission() + ff.mult(radiance(Ray(xx, ray.dd_ - nn*2*nn.dot(ray.dd_)), depth, xi));
+        return object->getEmission() + ff.mult(radiance(Ray(xx, ray.direction_ - nn*2*nn.dot(ray.direction_)), depth, xi));
     }
 
-    Ray reflectedRay(xx, ray.dd_ - nn*2*nn.dot(ray.dd_));
+    Ray reflectedRay(xx, ray.direction_ - nn*2*nn.dot(ray.direction_));
     bool into = nn.dot(nl) > 0;
     double nc = 1;
     double nt = 1.5;
     double nnt = into ? nc/nt : nt/nc;
-    double ddn = ray.dd_.dot(nl);
+    double ddn = ray.direction_.dot(nl);
     double cos2t;
 
     if ((cos2t=1-nnt*nnt*(1-ddn*ddn)) < 0)
@@ -81,7 +81,7 @@ Vec3 Renderer::radiance(const Ray& ray, int depth, short unsigned int* xi)
         return object->getEmission() + ff.mult(radiance(reflectedRay, depth, xi));
     }
 
-    Vec3 tdir = (ray.dd_*nnt - nn*((into ? 1 : -1) * (ddn*nnt+sqrt(cos2t)))).norm();
+    Vec3 tdir = (ray.direction_*nnt - nn*((into ? 1 : -1) * (ddn*nnt+sqrt(cos2t)))).norm();
     double aa = nt - nc;
     double bb = nt + nc;
     double R0 = aa*aa/(bb*bb);
@@ -102,7 +102,7 @@ Vec3* Renderer::render()
 {
     auto camera = sceneData_.getCamera();
     Vec3 cx = Vec3(sceneData_.getWidth()*0.5135/sceneData_.getHeight());
-    Vec3 cy = (cx%camera.dd_).norm()*0.5135;
+    Vec3 cy = (cx%camera.direction_).norm()*0.5135;
     Vec3 r;
     Vec3* c = new Vec3[sceneData_.getWidth()*sceneData_.getHeight()];
 
@@ -123,8 +123,8 @@ Vec3* Renderer::render()
                         double r1=2*erand48(Xi), dx=r1<1 ? sqrt(r1)-1: 1-sqrt(2-r1);
                         double r2=2*erand48(Xi), dy=r2<1 ? sqrt(r2)-1: 1-sqrt(2-r2);
                         Vec3 d = cx*( ( (sx+.5 + dx)/2 + x)/sceneData_.getWidth() - .5) +
-                                cy*( ( (sy+.5 + dy)/2 + y)/sceneData_.getHeight() - .5) + camera.dd_;
-                        r = r + radiance(Ray(camera.oo_+d*140,d.norm()), 0, Xi)*(1./samples_);
+                                cy*( ( (sy+.5 + dy)/2 + y)/sceneData_.getHeight() - .5) + camera.direction_;
+                        r = r + radiance(Ray(camera.origin_+d*140,d.norm()), 0, Xi)*(1./samples_);
                     } // Camera rays are pushed ^^^^^ forward to start in interior
                     c[i] = c[i] + Vec3(std::clamp(r.xx_, 0.0, 1.0), std::clamp(r.yy_, 0.0, 1.0),
                         std::clamp(r.zz_, 0.0, 1.0))*0.25;

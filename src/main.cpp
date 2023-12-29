@@ -57,8 +57,8 @@ using json = nlohmann::json;
     j["height"] = 720;
 
     auto camera = sceneData.getCamera();
-    j["camera"]["position"] = {{"xx", camera.oo_.xx_}, {"yy", camera.oo_.yy_}, {"zz", camera.oo_.zz_}};
-    j["camera"]["direction"] = {{"xx", camera.dd_.xx_}, {"yy", camera.dd_.yy_}, {"zz", camera.dd_.zz_}};
+    j["camera"]["position"] = {{"xx", camera.origin_.xx_}, {"yy", camera.origin_.yy_}, {"zz", camera.origin_.zz_}};
+    j["camera"]["direction"] = {{"xx", camera.direction_.xx_}, {"yy", camera.direction_.yy_}, {"zz", camera.direction_.zz_}};
 
     std::vector<json> obj_array;
     for (const auto obj : sceneData.objects_)

@@ -11,29 +11,31 @@ Vec3::Vec3(double xx, double yy, double zz)
     , zz_(zz)
 {}
 
-double Vec3::dot(const Vec3& input) const
+// Iloczyn skalarny
+double Vec3::dot(const Vec3& vec2) const
 {
-    return xx_*input.xx_ + yy_*input.yy_ + zz_*input.zz_;
+    return (xx_ * vec2.xx_) + (yy_ * vec2.yy_) + (zz_ * vec2.zz_);
 }
 
+// Normalizacja wektora
 Vec3& Vec3::norm()
 {
     return *this = *this * (1/sqrt(xx_*xx_ + yy_*yy_ + zz_*zz_));
 }
 
-Vec3 Vec3::mult(const Vec3& input) const
+Vec3 Vec3::mult(const Vec3& vec2) const
 {
-    return Vec3(xx_*input.xx_, yy_*input.yy_, zz_*input.zz_);
+    return Vec3(xx_*vec2.xx_, yy_*vec2.yy_, zz_*vec2.zz_);
 }
 
-Vec3 Vec3::operator+ (const Vec3& summand) const
+Vec3 Vec3::operator+ (const Vec3& vec2) const
 {
-    return Vec3(xx_ + summand.xx_, yy_ + summand.yy_, zz_ + summand.zz_);
+    return Vec3(xx_ + vec2.xx_, yy_ + vec2.yy_, zz_ + vec2.zz_);
 }
 
-Vec3 Vec3::operator- (const Vec3& subtrahend) const
+Vec3 Vec3::operator- (const Vec3& vec2) const
 {
-    return Vec3(xx_ - subtrahend.xx_, yy_ - subtrahend.yy_, zz_ - subtrahend.zz_);
+    return Vec3(xx_ - vec2.xx_, yy_ - vec2.yy_, zz_ - vec2.zz_);
 }
 
 Vec3 Vec3::operator* (double number) const
@@ -41,9 +43,10 @@ Vec3 Vec3::operator* (double number) const
     return Vec3(xx_ * number, yy_ * number, zz_ * number);
 }
 
-Vec3 Vec3::operator% (Vec3& input)
+// Iloczyn wektorowy
+Vec3 Vec3::operator% (Vec3& vec2)
 {
-    return Vec3(yy_*input.zz_ - zz_*input.yy_, zz_*input.xx_ - xx_*input.zz_, xx_*input.yy_ - yy_*input.xx_);
+    return Vec3(yy_*vec2.zz_ - zz_*vec2.yy_, zz_*vec2.xx_ - xx_*vec2.zz_, xx_*vec2.yy_ - yy_*vec2.xx_);
 }
 
 std::ostream& operator<<(std::ostream& os, const Vec3& vec)
