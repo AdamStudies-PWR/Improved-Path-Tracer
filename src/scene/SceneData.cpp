@@ -93,7 +93,6 @@ bool SceneData::initScene()
 }
 
 Ray SceneData::getCamera() const { return camera_; }
-int SceneData::getObjectCount() const { return objects_.size(); }
 std::shared_ptr<AObject> SceneData::getObjectAt(int id) const { return objects_.at(id); }
 uint32_t SceneData::getWidth() const { return width_; }
 uint32_t SceneData::getHeight() const { return height_; }

@@ -18,7 +18,7 @@ using namespace containers;
 
 int toRgb(double x)
 {
-    return std::clamp(int(x * 255)/100, 0, 255);
+    return std::clamp(int((x * 255)/100), 0, 255);
 }
 
 void getRgbArray(unsigned char* target, const std::vector<Vec3> image)

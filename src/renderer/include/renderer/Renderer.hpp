@@ -1,11 +1,10 @@
 #pragma once
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
+#include <random>
+#include <vector>
 
-#include "containers/Vec3.hpp"
 #include "containers/Ray.hpp"
+#include "containers/Vec3.hpp"
 #include "scene/SceneData.hpp"
 
 namespace tracer::renderer
@@ -14,17 +13,16 @@ namespace tracer::renderer
 class Renderer
 {
 public:
-   Renderer(scene::SceneData& sceneData, const int samples);
+    Renderer(scene::SceneData& sceneData, const uint32_t samples);
 
-   containers::Vec3* render();
+    std::vector<containers::Vec3> render();
 
 private:
-   bool intersect(const containers::Ray& ray, double& temp, int& id);
+    containers::Vec3 sendRay();
 
-   const int samples_;
-   scene::SceneData& sceneData_;
-
-   containers::Vec3 radiance(const containers::Ray& ray, int depth, short unsigned int* xi);
+    const uint32_t samples_;
+    scene::SceneData& sceneData_;
+    std::mt19937 generator_;
 };
 
 }  // namespace tracer::renderer

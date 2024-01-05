@@ -20,7 +20,7 @@ public:
 
     bool initScene();
     containers::Ray getCamera() const;
-    int getObjectCount() const;
+    int hasHitObject(const containers::Ray& ray) const;
     std::shared_ptr<objects::AObject> getObjectAt(int id) const;
     uint32_t getWidth() const;
     uint32_t getHeight() const;
