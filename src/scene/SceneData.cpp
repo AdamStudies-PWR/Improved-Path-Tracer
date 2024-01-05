@@ -14,6 +14,8 @@ using json = nlohmann::json;
 using namespace containers;
 using namespace objects;
 
+const double INF = 1e20;
+
 json loadJsonFile(const std::string filename)
 {
     std::ifstream file(filename);
@@ -97,6 +99,41 @@ std::shared_ptr<AObject> SceneData::getObjectAt(int id) const { return objects_.
 uint32_t SceneData::getWidth() const { return width_; }
 uint32_t SceneData::getHeight() const { return height_; }
 
+int SceneData::hasHitObject(const Ray& ray) const
+{
+    int index = -1;
+    double distance = INF;
+
+    // For debug purposes
+    unsigned id = 0;
+    // end
+
+    for (const auto& object : objects_)
+    {
+        auto temp = object->intersect(ray);
+        if (temp < distance)
+        {
+            distance = temp;
+            index = &object - &objects_[0];
+
+            // debug
+            std::cout << "Actual index is: " << id;
+            std::cout << "Calculated index is: " << index;
+            //
+        }
+
+        // debug
+        id++;
+        //
+    }
+
+    //debug
+    std::cout << "Returning: " << index << std::endl;
+    //
+
+    return index;
+}
+
 bool SceneData::loadBasicSceneData(const json& jsonData)
 {
     if (not jsonData.contains("height") || not jsonData.contains("width"))
@@ -136,7 +173,7 @@ bool SceneData::loadCamera(const nlohmann::json& jsonData)
     }
 
     camera_ = Ray(Vec3(positionData["xx"], positionData["yy"], positionData["zz"]),
-                  Vec3(directionData["xx"], directionData["yy"], directionData["zz"]));
+                  Vec3(directionData["xx"], directionData["yy"], directionData["zz"]).norm());
 
     return true;
 }

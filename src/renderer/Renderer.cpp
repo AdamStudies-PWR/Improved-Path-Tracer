@@ -22,14 +22,20 @@ Renderer::Renderer(SceneData& sceneData, const uint32_t samples)
 
 std::vector<Vec3> Renderer::render()
 {
-    std::vector<Vec3> image {};
+    std::vector<Vec3> image (sceneData_.getWidth() * sceneData_.getHeight());
+    Vec3 ray;
 
+    unsigned counter = 0;
+    #pragma omp parallel for private(ray)
     for (uint32_t i=0; i<sceneData_.getHeight(); i++)
     {
+        fprintf(stdout, "\nRendering %g%%", (counter * 100.)/(sceneData_.getHeight() - 1));
         for (uint32_t j=0; j<sceneData_.getWidth(); j++)
         {
-            image.push_back(sendRay());
+            const auto index = i * sceneData_.getWidth() + j;
+            image[index] = sendRay();
         }
+        counter++;
     }
 
     return image;
