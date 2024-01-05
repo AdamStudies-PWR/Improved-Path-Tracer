@@ -99,39 +99,22 @@ std::shared_ptr<AObject> SceneData::getObjectAt(int id) const { return objects_.
 uint32_t SceneData::getWidth() const { return width_; }
 uint32_t SceneData::getHeight() const { return height_; }
 
-int SceneData::hasHitObject(const Ray& ray) const
+std::pair<int, double> SceneData::getHitObjectAndDistance(const Ray& ray) const
 {
     int index = -1;
     double distance = INF;
 
-    // For debug purposes
-    unsigned id = 0;
-    // end
-
     for (const auto& object : objects_)
     {
         auto temp = object->intersect(ray);
-        if (temp < distance)
+        if (temp && temp < distance)
         {
             distance = temp;
             index = &object - &objects_[0];
-
-            // debug
-            std::cout << "Actual index is: " << id;
-            std::cout << "Calculated index is: " << index;
-            //
         }
-
-        // debug
-        id++;
-        //
     }
 
-    //debug
-    std::cout << "Returning: " << index << std::endl;
-    //
-
-    return index;
+    return {index, distance};
 }
 
 bool SceneData::loadBasicSceneData(const json& jsonData)

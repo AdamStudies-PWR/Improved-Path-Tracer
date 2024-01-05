@@ -18,7 +18,9 @@ public:
     std::vector<containers::Vec3> render();
 
 private:
-    containers::Vec3 sendRay();
+    containers::Vec3 samplePixel(const containers::Vec3 stepX, const containers::Vec3 stepY, const uint32_t pixelX,
+        const uint32_t pixelY);
+    containers::Vec3 sendRay(const containers::Ray& ray, uint16_t depth);
 
     const uint32_t samples_;
     scene::SceneData& sceneData_;

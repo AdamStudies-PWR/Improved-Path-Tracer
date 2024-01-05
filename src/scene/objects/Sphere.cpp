@@ -32,4 +32,15 @@ double Sphere::intersect(const Ray& ray) const
         ? intersection : ((intersection = -b + delta) > MARGIN ? intersection : 0);
 }
 
+Ray Sphere::getReflectedRay(const Ray& ray, const Vec3& intersection) const
+{
+    auto normal = (intersection - position_).norm();
+    normal = (normal.dot(ray.direction_) < 0) ? normal : (normal * -1);
+
+    // Here should be russian rullete to determine if recursion should be stopped early
+    // We are not doing this for now
+
+    return ray;
+}
+
 }  // namespace tracer::scene::objects

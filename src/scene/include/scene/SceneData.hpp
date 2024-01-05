@@ -1,8 +1,9 @@
 #pragma once
 
-#include <string>
-#include <vector>
 #include <memory>
+#include <string>
+#include <tuple>
+#include <vector>
 
 #include <nlohmann/json.hpp>
 
@@ -23,7 +24,7 @@ public:
     std::shared_ptr<objects::AObject> getObjectAt(int id) const;
     uint32_t getWidth() const;
     uint32_t getHeight() const;
-    int hasHitObject(const containers::Ray& ray) const;
+    std::pair<int, double> getHitObjectAndDistance(const containers::Ray& ray) const;
 
 private:
     bool loadBasicSceneData(const nlohmann::json& jsonData);
