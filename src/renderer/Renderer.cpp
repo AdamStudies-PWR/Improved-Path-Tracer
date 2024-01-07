@@ -67,8 +67,8 @@ Vec3 Renderer::samplePixel(const Vec3 stepX, const Vec3 stepY, const uint32_t pi
         // So far I am not doing that as I don't exactly understand how this part works
         // That's why I'm trying to keep it as simple as possible
 
-        Vec3 direction = stepX * ((/*0.25 + */pixelX)/sceneData_.getWidth() - 0.5)
-            + stepY * ((/*0.25 + */pixelY)/sceneData_.getHeight() - 0.5)
+        Vec3 direction = stepX * ((0.25 + pixelX)/sceneData_.getWidth() - 0.5)
+            + stepY * ((0.25 + pixelY)/sceneData_.getHeight() - 0.5)
             + sceneData_.getCamera().direction_;
 
         pixel = pixel + sendRay(Ray(sceneData_.getCamera().origin_ + direction * 140, direction.norm()), 0);
