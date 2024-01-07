@@ -2,6 +2,10 @@
 
 #include "math.h"
 
+// debug
+#include <iostream>
+//
+
 namespace tracer::scene::objects
 {
 
@@ -36,6 +40,11 @@ Ray Sphere::getReflectedRay(const Ray& ray, const Vec3& intersection) const
 {
     auto normal = (intersection - position_).norm();
     normal = (normal.dot(ray.direction_) < 0) ? normal : (normal * -1);
+
+    if (emission_.xx_ != 0)
+    {
+        std::cout << "Light source hit!" << std::endl;
+    }
 
     // Here should be russian rullete to determine if recursion should be stopped early
     // We are not doing this for now

@@ -3,8 +3,9 @@
 #include <algorithm>
 #include <cstdio>
 #include <iostream>
-#include <string>
 #include <math.h>
+#include <ranges>
+#include <string>
 
 #include <Magick++.h>
 
@@ -18,13 +19,13 @@ using namespace containers;
 
 int toRgb(double x)
 {
-    return std::clamp(int((x * 255)/100), 0, 255);
+    return std::clamp(int(x * 255), 0, 255);
 }
 
 void getRgbArray(unsigned char* target, const std::vector<Vec3> image)
 {
     int i = 0;
-    for (const auto pixel : image)
+    for (const auto pixel : std::ranges::views::reverse(image))
     {
         target[i] = toRgb(pixel.xx_);
         target[i + 1] = toRgb(pixel.yy_);
