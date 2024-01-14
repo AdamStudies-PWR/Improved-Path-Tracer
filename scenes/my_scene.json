@@ -1,0 +1,43 @@
+{
+    "camera": {
+        "direction": {
+            "xx": 0.0,
+            "yy": 1.0,
+            "zz": 0.0
+        },
+        "orientation": {
+            "xx": -1.0,
+            "yy": 0.0,
+            "zz": 0.0
+        },
+        "position": {
+            "xx": 640.0,
+            "yy": 0.0,
+            "zz": 360.0
+        }
+    },
+    "height": 720,
+    "objects": [
+        {
+            "color": {
+                "xx": 0.25,
+                "yy": 0.75,
+                "zz": 0.25
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "position": {
+                "xx": 640.0,
+                "yy": 250.0,
+                "zz": 360.0
+            },
+            "radius": 80.0,
+            "reflection": 0,
+            "type": "sphere"
+        }
+    ],
+    "width": 1280
+}

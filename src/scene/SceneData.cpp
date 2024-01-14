@@ -94,7 +94,7 @@ bool SceneData::initScene()
     return true;
 }
 
-Ray SceneData::getCamera() const { return camera_; }
+Camera SceneData::getCamera() const { return camera_; }
 std::shared_ptr<AObject> SceneData::getObjectAt(int id) const { return objects_.at(id); }
 uint32_t SceneData::getWidth() const { return width_; }
 uint32_t SceneData::getHeight() const { return height_; }
@@ -140,23 +140,26 @@ bool SceneData::loadCamera(const nlohmann::json& jsonData)
     }
 
     const auto cameraData = jsonData["camera"];
-    if (not cameraData.contains("direction") || not cameraData.contains("position"))
+    if (not cameraData.contains("direction") || not cameraData.contains("position")
+        || not cameraData.contains("orientation"))
     {
-        std::cout << "Camera data contains no direction or position!" << std::endl;
+        std::cout << "Camera data could not be read!" << std::endl;
         return false;
     }
 
     const auto directionData = cameraData["direction"];
     const auto positionData = cameraData["position"];
+    const auto orientationData = cameraData["orientation"];
 
-    if (not validateVec3tor(directionData) || not validateVec3tor(positionData))
+    if (not validateVec3tor(directionData) || not validateVec3tor(positionData) || not validateVec3tor(orientationData))
     {
-        std::cout << "Damaged position or direction vector!" << std::endl;
+        std::cout << "Camera data could not be parsed!" << std::endl;
         return false;
     }
 
-    camera_ = Ray(Vec3(positionData["xx"], positionData["yy"], positionData["zz"]),
-                  Vec3(directionData["xx"], directionData["yy"], directionData["zz"]).norm());
+    camera_ = Camera(Vec3(positionData["xx"], positionData["yy"], positionData["zz"]),
+                  Vec3(directionData["xx"], directionData["yy"], directionData["zz"]).norm(),
+                  Vec3(orientationData["xx"], orientationData["yy"], orientationData["zz"]).norm());
 
     return true;
 }

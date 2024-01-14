@@ -43,7 +43,8 @@ void saveImage(const std::vector<Vec3>& image, const uint32_t height, const uint
 
     if (width*height != image.size())
     {
-        std::cout << " Error saving image! Size missmatch!" << std::endl;
+        std::cout << "Error saving image! Size missmatch!" << std::endl;
+        return;
     }
 
     unsigned char pixelArray[image.size() * 3];

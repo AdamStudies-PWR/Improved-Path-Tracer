@@ -4,6 +4,7 @@
 
 //debug
 #include <iostream>
+#include <fstream>
 //
 
 namespace tracer::renderer
@@ -37,10 +38,13 @@ std::vector<Vec3> Renderer::render()
     // Check why I need to copy and store the camera first?
     auto camera = sceneData_.getCamera();
     // Those two are kinda magic for me so I need to get explanation for why is it calculated like that
-    Vec3 stepX = Vec3(sceneData_.getWidth() * 0.5135 / sceneData_.getHeight());
-    Vec3 stepY = (stepX%camera.direction_).norm() * 0.5135;
+    // Vec3 stepX = Vec3(sceneData_.getWidth() * 0.5135 / sceneData_.getHeight());
+    // Vec3 stepY = (stepX%camera.direction_).norm() * 0.5135;
     // Also this should be able be const so idk why not worke worke
     // Another thing to check :b
+
+    //camera.orientation_ = Vec3(((camera.direction_.yy_ - camera.direction_.zz_) / camera.direction_.yy_), 1, 1).norm();
+    Vec3 vecY = (camera.direction_%camera.orientation_).norm();
 
     unsigned counter = 0;
     #pragma omp parallel for
@@ -50,7 +54,7 @@ std::vector<Vec3> Renderer::render()
         for (uint32_t x=0; x<sceneData_.getWidth(); x++)
         {
             const auto index = y * sceneData_.getWidth() + x;
-            image[index] = samplePixel(stepX, stepY, x, y);
+            image[index] = samplePixel(camera.orientation_, vecY, x, y);
         }
         counter++;
     }
@@ -58,23 +62,32 @@ std::vector<Vec3> Renderer::render()
     return image;
 }
 
-Vec3 Renderer::samplePixel(const Vec3 stepX, const Vec3 stepY, const uint32_t pixelX, const uint32_t pixelY)
+Vec3 Renderer::samplePixel(Vec3 vecX, Vec3 vecY, uint32_t pixelX, uint32_t pixelY)
 {
-    Vec3 pixel = Vec3();
-    for (uint32_t i=0; i<samples_; i++)
-    {
-        // Here should be a filter that randomizes the ray send
-        // So far I am not doing that as I don't exactly understand how this part works
-        // That's why I'm trying to keep it as simple as possible
+    const auto center = sceneData_.getCamera().origin_;
 
-        Vec3 direction = stepX * ((0.25 + pixelX)/sceneData_.getWidth() - 0.5)
-            + stepY * ((0.25 + pixelY)/sceneData_.getHeight() - 0.5)
+    auto correctionX = (sceneData_.getWidth() % 2 == 0) ? 0.5 : 0.0;
+    auto correctionY = (sceneData_.getWidth() % 2 == 0) ? 0.5 : 0.0;
+    double stepX = (pixelX < sceneData_.getWidth()/2)
+        ? sceneData_.getWidth()/2 - pixelX - correctionX
+        : ((double)sceneData_.getWidth()/2 - pixelX - 1.0) + ((correctionX == 0.0) ? 1.0 : correctionX);
+    double stepY = (pixelY < sceneData_.getHeight()/2)
+        ? sceneData_.getHeight()/2 - pixelY - correctionY
+        : ((double)sceneData_.getHeight()/2 - pixelY - 1.0) + ((correctionY == 0.0) ? 1.0 : correctionY);
+
+    Vec3 pixel = Vec3();
+
+    for (uint32_t i=0; i<samples_; i++)
+    //for (uint32_t i=0; i<1; i++)
+    {
+        auto origin = center + vecX*stepX + vecY*stepY;
+        /*Vec3 direction = vecX * ((0.25 + pixelX)/sceneData_.getWidth() - 0.5)
+            + vecY * ((0.25 + pixelY)/sceneData_.getHeight() - 0.5)
             + sceneData_.getCamera().direction_;
 
-        pixel = pixel + sendRay(Ray(sceneData_.getCamera().origin_ + direction * 140, direction.norm()), 0);
-
-        // This whole thing is kinda ?? right now. So I need to work on this more to finally understand wtf is going on
-        // here. Also it is posible that x and y are currently reversed <- this will require some work
+        pixel = pixel + sendRay(Ray(sceneData_.getCamera().origin_ + direction * 140, direction.norm() * -1), 0);*/
+        const auto ray = Ray(origin + sceneData_.getCamera().direction_ * 140, sceneData_.getCamera().direction_);
+        pixel = pixel + sendRay(ray, 0);
     }
 
     pixel.xx_ = pixel.xx_/samples_;

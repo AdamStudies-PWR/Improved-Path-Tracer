@@ -1,13 +1,13 @@
 #pragma once
 
 #include <ostream>
+#include <stdint.h>
 
 namespace tracer::containers
 {
 
-class Vec3
+struct Vec3
 {
-public:
     Vec3(double xx=0, double yy=0, double zz=0);
 
     double dot(const Vec3& vec2) const;
@@ -25,4 +25,4 @@ public:
     double zz_;
 };
 
-} // namespace tracer::containers
+}  // namespace tracer::containers
