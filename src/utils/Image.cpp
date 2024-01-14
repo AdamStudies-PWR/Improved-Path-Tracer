@@ -4,7 +4,6 @@
 #include <cstdio>
 #include <iostream>
 #include <math.h>
-#include <ranges>
 #include <string>
 
 #include <Magick++.h>
@@ -25,7 +24,7 @@ int toRgb(double x)
 void getRgbArray(unsigned char* target, const std::vector<Vec3> image)
 {
     int i = 0;
-    for (const auto pixel : std::ranges::views::reverse(image))
+    for (const auto pixel : image)
     {
         target[i] = toRgb(pixel.xx_);
         target[i + 1] = toRgb(pixel.yy_);

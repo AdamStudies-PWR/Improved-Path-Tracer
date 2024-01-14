@@ -23,7 +23,7 @@ Sphere::Sphere(double radius, Vec3 position, Vec3 emission, Vec3 color, EReflect
 
 double Sphere::intersect(const Ray& ray) const
 {
-    double intersection = 0;
+    double intersection = 0.0;
 
     Vec3 op = ray.origin_ - position_;
     double b = op.dot(ray.direction_);

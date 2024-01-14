@@ -20,9 +20,9 @@
     "objects": [
         {
             "color": {
-                "xx": 0.25,
-                "yy": 0.75,
-                "zz": 0.25
+                "xx": 0.999,
+                "yy": 0.999,
+                "zz": 0.999
             },
             "emission": {
                 "xx": 0.0,
@@ -30,11 +30,51 @@
                 "zz": 0.0
             },
             "position": {
-                "xx": 640.0,
+                "xx": 480.0,
                 "yy": 250.0,
-                "zz": 360.0
+                "zz": 100.0
             },
-            "radius": 80.0,
+            "radius": 100.0,
+            "reflection": 1,
+            "type": "sphere"
+        },
+        {
+            "color": {
+                "xx": 0.999,
+                "yy": 0.999,
+                "zz": 0.999
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "position": {
+                "xx": 800.0,
+                "yy": 200.0,
+                "zz": 100.0
+            },
+            "radius": 100.0,
+            "reflection": 2,
+            "type": "sphere"
+        },
+        {
+            "color": {
+                "xx": 1.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "emission": {
+                "xx": 12.0,
+                "yy": 12.0,
+                "zz": 12.0
+            },
+            "position": {
+                "xx": 640.0,
+                "yy": 225.0,
+                "zz": 1300.0
+            },
+            "radius": 600.0,
             "reflection": 0,
             "type": "sphere"
         }
