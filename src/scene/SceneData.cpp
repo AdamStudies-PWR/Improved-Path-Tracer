@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 
+#include "objects/Plane.hpp"
 #include "objects/Sphere.hpp"
 
 namespace tracer::scene
@@ -140,8 +141,8 @@ bool SceneData::loadCamera(const nlohmann::json& jsonData)
     }
 
     const auto cameraData = jsonData["camera"];
-    if (not cameraData.contains("direction") || not cameraData.contains("position")
-        || not cameraData.contains("orientation"))
+    if (not cameraData.contains("direction") or not cameraData.contains("position")
+        or not cameraData.contains("orientation"))
     {
         std::cout << "Camera data could not be read!" << std::endl;
         return false;
@@ -151,7 +152,7 @@ bool SceneData::loadCamera(const nlohmann::json& jsonData)
     const auto positionData = cameraData["position"];
     const auto orientationData = cameraData["orientation"];
 
-    if (not validateVec3tor(directionData) || not validateVec3tor(positionData) || not validateVec3tor(orientationData))
+    if (not validateVec3tor(directionData) or not validateVec3tor(positionData) or not validateVec3tor(orientationData))
     {
         std::cout << "Camera data could not be parsed!" << std::endl;
         return false;
@@ -187,6 +188,14 @@ bool SceneData::loadObjects(const nlohmann::json& jsonData)
                 return false;
             }
         }
+        else if (object["type"] == "plane")
+        {
+            std::cout << "Found plane" << std::endl;
+            if (not addPlane(object))
+            {
+                return false;
+            }
+        }
         else
         {
             std::cout << "Unknown object type" << std::endl;
@@ -214,6 +223,30 @@ bool SceneData::addSpehere(const json& sphereData)
                                                 Vec3(emission["xx"], emission["yy"], emission["zz"]),
                                                 Vec3(color["xx"], color["yy"], color["zz"]),
                                                 EReflectionType(sphereData["reflection"])));
+
+    return true;
+}
+
+bool SceneData::addPlane(const json& planeData)
+{
+    if (not planeData.contains("north") or not planeData.contains("east"))
+    {
+        std::cout << " Broken plane object! " << std::endl;
+        return false;
+    }
+
+    const auto north = planeData["north"];
+    const auto east = planeData["east"];
+    const auto position = planeData["position"];
+    const auto color = planeData["color"];
+    const auto emission = planeData["emission"];
+
+    objects_.push_back(std::make_shared<Plane>(Vec3(north["xx"], north["yy"], north["zz"]),
+                                               Vec3(east["xx"], east["yy"], east["zz"]),
+                                               Vec3(position["xx"], position["yy"], position["zz"]),
+                                               Vec3(emission["xx"], emission["yy"], emission["zz"]),
+                                               Vec3(color["xx"], color["yy"], color["zz"]),
+                                               EReflectionType(planeData["reflection"])));
 
     return true;
 }

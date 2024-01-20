@@ -32,6 +32,7 @@ private:
     bool loadCamera(const nlohmann::json& jsonData);
     bool loadObjects(const nlohmann::json& jsonData);
     bool addSpehere(const nlohmann::json& sphereData);
+    bool addPlane(const nlohmann::json& planeData);
 
     const std::string jsonPath_;
 
