@@ -190,7 +190,6 @@ bool SceneData::loadObjects(const nlohmann::json& jsonData)
         }
         else if (object["type"] == "plane")
         {
-            std::cout << "Found plane" << std::endl;
             if (not addPlane(object))
             {
                 return false;
