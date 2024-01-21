@@ -17,6 +17,7 @@ using namespace scene;
 
 // const uint16_t MAX_DEPTH = 10;
 // For now no reflections
+const uint16_t VIEW_PORT_DISTANCE = 140;
 const uint16_t MAX_DEPTH = 0;
 
 std::uniform_real_distribution<> zero_to_hunderd_distribution(0.0, 100.0);
@@ -40,7 +41,7 @@ std::vector<Vec3> Renderer::render()
     const Vec3 vecZ = (camera.direction_%camera.orientation_).norm();
 
     unsigned counter = 0;
-    #pragma omp parallel for
+    // #pragma omp parallel for
     for (uint32_t z=0; z<sceneData_.getHeight(); z++)
     {
         fprintf(stdout, "\rRendering %g%%", (counter * 100.)/(sceneData_.getHeight() - 1));
@@ -81,7 +82,8 @@ Vec3 Renderer::samplePixel(const Vec3& vecX, const Vec3& vecZ, const uint32_t pi
             + sceneData_.getCamera().direction_;
 
         pixel = pixel + sendRay(Ray(sceneData_.getCamera().origin_ + direction * 140, direction.norm() * -1), 0);*/
-        const auto ray = Ray(origin + sceneData_.getCamera().direction_ * 140, sceneData_.getCamera().direction_);
+        const auto ray = Ray(origin + sceneData_.getCamera().direction_ * VIEW_PORT_DISTANCE,
+            sceneData_.getCamera().direction_);
         pixel = pixel + sendRay(ray, 0);
     }
 

@@ -28,6 +28,11 @@ Vec3 Vec3::mult(const Vec3& vec2) const
     return Vec3(xx_*vec2.xx_, yy_*vec2.yy_, zz_*vec2.zz_);
 }
 
+double Vec3::distance(const Vec3& vec2) const
+{
+    return sqrt(pow((xx_ - vec2.xx_), 2) + pow((yy_ - vec2.yy_), 2) + pow((zz_ - vec2.zz_), 2));
+}
+
 Vec3 Vec3::operator+ (const Vec3& vec2) const
 {
     return Vec3(xx_ + vec2.xx_, yy_ + vec2.yy_, zz_ + vec2.zz_);
@@ -47,6 +52,11 @@ Vec3 Vec3::operator* (double number) const
 Vec3 Vec3::operator% (Vec3& vec2)
 {
     return Vec3(yy_*vec2.zz_ - zz_*vec2.yy_, zz_*vec2.xx_ - xx_*vec2.zz_, xx_*vec2.yy_ - yy_*vec2.xx_);
+}
+
+bool Vec3::operator== (const Vec3& vec2) const
+{
+    return xx_ == vec2.xx_ and yy_ == vec2.yy_ and zz_ == vec2.zz_;
 }
 
 std::ostream& operator<<(std::ostream& os, const Vec3& vec)
