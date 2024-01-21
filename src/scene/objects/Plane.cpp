@@ -64,7 +64,7 @@ bool Plane::checkIfInBounds(const Vec3& impact) const
 {
     auto vertical = distanceToBorder(bottomLeft_, (bottomLeft_ - bottomRight_).norm(), impact);
     if (distanceVertical_ - vertical < -MARGIN) return false;
-    vertical = vertical + distanceToBorder(topLeft_, (topLeft_ - topRight_).norm(), impact);\
+    vertical = vertical + distanceToBorder(topLeft_, (topLeft_ - topRight_).norm(), impact);
     if (distanceVertical_  - vertical < -MARGIN or distanceVertical_  - vertical > MARGIN) return false;
 
     auto horizontal = distanceToBorder(bottomLeft_, (bottomLeft_ - topLeft_).norm(), impact);
