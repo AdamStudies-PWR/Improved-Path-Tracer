@@ -41,7 +41,7 @@ std::vector<Vec3> Renderer::render()
     const Vec3 vecZ = (camera.direction_%camera.orientation_).norm();
 
     unsigned counter = 0;
-    // #pragma omp parallel for
+    #pragma omp parallel for
     for (uint32_t z=0; z<sceneData_.getHeight(); z++)
     {
         fprintf(stdout, "\rRendering %g%%", (counter * 100.)/(sceneData_.getHeight() - 1));
