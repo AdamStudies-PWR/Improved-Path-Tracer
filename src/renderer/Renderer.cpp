@@ -19,6 +19,7 @@ using namespace scene;
 // For now no reflections
 const uint16_t VIEW_PORT_DISTANCE = 140;
 const uint16_t MAX_DEPTH = 0;
+const float FOV_SCALE = 0.001;
 
 std::uniform_real_distribution<> zero_to_hunderd_distribution(0.0, 100.0);
 }  // namespace
@@ -59,6 +60,7 @@ std::vector<Vec3> Renderer::render()
 Vec3 Renderer::samplePixel(const Vec3& vecX, const Vec3& vecZ, const uint32_t pixelX, const uint32_t pixelZ)
 {
     const auto center = sceneData_.getCamera().origin_;
+    const auto direction = sceneData_.getCamera().direction_;
 
     auto correctionX = (sceneData_.getWidth() % 2 == 0) ? 0.5 : 0.0;
     auto correctionZ = (sceneData_.getWidth() % 2 == 0) ? 0.5 : 0.0;
@@ -77,14 +79,8 @@ Vec3 Renderer::samplePixel(const Vec3& vecX, const Vec3& vecZ, const uint32_t pi
         // tutaj powinno dojść losowanie - biorę próbki w obszarze wokół pixela +1 -1
 
         const auto origin = center + vecX*stepX + vecZ*stepZ;
-        /*Vec3 direction = vecX * ((0.25 + pixelX)/sceneData_.getWidth() - 0.5)
-            + vecY * ((0.25 + pixelY)/sceneData_.getHeight() - 0.5)
-            + sceneData_.getCamera().direction_;
-
-        pixel = pixel + sendRay(Ray(sceneData_.getCamera().origin_ + direction * 140, direction.norm() * -1), 0);*/
-        const auto ray = Ray(origin + sceneData_.getCamera().direction_ * VIEW_PORT_DISTANCE,
-            sceneData_.getCamera().direction_);
-        pixel = pixel + sendRay(ray, 0);
+        const auto gaze = direction + vecX*stepX*FOV_SCALE + vecZ*stepZ*FOV_SCALE;
+        pixel = pixel + sendRay(Ray(origin + direction * VIEW_PORT_DISTANCE, gaze), 0);
     }
 
     pixel.xx_ = pixel.xx_/samples_;
