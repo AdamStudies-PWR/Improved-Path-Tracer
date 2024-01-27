@@ -95,29 +95,22 @@ Vec3 Renderer::sendRay(const Ray& ray, uint16_t depth)
 {
     if (depth > MAX_DEPTH) return Vec3();
 
-    const auto pair = sceneData_.getHitObjectAndDistance(ray);
-    if (pair.first == -1) return Vec3();
+    const auto hitObject = sceneData_.getHitObjectAndDistance(ray);
+    if (hitObject.first == -1) return Vec3();
 
-    const auto& object = sceneData_.getObjectAt(pair.first);
+    const auto& object = sceneData_.getObjectAt(hitObject.first);
 
-    // debug switch
-    /*switch (object->getReflectionType())
-    {
-        case objects::EReflectionType::Diffuse: return Vec3(1, 0, 0);
-        case objects::EReflectionType::Refractive: return Vec3(0, 1, 0);
-        case objects::EReflectionType::Specular: return Vec3(0, 0, 1);
-        default: return Vec3();
-    }*/
+    /*Some stopping condition based on reflectivness - should be random*/
+    /*Skipping for now*/
 
+    const auto intersection = ray.origin_ + ray.direction_ * hitObject.second;
+    const auto newRay = object->calculateReflection(ray, intersection, generator_);
+
+    /*
+    Uncomment this to get basic return with color valuse
     return object->getColor();
-
-    // This will show what objects are hit so hopefully we will get some usefull information
-
-    /*const auto intersection = ray.origin_ + (ray.direction_*pair.second);
-
-    const auto reflectedRay = object->getReflectedRay(ray, intersection);
-
-    return object->getEmission() + object->getColor().mult(sendRay(reflectedRay, ++depth));*/
+    */
+    return object->getEmission() + object->getColor().mult(sendRay(newRay, ++depth));
 }
 
 }  // namespace tracer::renderer

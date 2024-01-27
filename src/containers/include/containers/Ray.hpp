@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ostream>
+
 #include "containers/Vec3.hpp"
 
 namespace tracer::containers

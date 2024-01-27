@@ -55,7 +55,7 @@ double Plane::intersect(const Ray& ray) const
     return checkIfInBounds(impact) ? distance : 0.0;
 }
 
-Ray Plane::getReflectedRay(const Ray&, const Vec3&) const
+Ray Plane::calculateReflection(const Ray&, const Vec3&, std::mt19937&) const
 {
     return Ray();
 }

@@ -12,7 +12,8 @@ public:
         EReflectionType reflection);
 
     double intersect(const containers::Ray& ray) const override;
-    containers::Ray getReflectedRay(const containers::Ray& ray, const containers::Vec3& intersection) const override;
+    containers::Ray calculateReflection(const containers::Ray& ray, const containers::Vec3& intersection,
+        std::mt19937& generator) const override;
 
 private:
     double radius_;

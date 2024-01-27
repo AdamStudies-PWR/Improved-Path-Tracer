@@ -14,6 +14,8 @@ namespace
 using namespace containers;
 
 const double MARGIN = 1e-4;
+
+std::uniform_real_distribution<> zero_one(-1.0, 1.0);
 }  // namespace
 
 Sphere::Sphere(double radius, Vec3 position, Vec3 emission, Vec3 color, EReflectionType reflection)
@@ -36,20 +38,19 @@ double Sphere::intersect(const Ray& ray) const
         ? intersection : ((intersection = -b + delta) > MARGIN ? intersection : 0);
 }
 
-Ray Sphere::getReflectedRay(const Ray& ray, const Vec3& intersection) const
+Ray Sphere::calculateReflection(const Ray& ray, const Vec3& intersection, std::mt19937& generator) const
 {
-    auto normal = (intersection - position_).norm();
-    normal = (normal.dot(ray.direction_) < 0) ? normal : (normal * -1);
+    Vec3 normal = (intersection - position_).norm();
+    Vec3 surfaceNormal = normal.dot(ray.direction_) < 0 ? normal : normal * -1;
 
-    if (emission_.xx_ != 0)
+    if (reflection_ == Diffuse)
     {
-        std::cout << "Light source hit!" << std::endl;
+        auto angle = 2 * M_PI * zero_one(generator);
+
+        std::cout << angle << ", " << surfaceNormal << std::endl;
     }
 
-    // Here should be russian rullete to determine if recursion should be stopped early
-    // We are not doing this for now
-
-    return ray;
+    return Ray();
 }
 
 }  // namespace tracer::scene::objects

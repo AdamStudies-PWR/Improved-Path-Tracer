@@ -12,7 +12,8 @@ public:
         containers::Vec3 color, EReflectionType reflection);
 
     double intersect(const containers::Ray& ray) const override;
-    containers::Ray getReflectedRay(const containers::Ray& ray, const containers::Vec3& intersection) const override;
+    containers::Ray calculateReflection(const containers::Ray& ray, const containers::Vec3& intersection,
+        std::mt19937& generator) const override;
 
 private:
     bool checkIfInBounds(const containers::Vec3& impact) const;
