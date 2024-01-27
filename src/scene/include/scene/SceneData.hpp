@@ -1,5 +1,7 @@
 #pragma once
 
+#include <functional>
+#include <map>
 #include <memory>
 #include <string>
 #include <tuple>
@@ -35,11 +37,11 @@ private:
     bool addPlane(const nlohmann::json& planeData);
 
     const std::string jsonPath_;
-
+    objects::Camera camera_;
+    std::map<std::string, bool (SceneData::*)(const nlohmann::json&)> typeToHandler_;
+    std::vector<std::shared_ptr<objects::AObject>> objects_;
     uint32_t height_;
     uint32_t width_;
-    std::vector<std::shared_ptr<objects::AObject>> objects_;
-    objects::Camera camera_;
 };
 
 }  // namespace tracer::scene

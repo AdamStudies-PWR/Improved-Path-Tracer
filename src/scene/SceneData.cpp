@@ -56,7 +56,10 @@ bool validateObject(const json& objectData)
 
 SceneData::SceneData(const std::string& jsonPath)
     : jsonPath_(jsonPath)
-{}
+{
+    typeToHandler_["sphere"] = &SceneData::addSpehere;
+    typeToHandler_["plane"] = &SceneData::addPlane;
+}
 
 bool SceneData::initScene()
 {
@@ -181,16 +184,9 @@ bool SceneData::loadObjects(const nlohmann::json& jsonData)
             return false;
         }
 
-        if (object["type"] == "sphere")
+        if (typeToHandler_[object["type"]])
         {
-            if (not addSpehere(object))
-            {
-                return false;
-            }
-        }
-        else if (object["type"] == "plane")
-        {
-            if (not addPlane(object))
+            if (not (this->*typeToHandler_[object["type"]])(object))
             {
                 return false;
             }
@@ -209,7 +205,7 @@ bool SceneData::addSpehere(const json& sphereData)
 {
     if (not sphereData.contains("radius"))
     {
-        std::cout << " Broken sphere object! " << std::endl;
+        std::cout << "Broken sphere object! " << std::endl;
         return false;
     }
 
@@ -230,7 +226,7 @@ bool SceneData::addPlane(const json& planeData)
 {
     if (not planeData.contains("north") or not planeData.contains("east"))
     {
-        std::cout << " Broken plane object! " << std::endl;
+        std::cout << "Broken plane object! " << std::endl;
         return false;
     }
 

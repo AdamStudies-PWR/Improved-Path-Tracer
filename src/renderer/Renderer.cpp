@@ -15,10 +15,8 @@ namespace
 using namespace containers;
 using namespace scene;
 
-// const uint16_t MAX_DEPTH = 10;
-// For now no reflections
 const uint16_t VIEW_PORT_DISTANCE = 140;
-const uint16_t MAX_DEPTH = 0;
+const uint16_t MAX_DEPTH = 10;
 const float FOV_SCALE = 0.001;
 
 std::uniform_real_distribution<> tent_filter(-1.0, 1.0);
