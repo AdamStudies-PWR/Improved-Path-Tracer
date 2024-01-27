@@ -21,7 +21,7 @@ const uint16_t VIEW_PORT_DISTANCE = 140;
 const uint16_t MAX_DEPTH = 0;
 const float FOV_SCALE = 0.001;
 
-std::uniform_real_distribution<> zero_to_hunderd_distribution(0.0, 100.0);
+std::uniform_real_distribution<> tent_filter(-1.0, 1.0);
 }  // namespace
 
 Renderer::Renderer(SceneData& sceneData, const uint32_t samples)
@@ -74,11 +74,14 @@ Vec3 Renderer::samplePixel(const Vec3& vecX, const Vec3& vecZ, const uint32_t pi
     Vec3 pixel = Vec3();
 
     for (uint32_t i=0; i<samples_; i++)
-    //for (uint32_t i=0; i<1; i++)
     {
-        // tutaj powinno dojść losowanie - biorę próbki w obszarze wokół pixela +1 -1
+        // Tent filter
+        const auto xFactor = tent_filter(generator_);
+        const auto zFactor = tent_filter(generator_);
+        const auto tentFilter = vecX * xFactor + vecZ * zFactor;
+        // Tent filter
 
-        const auto origin = center + vecX*stepX + vecZ*stepZ;
+        const auto origin = center + vecX*stepX + vecZ*stepZ + tentFilter;
         const auto gaze = direction + vecX*stepX*FOV_SCALE + vecZ*stepZ*FOV_SCALE;
         pixel = pixel + sendRay(Ray(origin + direction * VIEW_PORT_DISTANCE, gaze), 0);
     }
