@@ -5,9 +5,8 @@
 namespace tracer::containers
 {
 
-class Ray
+struct Ray
 {
-public:
     Ray(Vec3 origin=Vec3(), Vec3 direction=Vec3());
 
     friend std::ostream& operator<<(std::ostream& os, const Ray& ray);

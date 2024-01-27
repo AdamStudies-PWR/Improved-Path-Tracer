@@ -2,6 +2,8 @@ project(tracer-scene)
 
 set(SOURCES
     objects/AObject.cpp
+    objects/Camera.cpp
+    objects/Plane.cpp
     objects/Sphere.cpp
     SceneData.cpp
 )
