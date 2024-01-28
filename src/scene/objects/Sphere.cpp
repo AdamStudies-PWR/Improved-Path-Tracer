@@ -46,7 +46,7 @@ RayData Sphere::calculateReflections(const Ray& ray, const Vec3& intersection, c
     switch (reflection_)
     {
     case Diffuse: return {{Ray(intersection, calculateDiffuseDirection(surfaceNormal, generator)), 1.0}};
-    case Specular: return {{Ray(intersection, calculateSpecularDirection(ray.direction_, normal)), 1.0}};
+    case Specular: return calculateSpecular(ray, intersection);
     case Refractive: return calculateRefractive(ray, intersection, depth, normal, surfaceNormal, generator);
     default: std::cout << "Uknown reflection type" << std::endl;
     }
@@ -64,15 +64,17 @@ Vec3 Sphere::calculateDiffuseDirection(Vec3& surfaceNormal, std::mt19937& genera
     return (ortX*cos(angle)*sqrt(distance) + ortY*sin(angle)*sqrt(distance) + surfaceNormal*sqrt(1 - distance)).norm();
 }
 
-Vec3 Sphere::calculateSpecularDirection(const Vec3& direction, const Vec3& normal) const
+RayData Sphere::calculateSpecular(const containers::Ray& ray, const containers::Vec3& intersection) const
 {
-    return direction - normal * 2 * normal.dot(direction);
+    auto normal = (intersection - position_).norm();
+    auto reflectedDirection = ray.direction_ - normal * 2 * ray.direction_.dot(normal);
+    return {{Ray(intersection, reflectedDirection), 1.0}};
 }
 
 RayData Sphere::calculateRefractive(const Ray& ray, const Vec3& intersection, const uint16_t depth,
     const Vec3& normal, const Vec3& surfaceNormal, std::mt19937& generator) const
 {
-    Ray reflected = Ray(intersection, calculateSpecularDirection(ray.direction_, normal));
+    Ray reflected = calculateSpecular(ray, intersection)[0].first; // hack
     bool isEntering = normal.dot(surfaceNormal) > 0;
     const auto localIOR = isEntering ? 1/GLASS_IOR : GLASS_IOR;
     const auto scalar = ray.direction_.dot(surfaceNormal);

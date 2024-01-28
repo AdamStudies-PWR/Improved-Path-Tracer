@@ -18,6 +18,7 @@ public:
 private:
     bool checkIfInBounds(const containers::Vec3& impact) const;
     RayData calculateDiffuse(const containers::Vec3& intersection, std::mt19937& generator) const;
+    RayData calculateSepcular(const containers::Ray& ray, const containers::Vec3& intersection) const;
 
     containers::Vec3 bottomLeft_;
     containers::Vec3 bottomRight_;

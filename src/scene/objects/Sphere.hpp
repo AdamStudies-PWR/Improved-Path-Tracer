@@ -17,7 +17,7 @@ public:
 
 private:
     containers::Vec3 calculateDiffuseDirection(containers::Vec3& surfaceNormal, std::mt19937& generator) const;
-    containers::Vec3 calculateSpecularDirection(const containers::Vec3& direction, const containers::Vec3& norma) const;
+    RayData calculateSpecular(const containers::Ray& ray, const containers::Vec3& intersection) const;
     RayData calculateRefractive(const containers::Ray& ray, const containers::Vec3& intersection,
         const uint16_t depth, const containers::Vec3& normal, const containers::Vec3& surfaceNormal,
         std::mt19937& generator) const;

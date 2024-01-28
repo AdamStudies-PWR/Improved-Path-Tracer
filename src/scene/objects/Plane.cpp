@@ -59,13 +59,13 @@ double Plane::intersect(const Ray& ray) const
     return checkIfInBounds(impact) ? distance : 0.0;
 }
 
-RayData Plane::calculateReflections(const Ray&, const Vec3&/* intersection*/, const uint16_t,
-    std::mt19937&/* generator*/) const
+RayData Plane::calculateReflections(const Ray& ray, const Vec3& intersection, const uint16_t,
+    std::mt19937& generator) const
 {
     switch (reflection_)
     {
-    case Diffuse: return {};//calculateDiffuse(intersection, generator);
-    case Specular: return {};
+    case Diffuse: return calculateDiffuse(intersection, generator);
+    case Specular: return calculateSepcular(ray, intersection);
     case Refractive: return {};
     default: std::cout << "Uknown reflection type" << std::endl;
     }
@@ -88,12 +88,27 @@ bool Plane::checkIfInBounds(const Vec3& impact) const
     return true;
 }
 
-RayData Plane::calculateDiffuse(const Vec3& intersection, std::mt19937& generator) const
+RayData Plane::calculateDiffuse(const Vec3& intersection, std::mt19937&) const
 {
-    auto angle = 2 * M_PI * zero_one(generator);
-    angle = 0.0;
+    // auto normal = planeVector_;
+    // ray.direction_ % normal
+    /*auto angle = 2 * M_PI * zero_one(generator);
+    auto distance = zero_one(generator);
+    auto tmp = fabs(planeVector_.xx_) > 0.1 ? Vec3(0, 1, 0) : Vec3(1, 0, 0);
+    auto local = planeVector_ * -1;
+    auto ortX = (tmp % local).norm();
+    auto ortY = local % ortX;*/
 
-    return {{Ray(intersection, Vec3()), angle}};
+    // auto dir = (ortX*cos(angle)*sqrt(distance) + ortY*sin(angle)*sqrt(distance) + local*sqrt(1 - distance)).norm();
+
+    return {{Ray(intersection, Vec3()), 1.0}};
+}
+
+RayData Plane::calculateSepcular(const containers::Ray& ray, const containers::Vec3& intersection) const
+{
+    auto normal = ray.direction_.dot(planeVector_) < 0 ? planeVector_ * -1 : planeVector_;
+    auto reflectedDirection = ray.direction_ - normal * 2 * ray.direction_.dot(normal);
+    return {{Ray(intersection, reflectedDirection), 1.0}};
 }
 
 }  // namespace tracer::scene::objects
