@@ -33,6 +33,11 @@ double Vec3::distance(const Vec3& vec2) const
     return sqrt(pow((xx_ - vec2.xx_), 2) + pow((yy_ - vec2.yy_), 2) + pow((zz_ - vec2.zz_), 2));
 }
 
+double Vec3::length() const
+{
+    return sqrt(pow(xx_, 2) + pow(yy_, 2) + pow(zz_, 2));
+}
+
 Vec3 Vec3::operator+ (const Vec3& vec2) const
 {
     return Vec3(xx_ + vec2.xx_, yy_ + vec2.yy_, zz_ + vec2.zz_);

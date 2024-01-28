@@ -1,5 +1,7 @@
 #include "Plane.hpp"
 
+#include <iostream>
+
 #include "math.h"
 
 namespace tracer::scene::objects
@@ -10,6 +12,8 @@ namespace
 using namespace containers;
 
 const double MARGIN = 1e-4;
+
+std::uniform_real_distribution<> zero_one(0.0, 1.0);
 
 double distanceToBorder(const Vec3& origin, const Vec3& border, const Vec3& impact)
 {
@@ -55,9 +59,18 @@ double Plane::intersect(const Ray& ray) const
     return checkIfInBounds(impact) ? distance : 0.0;
 }
 
-Ray Plane::calculateReflection(const Ray&, const Vec3&, std::mt19937&) const
+RayData Plane::calculateReflections(const Ray&, const Vec3&/* intersection*/, const uint16_t,
+    std::mt19937&/* generator*/) const
 {
-    return Ray();
+    switch (reflection_)
+    {
+    case Diffuse: return {};//calculateDiffuse(intersection, generator);
+    case Specular: return {};
+    case Refractive: return {};
+    default: std::cout << "Uknown reflection type" << std::endl;
+    }
+
+    return {};
 }
 
 bool Plane::checkIfInBounds(const Vec3& impact) const
@@ -73,6 +86,14 @@ bool Plane::checkIfInBounds(const Vec3& impact) const
     if (distanceHorizontal_ - horizontal < -MARGIN or distanceHorizontal_ - horizontal > MARGIN) return false;
 
     return true;
+}
+
+RayData Plane::calculateDiffuse(const Vec3& intersection, std::mt19937& generator) const
+{
+    auto angle = 2 * M_PI * zero_one(generator);
+    angle = 0.0;
+
+    return {{Ray(intersection, Vec3()), angle}};
 }
 
 }  // namespace tracer::scene::objects

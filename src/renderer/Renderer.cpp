@@ -15,7 +15,7 @@ namespace
 using namespace containers;
 using namespace scene;
 
-const uint16_t VIEW_PORT_DISTANCE = 140;
+const uint16_t VIEWPORT_DISTANCE = 140;
 const uint16_t MAX_DEPTH = 10;
 const float FOV_SCALE = 0.001;
 
@@ -44,6 +44,7 @@ std::vector<Vec3> Renderer::render()
     for (uint32_t z=0; z<sceneData_.getHeight(); z++)
     {
         fprintf(stdout, "\rRendering %g%%", (counter * 100.)/(sceneData_.getHeight() - 1));
+        #pragma omp parallel for
         for (uint32_t x=0; x<sceneData_.getWidth(); x++)
         {
             const auto index = z * sceneData_.getWidth() + x;
@@ -69,8 +70,9 @@ Vec3 Renderer::samplePixel(const Vec3& vecX, const Vec3& vecZ, const uint32_t pi
         ? sceneData_.getHeight()/2 - pixelZ - correctionZ
         : ((double)sceneData_.getHeight()/2 - pixelZ - 1.0) + ((correctionZ == 0.0) ? 1.0 : correctionZ);
 
-    Vec3 pixel = Vec3();
+    const auto gaze = direction + vecX*stepX*FOV_SCALE + vecZ*stepZ*FOV_SCALE;
 
+    Vec3 pixel = Vec3();
     for (uint32_t i=0; i<samples_; i++)
     {
         // Tent filter
@@ -80,8 +82,7 @@ Vec3 Renderer::samplePixel(const Vec3& vecX, const Vec3& vecZ, const uint32_t pi
         // Tent filter
 
         const auto origin = center + vecX*stepX + vecZ*stepZ + tentFilter;
-        const auto gaze = direction + vecX*stepX*FOV_SCALE + vecZ*stepZ*FOV_SCALE;
-        pixel = pixel + sendRay(Ray(origin + direction * VIEW_PORT_DISTANCE, gaze), 0);
+        pixel = pixel + sendRay(Ray(origin + direction * VIEWPORT_DISTANCE, gaze), 0);
     }
 
     pixel.xx_ = pixel.xx_/samples_;
@@ -95,22 +96,25 @@ Vec3 Renderer::sendRay(const Ray& ray, uint16_t depth)
 {
     if (depth > MAX_DEPTH) return Vec3();
 
-    const auto hitObject = sceneData_.getHitObjectAndDistance(ray);
-    if (hitObject.first == -1) return Vec3();
+    const auto hitData = sceneData_.getHitObjectAndDistance(ray);
+    if (hitData.first == -1) return Vec3();
 
-    const auto& object = sceneData_.getObjectAt(hitObject.first);
+    const auto& object = sceneData_.getObjectAt(hitData.first);
 
     /*Some stopping condition based on reflectivness - should be random*/
     /*Skipping for now*/
 
-    const auto intersection = ray.origin_ + ray.direction_ * hitObject.second;
-    const auto newRay = object->calculateReflection(ray, intersection, generator_);
+    const auto intersection = ray.origin_ + ray.direction_ * hitData.second;
+    const auto reflectedRays = object->calculateReflections(ray, intersection, depth, generator_);
 
-    /*
-    Uncomment this to get basic return with color valuse
-    return object->getColor();
-    */
-    return object->getEmission() + object->getColor().mult(sendRay(newRay, ++depth));
+    Vec3 path = Vec3();
+    ++depth;
+    for (const auto& reflectionData : reflectedRays)
+    {
+        path = path + sendRay(reflectionData.first, depth) * reflectionData.second;
+    }
+
+    return object->getEmission() + object->getColor().mult(path);
 }
 
 }  // namespace tracer::renderer

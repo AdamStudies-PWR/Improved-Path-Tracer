@@ -14,6 +14,7 @@ struct Vec3
     Vec3& norm();
     Vec3 mult(const Vec3& vec2) const;
     double distance(const Vec3& vec2) const;
+    double length() const;
 
     Vec3 operator+ (const Vec3& vec2) const;
     Vec3 operator- (const Vec3& vec2) const;
