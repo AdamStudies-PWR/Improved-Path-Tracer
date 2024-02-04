@@ -17,7 +17,7 @@ using namespace scene;
 
 const uint16_t VIEWPORT_DISTANCE = 140;
 const uint16_t MAX_DEPTH = 10;
-const float FOV_SCALE = 0.001;
+const float FOV_SCALE = 0.0009;
 
 std::uniform_real_distribution<> tent_filter(-1.0, 1.0);
 }  // namespace
@@ -43,7 +43,7 @@ std::vector<Vec3> Renderer::render()
     #pragma omp parallel for
     for (uint32_t z=0; z<sceneData_.getHeight(); z++)
     {
-        fprintf(stdout, "\rRendering %g%%", (counter * 100.)/(sceneData_.getHeight() - 1));
+        fprintf(stdout, "\rRendering %.2f%%", (counter * 100.)/(sceneData_.getHeight() - 1));
         #pragma omp parallel for
         for (uint32_t x=0; x<sceneData_.getWidth(); x++)
         {

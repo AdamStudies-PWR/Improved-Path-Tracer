@@ -67,6 +67,7 @@ Vec3 Sphere::calculateDiffuseDirection(Vec3& surfaceNormal, std::mt19937& genera
 RayData Sphere::calculateSpecular(const containers::Ray& ray, const containers::Vec3& intersection) const
 {
     auto normal = (intersection - position_).norm();
+    normal = ray.direction_.dot(normal) < 0 ? normal * -1 : normal;
     auto reflectedDirection = ray.direction_ - normal * 2 * ray.direction_.dot(normal);
     return {{Ray(intersection, reflectedDirection), 1.0}};
 }
