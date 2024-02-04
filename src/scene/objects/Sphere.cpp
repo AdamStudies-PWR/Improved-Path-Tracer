@@ -15,6 +15,7 @@ const double GLASS_IOR = 1.5;
 const double MARGIN = 1e-4;
 
 std::uniform_real_distribution<> zero_one(0.0, 1.0);
+std::uniform_real_distribution<> one_one(-1.0, 1.0);
 }  // namespace
 
 Sphere::Sphere(double radius, Vec3 position, Vec3 emission, Vec3 color, EReflectionType reflection)
@@ -45,7 +46,7 @@ RayData Sphere::calculateReflections(const Ray& ray, const Vec3& intersection, c
 
     switch (reflection_)
     {
-    case Diffuse: return {{Ray(intersection, calculateDiffuseDirection(surfaceNormal, generator)), 1.0}};
+    case Diffuse: return calculateDiffuse(ray, intersection, generator);
     case Specular: return calculateSpecular(ray, intersection);
     case Refractive: return calculateRefractive(ray, intersection, depth, normal, surfaceNormal, generator);
     default: std::cout << "Uknown reflection type" << std::endl;
@@ -54,14 +55,22 @@ RayData Sphere::calculateReflections(const Ray& ray, const Vec3& intersection, c
     return {};
 }
 
-Vec3 Sphere::calculateDiffuseDirection(Vec3& surfaceNormal, std::mt19937& generator) const
+RayData Sphere::calculateDiffuse(const Ray& ray, const Vec3& intersection, std::mt19937& generator) const
 {
-    auto angle = 2 * M_PI * zero_one(generator);
-    auto distance = zero_one(generator);
-    auto ortX = ((fabs(surfaceNormal.xx_) > 0.1 ? Vec3(0, 1, 0) : Vec3(1, 0, 0))%surfaceNormal).norm();
-    auto ortY = surfaceNormal%ortX;
+    auto normal = (intersection - position_).norm();
+    normal = (ray.direction_.dot(normal) < 0 ? normal * -1 : normal) * -1;
+    auto tmp = fabs(normal.xx_) > 0.1 ? Vec3(0, 1, 0) : Vec3(1, 0, 0);
+    auto ortX = (tmp % normal).norm();
+    auto ortY = normal % ortX;
 
-    return (ortX*cos(angle)*sqrt(distance) + ortY*sin(angle)*sqrt(distance) + surfaceNormal*sqrt(1 - distance)).norm();
+    auto direction = Vec3(0, 0, 0);
+    while (direction == Vec3(0, 0, 0))
+    {
+        direction = ortX * one_one(generator) + ortY * one_one(generator) + normal * zero_one(generator);
+    }
+    direction = direction.norm();
+
+    return {{Ray(intersection, direction), 1.0}};
 }
 
 RayData Sphere::calculateSpecular(const containers::Ray& ray, const containers::Vec3& intersection) const
@@ -69,7 +78,7 @@ RayData Sphere::calculateSpecular(const containers::Ray& ray, const containers::
     auto normal = (intersection - position_).norm();
     normal = ray.direction_.dot(normal) < 0 ? normal * -1 : normal;
     auto reflectedDirection = ray.direction_ - normal * 2 * ray.direction_.dot(normal);
-    return {{Ray(intersection, reflectedDirection), 1.0}};
+    return {{Ray(intersection, reflectedDirection), 0.9}};
 }
 
 RayData Sphere::calculateRefractive(const Ray& ray, const Vec3& intersection, const uint16_t depth,

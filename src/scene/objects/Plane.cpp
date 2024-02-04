@@ -14,6 +14,7 @@ using namespace containers;
 const double MARGIN = 1e-4;
 
 std::uniform_real_distribution<> zero_one(0.0, 1.0);
+std::uniform_real_distribution<> one_one(-1.0, 1.0);
 
 double distanceToBorder(const Vec3& origin, const Vec3& border, const Vec3& impact)
 {
@@ -88,19 +89,21 @@ bool Plane::checkIfInBounds(const Vec3& impact) const
     return true;
 }
 
-RayData Plane::calculateDiffuse(const Ray&, const Vec3& intersection, std::mt19937&) const
+RayData Plane::calculateDiffuse(const Ray& ray, const Vec3& intersection, std::mt19937& generator) const
 {
-    /*auto normal = ray.direction_.dot(planeVector_) < 0 ? planeVector_ * -1 : planeVector_;
-    auto angle = 2 * M_PI * zero_one(generator);
-    auto distance = zero_one(generator);
+    auto normal = (ray.direction_.dot(planeVector_) < 0 ? planeVector_ * -1 : planeVector_) * -1;
     auto tmp = fabs(normal.xx_) > 0.1 ? Vec3(0, 1, 0) : Vec3(1, 0, 0);
-    auto local = normal * -1;
-    auto ortX = (tmp % local).norm();
-    auto ortY = local % ortX;*/
+    auto ortX = (tmp % normal).norm();
+    auto ortY = normal % ortX;
 
-    //auto dir = (ortX*cos(angle)*sqrt(distance) + ortY*sin(angle)*sqrt(distance) + local*sqrt(1 - distance)).norm();
+    auto direction = Vec3(0, 0, 0);
+    while (direction == Vec3(0, 0, 0))
+    {
+        direction = ortX * one_one(generator) + ortY * one_one(generator) + normal * zero_one(generator);
+    }
+    direction = direction.norm();
 
-    return {{Ray(intersection, Vec3()), 1.0}};
+    return {{Ray(intersection, direction), 1.0}};
 }
 
 RayData Plane::calculateSepcular(const Ray& ray, const Vec3& intersection) const
