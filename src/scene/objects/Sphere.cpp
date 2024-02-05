@@ -59,16 +59,15 @@ RayData Sphere::calculateDiffuse(const Ray& ray, const Vec3& intersection, std::
 {
     auto normal = (intersection - position_).norm();
     normal = (ray.direction_.dot(normal) < 0 ? normal * -1 : normal) * -1;
-    auto tmp = fabs(normal.xx_) > 0.1 ? Vec3(0, 1, 0) : Vec3(1, 0, 0);
-    auto ortX = (tmp % normal).norm();
-    auto ortY = normal % ortX;
 
     auto direction = Vec3(0, 0, 0);
     while (direction == Vec3(0, 0, 0))
     {
-        direction = ortX * one_one(generator) + ortY * one_one(generator) + normal * zero_one(generator);
+        direction = Vec3(one_one(generator), one_one(generator), one_one(generator));
     }
+
     direction = direction.norm();
+    direction = (direction.dot(normal) < 0) ? direction * -1 : direction;
 
     return {{Ray(intersection, direction), 1.0}};
 }
