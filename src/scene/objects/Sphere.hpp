@@ -20,8 +20,7 @@ private:
         std::mt19937& generator) const;
     RayData calculateSpecular(const containers::Ray& ray, const containers::Vec3& intersection) const;
     RayData calculateRefractive(const containers::Ray& ray, const containers::Vec3& intersection,
-        const uint16_t depth, const containers::Vec3& normal, const containers::Vec3& surfaceNormal,
-        std::mt19937& generator) const;
+        std::mt19937& generator, const uint16_t depth) const;
 
     double radius_;
 };

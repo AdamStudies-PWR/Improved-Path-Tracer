@@ -67,7 +67,7 @@ RayData Plane::calculateReflections(const Ray& ray, const Vec3& intersection, co
     {
     case Diffuse: return calculateDiffuse(ray, intersection, generator);
     case Specular: return calculateSepcular(ray, intersection);
-    case Refractive: return {};
+    case Refractive: return calculateRefractive();
     default: std::cout << "Uknown reflection type" << std::endl;
     }
 
@@ -110,6 +110,11 @@ RayData Plane::calculateSepcular(const Ray& ray, const Vec3& intersection) const
     auto normal = ray.direction_.dot(planeVector_) < 0 ? planeVector_ * -1 : planeVector_;
     auto reflectedDirection = ray.direction_ - normal * 2 * ray.direction_.dot(normal);
     return {{Ray(intersection, reflectedDirection), 1.0}};
+}
+
+RayData Plane::calculateRefractive() const
+{
+    return {};
 }
 
 }  // namespace tracer::scene::objects
