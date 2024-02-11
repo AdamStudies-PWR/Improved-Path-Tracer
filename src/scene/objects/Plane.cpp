@@ -66,7 +66,7 @@ RayData Plane::calculateReflections(const Vec3& intersection, const Vec3& incomi
     {
     case Specular: return handleSpecular(intersection, incoming, normal, generator, depth);
     case Diffuse: return handleDiffuse(intersection, normal, generator);
-    case Refractive: return handleRefractive(intersection, incoming, normal, generator, depth);
+    case Refractive: return handleRefractive(intersection, incoming, normal, normal, generator, depth);
     default: std::cout << "Uknown reflection type" << std::endl;
     }
 

@@ -41,14 +41,14 @@ double Sphere::intersect(const Ray& ray) const
 RayData Sphere::calculateReflections(const Vec3& intersection, const Vec3& incoming, std::mt19937& generator,
     const uint8_t depth) const
 {
-    auto normal = (intersection - position_).norm();
-    normal = incoming.dot(normal) < 0 ? normal * -1 : normal;
+    const auto rawNormal = (intersection - position_).norm();
+    const auto normal = incoming.dot(rawNormal) < 0 ? rawNormal * -1 : rawNormal;
 
     switch (reflection_)
     {
     case Specular: return handleSpecular(intersection, incoming, normal, generator, depth);
     case Diffuse: return handleDiffuse(intersection, normal, generator);
-    case Refractive: return handleRefractive(intersection, incoming, normal, generator, depth);;
+    case Refractive: return handleRefractive(intersection, incoming, rawNormal, normal, generator, depth);
     default: std::cout << "Uknown reflection type" << std::endl;
     }
 

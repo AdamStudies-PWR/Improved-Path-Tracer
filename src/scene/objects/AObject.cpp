@@ -1,6 +1,7 @@
 #include "scene/objects/AObject.hpp"
 
 #include <optional>
+#include <iostream>
 
 #include "math.h"
 
@@ -12,6 +13,7 @@ namespace
 using namespace containers;
 
 const double GLASS_IOR = 1.5;
+const double AIR_IOR = 1.0;
 
 std::uniform_real_distribution<> zero_one(0.0, 1.0);
 std::uniform_real_distribution<> one_one(-1.0, 1.0);
@@ -35,8 +37,9 @@ Vec3 calculateDiffuse(const Vec3& normal, std::mt19937& generator)
 
 std::optional<Vec3> calculateRefreactive(const Vec3& incoming, const Vec3& normal)
 {
+    const auto index = AIR_IOR/GLASS_IOR;
     const auto cosIncoming = fabs(normal.dot(incoming));
-    const double sinRefracted2 = pow(GLASS_IOR, 2) * (1.0 - pow(cosIncoming, 2));
+    auto sinRefracted2 = pow(index, 2) * (1.0 - pow(cosIncoming, 2));
 
     if (sinRefracted2 > 1.0)
     {
@@ -44,7 +47,7 @@ std::optional<Vec3> calculateRefreactive(const Vec3& incoming, const Vec3& norma
     }
 
     const double cosRefracted = sqrt(1.0 - sinRefracted2);
-    return incoming * GLASS_IOR + normal * (GLASS_IOR * cosIncoming - cosRefracted);
+    return incoming * index + normal * (index * cosIncoming - cosRefracted);
 }
 }  // namespace
 
@@ -90,11 +93,11 @@ RayData AObject::handleDiffuse(const Vec3& intersection, const Vec3& normal, std
     return {{Ray(intersection, diffuse), 1.0}};
 }
 
-RayData AObject::handleRefractive(const Vec3& intersection, const Vec3& incoming, const Vec3& normal,
-    std::mt19937& generator, const uint8_t depth) const
+RayData AObject::handleRefractive(const Vec3& intersection, const Vec3& incoming, const Vec3& rawNormal,
+    const Vec3& normal, std::mt19937& generator, const uint8_t depth) const
 {
     auto specular = calculateSpecular(incoming, normal);
-    auto maybeRefreactive = calculateRefreactive(incoming, normal);
+    auto maybeRefreactive = calculateRefreactive(incoming, rawNormal);
 
     if (not maybeRefreactive.has_value())
     {
