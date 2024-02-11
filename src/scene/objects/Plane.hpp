@@ -12,15 +12,11 @@ public:
         containers::Vec3 color, EReflectionType reflection);
 
     double intersect(const containers::Ray& ray) const override;
-    RayData calculateReflections(const containers::Ray& ray, const containers::Vec3& intersection,
-        const uint16_t depth, std::mt19937& generator) const override;
+    RayData calculateReflections(const containers::Vec3& intersection, const containers::Vec3& incoming,
+        std::mt19937& generator, const uint8_t depth) const override;
 
 private:
     bool checkIfInBounds(const containers::Vec3& impact) const;
-    RayData calculateDiffuse(const containers::Ray& ray, const containers::Vec3& intersection,
-        std::mt19937& generator) const;
-    RayData calculateSepcular(const containers::Ray& ray, const containers::Vec3& intersection) const;
-    RayData calculateRefractive() const;
 
     containers::Vec3 bottomLeft_;
     containers::Vec3 bottomRight_;

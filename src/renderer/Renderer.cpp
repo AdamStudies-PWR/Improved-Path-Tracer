@@ -16,7 +16,7 @@ using namespace containers;
 using namespace scene;
 
 const uint16_t VIEWPORT_DISTANCE = 140;
-const uint16_t MAX_DEPTH = 10;
+const uint8_t MAX_DEPTH = 10;
 const float FOV_SCALE = 0.0009;
 
 std::uniform_real_distribution<> tent_filter(-1.0, 1.0);
@@ -92,7 +92,7 @@ Vec3 Renderer::samplePixel(const Vec3& vecX, const Vec3& vecZ, const uint32_t pi
     return pixel;
 }
 
-Vec3 Renderer::sendRay(const Ray& ray, uint16_t depth)
+Vec3 Renderer::sendRay(const Ray& ray, uint8_t depth)
 {
     if (depth > MAX_DEPTH) return Vec3();
 
@@ -105,7 +105,7 @@ Vec3 Renderer::sendRay(const Ray& ray, uint16_t depth)
     /*Skipping for now*/
 
     const auto intersection = ray.origin_ + ray.direction_ * hitData.second;
-    const auto reflectedRays = object->calculateReflections(ray, intersection, depth, generator_);
+    const auto reflectedRays = object->calculateReflections(intersection, ray.direction_, generator_, depth);
 
     Vec3 path = Vec3();
     ++depth;

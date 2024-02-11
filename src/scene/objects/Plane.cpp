@@ -13,9 +13,6 @@ using namespace containers;
 
 const double MARGIN = 1e-4;
 
-std::uniform_real_distribution<> zero_one(0.0, 1.0);
-std::uniform_real_distribution<> one_one(-1.0, 1.0);
-
 double distanceToBorder(const Vec3& origin, const Vec3& border, const Vec3& impact)
 {
     const auto refPoint = impact - origin;
@@ -60,14 +57,16 @@ double Plane::intersect(const Ray& ray) const
     return checkIfInBounds(impact) ? distance : 0.0;
 }
 
-RayData Plane::calculateReflections(const Ray& ray, const Vec3& intersection, const uint16_t,
-    std::mt19937& generator) const
+RayData Plane::calculateReflections(const Vec3& intersection, const Vec3& incoming, std::mt19937& generator,
+    const uint8_t depth) const
 {
+    const auto normal = (incoming.dot(planeVector_) < 0 ? planeVector_ * -1 : planeVector_) * -1;
+
     switch (reflection_)
     {
-    case Diffuse: return calculateDiffuse(ray, intersection, generator);
-    case Specular: return calculateSepcular(ray, intersection);
-    case Refractive: return calculateRefractive();
+    case Diffuse: return handleDiffuse(intersection, normal, generator);
+    case Specular: return handleSpecular(intersection, incoming, normal);
+    case Refractive: return handleRefractive(intersection, incoming, normal, generator, depth);
     default: std::cout << "Uknown reflection type" << std::endl;
     }
 
@@ -87,34 +86,6 @@ bool Plane::checkIfInBounds(const Vec3& impact) const
     if (distanceHorizontal_ - horizontal < -MARGIN or distanceHorizontal_ - horizontal > MARGIN) return false;
 
     return true;
-}
-
-RayData Plane::calculateDiffuse(const Ray& ray, const Vec3& intersection, std::mt19937& generator) const
-{
-    auto normal = (ray.direction_.dot(planeVector_) < 0 ? planeVector_ * -1 : planeVector_) * -1;
-
-    auto direction = Vec3(0, 0, 0);
-    while (direction == Vec3(0, 0, 0))
-    {
-        direction = Vec3(one_one(generator), one_one(generator), one_one(generator));
-    }
-
-    direction = direction.norm();
-    direction = (direction.dot(normal) < 0) ? direction * -1 : direction;
-
-    return {{Ray(intersection, direction), 1.0}};
-}
-
-RayData Plane::calculateSepcular(const Ray& ray, const Vec3& intersection) const
-{
-    auto normal = ray.direction_.dot(planeVector_) < 0 ? planeVector_ * -1 : planeVector_;
-    auto reflectedDirection = ray.direction_ - normal * 2 * ray.direction_.dot(normal);
-    return {{Ray(intersection, reflectedDirection), 1.0}};
-}
-
-RayData Plane::calculateRefractive() const
-{
-    return {};
 }
 
 }  // namespace tracer::scene::objects

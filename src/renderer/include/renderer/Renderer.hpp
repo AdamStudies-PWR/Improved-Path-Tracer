@@ -20,7 +20,7 @@ public:
 private:
     containers::Vec3 samplePixel(const containers::Vec3& vecX, const containers::Vec3& vecZ, const uint32_t pixelX,
         const uint32_t pixelZ);
-    containers::Vec3 sendRay(const containers::Ray& ray, uint16_t depth);
+    containers::Vec3 sendRay(const containers::Ray& ray, uint8_t depth);
 
     const uint32_t samples_;
     scene::SceneData& sceneData_;
