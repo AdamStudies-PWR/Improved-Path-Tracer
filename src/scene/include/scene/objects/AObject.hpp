@@ -30,7 +30,7 @@ public:
 
 protected:
     RayData handleSpecular(const containers::Vec3& intersection, const containers::Vec3& incoming,
-        const containers::Vec3& normal) const;
+        const containers::Vec3& normal, std::mt19937& generator, const uint8_t depth) const;
     RayData handleDiffuse(const containers::Vec3& intersection, const containers::Vec3& normal,
         std::mt19937& generator) const;
     RayData handleRefractive(const containers::Vec3& intersection, const containers::Vec3& incoming,

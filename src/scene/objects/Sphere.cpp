@@ -46,8 +46,8 @@ RayData Sphere::calculateReflections(const Vec3& intersection, const Vec3& incom
 
     switch (reflection_)
     {
+    case Specular: return handleSpecular(intersection, incoming, normal, generator, depth);
     case Diffuse: return handleDiffuse(intersection, normal, generator);
-    case Specular: return handleSpecular(intersection, incoming, normal);
     case Refractive: return handleRefractive(intersection, incoming, normal, generator, depth);;
     default: std::cout << "Uknown reflection type" << std::endl;
     }

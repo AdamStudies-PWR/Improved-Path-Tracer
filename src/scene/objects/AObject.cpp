@@ -60,10 +60,28 @@ Vec3 AObject::getEmission() const { return emission_; }
 Vec3 AObject::getPosition() const { return position_; }
 EReflectionType AObject::getReflectionType() const { return reflection_; }
 
-RayData AObject::handleSpecular(const Vec3& intersection, const Vec3& incoming, const Vec3& normal) const
+RayData AObject::handleSpecular(const Vec3& intersection, const Vec3& incoming, const Vec3& normal,
+    std::mt19937& generator, const uint8_t depth) const
 {
     auto specular = calculateSpecular(incoming, normal);
-    return {{Ray(intersection, specular), 1.0}};
+    auto diffuse = calculateDiffuse(normal, generator);
+
+    if (depth < 2)
+    {
+        return {
+            {Ray(intersection, specular), 0.92},
+            {Ray(intersection, diffuse), 0.08}
+        };
+    }
+
+    if (zero_one(generator) > 0.9)
+    {
+        return {{Ray(intersection, diffuse), 1.0}};
+    }
+    else
+    {
+        return {{Ray(intersection, specular), 1.0}};
+    }
 }
 
 RayData AObject::handleDiffuse(const Vec3& intersection, const Vec3& normal, std::mt19937& generator) const
