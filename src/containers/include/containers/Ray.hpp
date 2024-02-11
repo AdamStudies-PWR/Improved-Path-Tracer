@@ -1,19 +1,20 @@
 #pragma once
 
-#include "containers/Vec.hpp"
+#include <ostream>
+
+#include "containers/Vec3.hpp"
 
 namespace tracer::containers
 {
 
-class Ray
+struct Ray
 {
-public:
-    Ray(Vec oo=Vec(), Vec dd=Vec());
+    Ray(Vec3 origin=Vec3(), Vec3 direction=Vec3());
 
     friend std::ostream& operator<<(std::ostream& os, const Ray& ray);
 
-    Vec oo_;
-    Vec dd_;
+    Vec3 origin_;
+    Vec3 direction_;
 };
 
 }  // namespace tracer::containers

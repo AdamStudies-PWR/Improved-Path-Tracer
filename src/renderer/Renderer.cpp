@@ -1,12 +1,11 @@
 #include "renderer/Renderer.hpp"
 
-#include <vector>
-#include <iostream>
-#include <algorithm>
-
 #include <omp.h>
 
-#include "scene/objects/AObject.hpp"
+//debug
+#include <iostream>
+#include <fstream>
+//
 
 namespace tracer::renderer
 {
@@ -15,145 +14,107 @@ namespace
 {
 using namespace containers;
 using namespace scene;
-using namespace scene::objects;
+
+const uint16_t VIEWPORT_DISTANCE = 140;
+const uint8_t MAX_DEPTH = 10;
+const float FOV_SCALE = 0.0009;
+
+std::uniform_real_distribution<> tent_filter(-1.0, 1.0);
 }  // namespace
 
-Renderer::Renderer(SceneData& sceneData, const int samples)
+Renderer::Renderer(SceneData& sceneData, const uint32_t samples)
     : samples_(samples)
     , sceneData_(sceneData)
-{}
-
-Vec Renderer::radiance(const Ray& ray, int depth, short unsigned int* xi)
 {
-    double temp;
-    int id = 0;
-
-    if (!intersect(ray, temp, id))
-    {
-        return Vec();
-    }
-
-    const auto object = sceneData_.getObjectAt(id);
-
-    Vec xx = ray.oo_ + ray.dd_ * temp;
-    Vec nn = (xx - object->getPosition()).norm();
-    Vec nl = nn.dot(ray.dd_) < 0 ? nn : nn * -1;
-    Vec ff = object->getColor();
-
-    double pp = ff.xx_ > ff.yy_ && ff.xx_ > ff.zz_ ? ff.xx_ : ff.yy_ > ff.zz_ ? ff.yy_ : ff.zz_;
-    if (++depth > 5)
-    {
-        if (erand48(xi) < pp)
-        {
-            ff = ff * (1/pp);
-        }
-        else return object->getEmission();
-    }
-
-    if (object->getReflectionType() == Diffuse)
-    {
-        double r1 = 2*M_PI*erand48(xi);
-        double r2 = erand48(xi);
-        double r2s = sqrt(r2);
-
-        Vec ww = nl;
-        Vec uu = ((fabs(ww.xx_) > 0.1 ? Vec(0, 1, 0) : Vec(1, 0, 0))%ww).norm();
-        Vec vv = ww%uu;
-        Vec dd = (uu*cos(r1)*r2s + vv*sin(r1)*r2s + ww*sqrt(1-r2)).norm();
-
-        return object->getEmission() + ff.mult(radiance(Ray(xx, dd), depth, xi));
-    }
-    else if (object->getReflectionType() == Specular)
-    {
-        return object->getEmission() + ff.mult(radiance(Ray(xx, ray.dd_ - nn*2*nn.dot(ray.dd_)), depth, xi));
-    }
-
-    Ray reflectedRay(xx, ray.dd_ - nn*2*nn.dot(ray.dd_));
-    bool into = nn.dot(nl) > 0;
-    double nc = 1;
-    double nt = 1.5;
-    double nnt = into ? nc/nt : nt/nc;
-    double ddn = ray.dd_.dot(nl);
-    double cos2t;
-
-    if ((cos2t=1-nnt*nnt*(1-ddn*ddn)) < 0)
-    {
-        return object->getEmission() + ff.mult(radiance(reflectedRay, depth, xi));
-    }
-
-    Vec tdir = (ray.dd_*nnt - nn*((into ? 1 : -1) * (ddn*nnt+sqrt(cos2t)))).norm();
-    double aa = nt - nc;
-    double bb = nt + nc;
-    double R0 = aa*aa/(bb*bb);
-    double cc = 1 - (into ? -ddn : tdir.dot(nn));
-    double Re = R0 + (1 - R0)*cc*cc*cc*cc*cc;
-    double Tr = 1 - Re;
-    double PP = 0.25 + 0.5 * Re;
-    double RP = Re/PP;
-    double TP = Tr/(1-PP);
-
-    return object->getEmission() + ff.mult(depth > 2 ? (erand48(xi) < PP ?
-        radiance(reflectedRay, depth, xi)*RP : radiance(Ray(xx, tdir), depth, xi)* TP) :
-        radiance(reflectedRay, depth, xi)*Re + radiance(Ray(xx, tdir), depth, xi)*Tr);
+    std::random_device rd;
+    std::mt19937 generator(rd());
+    generator_ = generator;
 }
 
-// refactor this !!!
-Vec* Renderer::render()
+std::vector<Vec3> Renderer::render()
 {
+    std::vector<Vec3> image (sceneData_.getWidth() * sceneData_.getHeight());
+
+    // Check why I need to copy and store the camera first?
     auto camera = sceneData_.getCamera();
-    Vec cx = Vec(sceneData_.getWidth()*0.5135/sceneData_.getHeight());
-    Vec cy = (cx%camera.dd_).norm()*0.5135;
-    Vec r;
-    Vec* c = new Vec[sceneData_.getWidth()*sceneData_.getHeight()];
+    const Vec3 vecZ = (camera.direction_%camera.orientation_).norm();
 
-    int counter = 0;
-    #pragma omp parallel for private(r)
-    for (uint32_t y=0; y < sceneData_.getHeight(); y++)
+    unsigned counter = 0;
+    #pragma omp parallel for
+    for (uint32_t z=0; z<sceneData_.getHeight(); z++)
     {
-        // printf("Thread %d is running number %d\n", omp_get_thread_num(), y);
-        fprintf(stderr,"\rRendering (%d samples) %5.2f%%",samples_*4,100.*counter/(sceneData_.getHeight()-1));
-        for (unsigned short x=0, Xi[3]={0, 0, (unsigned short)(y*y*y)}; x<sceneData_.getWidth(); x++)   // Loop cols
+        fprintf(stdout, "\rRendering %.2f%%", (counter * 100.)/(sceneData_.getHeight() - 1));
+        #pragma omp parallel for
+        for (uint32_t x=0; x<sceneData_.getWidth(); x++)
         {
-            for (int sy=0, i=(sceneData_.getHeight()-y-1)*sceneData_.getWidth()+x; sy<2; sy++)     // 2x2 subpixel rows
-            {
-                for (int sx=0; sx<2; sx++, r=Vec())
-                {        // 2x2 subpixel cols
-                    for (int s=0; s<samples_; s++)
-                    {
-                        double r1=2*erand48(Xi), dx=r1<1 ? sqrt(r1)-1: 1-sqrt(2-r1);
-                        double r2=2*erand48(Xi), dy=r2<1 ? sqrt(r2)-1: 1-sqrt(2-r2);
-                        Vec d = cx*( ( (sx+.5 + dx)/2 + x)/sceneData_.getWidth() - .5) +
-                                cy*( ( (sy+.5 + dy)/2 + y)/sceneData_.getHeight() - .5) + camera.dd_;
-                        r = r + radiance(Ray(camera.oo_+d*140,d.norm()), 0, Xi)*(1./samples_);
-                    } // Camera rays are pushed ^^^^^ forward to start in interior
-                    c[i] = c[i] + Vec(std::clamp(r.xx_, 0.0, 1.0), std::clamp(r.yy_, 0.0, 1.0),
-                        std::clamp(r.zz_, 0.0, 1.0))*0.25;
-                }
-            }
+            const auto index = z * sceneData_.getWidth() + x;
+            image[index] = samplePixel(camera.orientation_, vecZ, x, z);
         }
-
         counter++;
     }
 
-    return c;
+    return image;
 }
 
-bool Renderer::intersect(const Ray& ray, double& temp, int& id)
+Vec3 Renderer::samplePixel(const Vec3& vecX, const Vec3& vecZ, const uint32_t pixelX, const uint32_t pixelZ)
 {
-    const auto n = sceneData_.getObjectCount();
-    double dd;
-    double inf = temp = 1e20;
+    const auto center = sceneData_.getCamera().origin_;
+    const auto direction = sceneData_.getCamera().direction_;
 
-    for(int i = n; i--;)
+    auto correctionX = (sceneData_.getWidth() % 2 == 0) ? 0.5 : 0.0;
+    auto correctionZ = (sceneData_.getWidth() % 2 == 0) ? 0.5 : 0.0;
+    double stepX = (pixelX < sceneData_.getWidth()/2)
+        ? sceneData_.getWidth()/2 - pixelX - correctionX
+        : ((double)sceneData_.getWidth()/2 - pixelX - 1.0) + ((correctionX == 0.0) ? 1.0 : correctionX);
+    double stepZ = (pixelZ < sceneData_.getHeight()/2)
+        ? sceneData_.getHeight()/2 - pixelZ - correctionZ
+        : ((double)sceneData_.getHeight()/2 - pixelZ - 1.0) + ((correctionZ == 0.0) ? 1.0 : correctionZ);
+
+    const auto gaze = direction + vecX*stepX*FOV_SCALE + vecZ*stepZ*FOV_SCALE;
+
+    Vec3 pixel = Vec3();
+    for (uint32_t i=0; i<samples_; i++)
     {
-        if ((dd = sceneData_.getObjectAt(i)->intersect(ray)) && dd < temp)
-        {
-            temp = dd;
-            id = i;
-        }
+        // Tent filter
+        const auto xFactor = tent_filter(generator_);
+        const auto zFactor = tent_filter(generator_);
+        const auto tentFilter = vecX * xFactor + vecZ * zFactor;
+        // Tent filter
+
+        const auto origin = center + vecX*stepX + vecZ*stepZ + tentFilter;
+        pixel = pixel + sendRay(Ray(origin + direction * VIEWPORT_DISTANCE, gaze), 0);
     }
 
-    return temp < inf;
+    pixel.xx_ = pixel.xx_/samples_;
+    pixel.yy_ = pixel.yy_/samples_;
+    pixel.zz_ = pixel.zz_/samples_;
+
+    return pixel;
+}
+
+Vec3 Renderer::sendRay(const Ray& ray, uint8_t depth)
+{
+    if (depth > MAX_DEPTH) return Vec3();
+
+    const auto hitData = sceneData_.getHitObjectAndDistance(ray);
+    if (hitData.first == -1) return Vec3();
+
+    const auto& object = sceneData_.getObjectAt(hitData.first);
+
+    /*Some stopping condition based on reflectivness - should be random*/
+    /*Skipping for now*/
+
+    const auto intersection = ray.origin_ + ray.direction_ * hitData.second;
+    const auto reflectedRays = object->calculateReflections(intersection, ray.direction_, generator_, depth);
+
+    Vec3 path = Vec3();
+    ++depth;
+    for (const auto& reflectionData : reflectedRays)
+    {
+        path = path + sendRay(reflectionData.first, depth) * reflectionData.second;
+    }
+
+    return object->getEmission() + object->getColor().mult(path);
 }
 
 }  // namespace tracer::renderer

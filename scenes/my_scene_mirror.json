@@ -1,0 +1,286 @@
+{
+    "camera": {
+        "direction": {
+            "xx": 0.0,
+            "yy": 1.0,
+            "zz": 0.0
+        },
+        "orientation": {
+            "xx": -1.0,
+            "yy": 0.0,
+            "zz": 0.0
+        },
+        "position": {
+            "xx": 640.0,
+            "yy": 0.0,
+            "zz": 360.0
+        }
+    },
+    "height": 720,
+    "objects": [
+        {
+            "color": {
+                "xx": 0.75,
+                "yy": 0.75,
+                "zz": 0.75
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "position": {
+                "xx": 640.0,
+                "yy": 720.0,
+                "zz": 360.0
+            },
+            "north": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 370.0
+            },
+            "east": {
+                "xx": 650.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "reflection": 0,
+            "type": "plane"
+        },
+        {
+            "color": {
+                "xx": 0.75,
+                "yy": 0.25,
+                "zz": 0.25
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "position": {
+                "xx": 0.0,
+                "yy": 95.0,
+                "zz": 360.0
+            },
+            "north": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 370.0
+            },
+            "east": {
+                "xx": 0.0,
+                "yy": 640.0,
+                "zz": 0.0
+            },
+            "reflection": 0,
+            "type": "plane"
+        },
+        {
+            "color": {
+                "xx": 0.25,
+                "yy": 0.25,
+                "zz": 0.75
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "position": {
+                "xx": 1280.0,
+                "yy": 95.0,
+                "zz": 360.0
+            },
+            "north": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 370.0
+            },
+            "east": {
+                "xx": 0.0,
+                "yy": 640.0,
+                "zz": 0.0
+            },
+            "reflection": 0,
+            "type": "plane"
+        },
+        {
+            "color": {
+                "xx": 0.25,
+                "yy": 0.75,
+                "zz": 0.25
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "position": {
+                "xx": 640.0,
+                "yy": -540.0,
+                "zz": 360.0
+            },
+            "north": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 370.0
+            },
+            "east": {
+                "xx": -650.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "reflection": 0,
+            "type": "plane"
+        },
+        {
+            "color": {
+                "xx": 0.75,
+                "yy": 0.75,
+                "zz": 0.75
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "position": {
+                "xx": 640.0,
+                "yy": 95.0,
+                "zz": -5.0
+            },
+            "north": {
+                "xx": 0.0,
+                "yy": 640.0,
+                "zz": 0.0
+            },
+            "east": {
+                "xx": 650.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "reflection": 0,
+            "type": "plane"
+        },
+        {
+            "color": {
+                "xx": 0.75,
+                "yy": 0.75,
+                "zz": 0.75
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "position": {
+                "xx": 640.0,
+                "yy": 95.0,
+                "zz": 721.0
+            },
+            "north": {
+                "xx": 0.0,
+                "yy": 640.0,
+                "zz": 0.0
+            },
+            "east": {
+                "xx": -650.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "reflection": 0,
+            "type": "plane"
+        },
+        {
+            "color": {
+                "xx": 0.999,
+                "yy": 0.999,
+                "zz": 0.999
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "position": {
+                "xx": 390.0,
+                "yy": 520.0,
+                "zz": 150.0
+            },
+            "radius": 150.0,
+            "reflection": 1,
+            "type": "sphere"
+        },
+        {
+            "color": {
+                "xx": 0.999,
+                "yy": 0.999,
+                "zz": 0.999
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "position": {
+                "xx": 890.0,
+                "yy": 350.0,
+                "zz": 150.0
+            },
+            "radius": 150.0,
+            "reflection": 2,
+            "type": "sphere"
+        },
+        {
+            "color": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "emission": {
+                "xx": 20.0,
+                "yy": 20.0,
+                "zz": 20.0
+            },
+            "position": {
+                "xx": 640.0,
+                "yy": 380.0,
+                "zz": 1305.0
+            },
+            "radius": 600.0,
+            "reflection": 0,
+            "type": "sphere"
+        },
+        {
+            "color": {
+                "xx": 0.999,
+                "yy": 0.999,
+                "zz": 0.999
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "position": {
+                "xx": 320.0,
+                "yy": 200.0,
+                "zz": 360.0
+            },
+            "north": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 370.0
+            },
+            "east": {
+                "xx": 330.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "reflection": 2,
+            "type": "plane"
+        }
+    ],
+    "width": 1280
+}

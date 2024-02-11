@@ -2,7 +2,7 @@
 #include <iostream>
 #include <memory>
 
-#include "containers/Vec.hpp"
+#include "containers/Vec3.hpp"
 #include "renderer/Renderer.hpp"
 #include "scene/SceneData.hpp"
 #include "utils/Image.hpp"
@@ -32,11 +32,10 @@ int main(int argc, char* argv[])
     }
 
     auto renderer = std::make_shared<Renderer>(sceneData, inputParser.getSamplingRate());
-    const auto wrappedRender = [renderer]() -> Vec* {
+    const auto wrappedRender = [renderer]() -> const std::vector<Vec3> {
         return renderer->render();
     };
-
-    auto* image = measure(std::move(wrappedRender));
+    const auto image = measure(std::move(wrappedRender));
     saveImage(image, sceneData.getHeight(), sceneData.getWidth());
 
     return 0;
@@ -57,8 +56,8 @@ using json = nlohmann::json;
     j["height"] = 720;
 
     auto camera = sceneData.getCamera();
-    j["camera"]["position"] = {{"xx", camera.oo_.xx_}, {"yy", camera.oo_.yy_}, {"zz", camera.oo_.zz_}};
-    j["camera"]["direction"] = {{"xx", camera.dd_.xx_}, {"yy", camera.dd_.yy_}, {"zz", camera.dd_.zz_}};
+    j["camera"]["position"] = {{"xx", camera.origin_.xx_}, {"yy", camera.origin_.yy_}, {"zz", camera.origin_.zz_}};
+    j["camera"]["direction"] = {{"xx", camera.direction_.xx_}, {"yy", camera.direction_.yy_}, {"zz", camera.direction_.zz_}};
 
     std::vector<json> obj_array;
     for (const auto obj : sceneData.objects_)

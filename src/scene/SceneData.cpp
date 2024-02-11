@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 
+#include "objects/Plane.hpp"
 #include "objects/Sphere.hpp"
 
 namespace tracer::scene
@@ -13,6 +14,8 @@ namespace
 using json = nlohmann::json;
 using namespace containers;
 using namespace objects;
+
+const double INF = 1e20;
 
 json loadJsonFile(const std::string filename)
 {
@@ -28,7 +31,7 @@ json loadJsonFile(const std::string filename)
     return data;
 }
 
-bool validateVector(const json& vecData)
+bool validateVec3tor(const json& vecData)
 {
     return vecData.contains("xx") && vecData.contains("yy") && vecData.contains("yy");
 }
@@ -41,8 +44,8 @@ bool validateObject(const json& objectData)
         return false;
     }
 
-    if (not validateVector(objectData["color"]) || not validateVector(objectData["emission"])
-        || not validateVector(objectData["position"]))
+    if (not validateVec3tor(objectData["color"]) || not validateVec3tor(objectData["emission"])
+        || not validateVec3tor(objectData["position"]))
     {
         return false;
     }
@@ -53,7 +56,10 @@ bool validateObject(const json& objectData)
 
 SceneData::SceneData(const std::string& jsonPath)
     : jsonPath_(jsonPath)
-{}
+{
+    typeToHandler_["sphere"] = &SceneData::addSpehere;
+    typeToHandler_["plane"] = &SceneData::addPlane;
+}
 
 bool SceneData::initScene()
 {
@@ -92,11 +98,28 @@ bool SceneData::initScene()
     return true;
 }
 
-Ray SceneData::getCamera() const { return camera_; }
-int SceneData::getObjectCount() const { return objects_.size(); }
+Camera SceneData::getCamera() const { return camera_; }
 std::shared_ptr<AObject> SceneData::getObjectAt(int id) const { return objects_.at(id); }
 uint32_t SceneData::getWidth() const { return width_; }
 uint32_t SceneData::getHeight() const { return height_; }
+
+std::pair<int, double> SceneData::getHitObjectAndDistance(const Ray& ray) const
+{
+    int index = -1;
+    double distance = INF;
+
+    for (const auto& object : objects_)
+    {
+        auto temp = object->intersect(ray);
+        if (temp && temp < distance)
+        {
+            distance = temp;
+            index = &object - &objects_[0];
+        }
+    }
+
+    return {index, distance};
+}
 
 bool SceneData::loadBasicSceneData(const json& jsonData)
 {
@@ -121,23 +144,26 @@ bool SceneData::loadCamera(const nlohmann::json& jsonData)
     }
 
     const auto cameraData = jsonData["camera"];
-    if (not cameraData.contains("direction") || not cameraData.contains("position"))
+    if (not cameraData.contains("direction") or not cameraData.contains("position")
+        or not cameraData.contains("orientation"))
     {
-        std::cout << "Camera data contains no direction or position!" << std::endl;
+        std::cout << "Camera data could not be read!" << std::endl;
         return false;
     }
 
     const auto directionData = cameraData["direction"];
     const auto positionData = cameraData["position"];
+    const auto orientationData = cameraData["orientation"];
 
-    if (not validateVector(directionData) || not validateVector(positionData))
+    if (not validateVec3tor(directionData) or not validateVec3tor(positionData) or not validateVec3tor(orientationData))
     {
-        std::cout << "Damaged position or direction vector!" << std::endl;
+        std::cout << "Camera data could not be parsed!" << std::endl;
         return false;
     }
 
-    camera_ = Ray(Vec(positionData["xx"], positionData["yy"], positionData["zz"]),
-                  Vec(directionData["xx"], directionData["yy"], directionData["zz"]));
+    camera_ = Camera(Vec3(positionData["xx"], positionData["yy"], positionData["zz"]),
+                  Vec3(directionData["xx"], directionData["yy"], directionData["zz"]).norm(),
+                  Vec3(orientationData["xx"], orientationData["yy"], orientationData["zz"]).norm());
 
     return true;
 }
@@ -158,9 +184,9 @@ bool SceneData::loadObjects(const nlohmann::json& jsonData)
             return false;
         }
 
-        if (object["type"] == "sphere")
+        if (typeToHandler_[object["type"]])
         {
-            if (not addSpehere(object))
+            if (not (this->*typeToHandler_[object["type"]])(object))
             {
                 return false;
             }
@@ -179,7 +205,7 @@ bool SceneData::addSpehere(const json& sphereData)
 {
     if (not sphereData.contains("radius"))
     {
-        std::cout << " Broken sphere object! " << std::endl;
+        std::cout << "Broken sphere object! " << std::endl;
         return false;
     }
 
@@ -188,23 +214,47 @@ bool SceneData::addSpehere(const json& sphereData)
     const auto emission = sphereData["emission"];
 
     objects_.push_back(std::make_shared<Sphere>(sphereData["radius"],
-                                                Vec(position["xx"], position["yy"], position["zz"]),
-                                                Vec(emission["xx"], emission["yy"], emission["zz"]),
-                                                Vec(color["xx"], color["yy"], color["zz"]),
+                                                Vec3(position["xx"], position["yy"], position["zz"]),
+                                                Vec3(emission["xx"], emission["yy"], emission["zz"]),
+                                                Vec3(color["xx"], color["yy"], color["zz"]),
                                                 EReflectionType(sphereData["reflection"])));
+
+    return true;
+}
+
+bool SceneData::addPlane(const json& planeData)
+{
+    if (not planeData.contains("north") or not planeData.contains("east"))
+    {
+        std::cout << "Broken plane object! " << std::endl;
+        return false;
+    }
+
+    const auto north = planeData["north"];
+    const auto east = planeData["east"];
+    const auto position = planeData["position"];
+    const auto color = planeData["color"];
+    const auto emission = planeData["emission"];
+
+    objects_.push_back(std::make_shared<Plane>(Vec3(north["xx"], north["yy"], north["zz"]),
+                                               Vec3(east["xx"], east["yy"], east["zz"]),
+                                               Vec3(position["xx"], position["yy"], position["zz"]),
+                                               Vec3(emission["xx"], emission["yy"], emission["zz"]),
+                                               Vec3(color["xx"], color["yy"], color["zz"]),
+                                               EReflectionType(planeData["reflection"])));
 
     return true;
 }
 
 }  // namespace tracer::scene
 
-// camera_ = Ray(Vec(50, 52, 295.6), Vec(0, -0.042612, -1).norm());
-// objects_.push_back(std::make_shared<Sphere>(1e5, Vec(1e5-9, 40.8, 81.6), Vec(), Vec(0.75, 0.25, 0.25), Diffuse));       // Left Wall
-// objects_.push_back(std::make_shared<Sphere>(1e5, Vec(-1e5+109, 40.8, 81.6), Vec(), Vec(0.25, 0.25, 0.75), Diffuse));    // Right Wall
-// objects_.push_back(std::make_shared<Sphere>(1e5, Vec(50, 40.8, 1e5), Vec(), Vec(0.75, 0.75, 0.75), Diffuse));           // Back Wall
-// objects_.push_back(std::make_shared<Sphere>(1e5, Vec(50, 40.8, -1e5+175), Vec(), Vec(0, 0.44, 0), Diffuse));            // Wall behind camera?
-// objects_.push_back(std::make_shared<Sphere>(1e5, Vec(50, 1e5, 81.6), Vec(), Vec(0.75, 0.75, 0.75), Diffuse));           // Floor
-// objects_.push_back(std::make_shared<Sphere>(1e5, Vec(50, -1e5+81.6, 81.6), Vec(), Vec(0.75, 0.75, 0.75), Diffuse));     // Ceiling
-// objects_.push_back(std::make_shared<Sphere>(16.5, Vec(27, 16.5, 47), Vec(), Vec(1, 1, 1) * 0.999, Specular));           // Left Orb (Mirror like)
-// objects_.push_back(std::make_shared<Sphere>(16.5, Vec(73, 16.5, 78), Vec(), Vec(1, 1, 1) * 0.999, Refractive));         // Right Orb (Glass ?)
-// objects_.push_back(std::make_shared<Sphere>(600, Vec(50, 681.6-.27, 81.6), Vec(12, 12, 12), Vec(), Diffuse));           // Light source
+// camera_ = Ray(Vec3(50, 52, 295.6), Vec3(0, -0.042612, -1).norm());
+// objects_.push_back(std::make_shared<Sphere>(1e5, Vec3(1e5-9, 40.8, 81.6), Vec3(), Vec3(0.75, 0.25, 0.25), Diffuse));       // Left Wall
+// objects_.push_back(std::make_shared<Sphere>(1e5, Vec3(-1e5+109, 40.8, 81.6), Vec3(), Vec3(0.25, 0.25, 0.75), Diffuse));    // Right Wall
+// objects_.push_back(std::make_shared<Sphere>(1e5, Vec3(50, 40.8, 1e5), Vec3(), Vec3(0.75, 0.75, 0.75), Diffuse));           // Back Wall
+// objects_.push_back(std::make_shared<Sphere>(1e5, Vec3(50, 40.8, -1e5+175), Vec3(), Vec3(0, 0.44, 0), Diffuse));            // Wall behind camera?
+// objects_.push_back(std::make_shared<Sphere>(1e5, Vec3(50, 1e5, 81.6), Vec3(), Vec3(0.75, 0.75, 0.75), Diffuse));           // Floor
+// objects_.push_back(std::make_shared<Sphere>(1e5, Vec3(50, -1e5+81.6, 81.6), Vec3(), Vec3(0.75, 0.75, 0.75), Diffuse));     // Ceiling
+// objects_.push_back(std::make_shared<Sphere>(16.5, Vec3(27, 16.5, 47), Vec3(), Vec3(1, 1, 1) * 0.999, Specular));           // Left Orb (Mirror like)
+// objects_.push_back(std::make_shared<Sphere>(16.5, Vec3(73, 16.5, 78), Vec3(), Vec3(1, 1, 1) * 0.999, Refractive));         // Right Orb (Glass ?)
+// objects_.push_back(std::make_shared<Sphere>(600, Vec3(50, 681.6-.27, 81.6), Vec3(12, 12, 12), Vec3(), Diffuse));           // Light source

@@ -5,9 +5,9 @@ namespace tracer::scene::objects
 
 enum EReflectionType
 {
-    Diffuse,
-    Specular,
-    Refractive
+    Diffuse,  // Zwykłe odbicie
+    Specular,  // Odbicie Lustrzane
+    Refractive  // Szkło
 };
 
 }  // namespace tracer::scene::objects

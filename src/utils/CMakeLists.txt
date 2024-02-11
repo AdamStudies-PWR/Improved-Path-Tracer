@@ -13,7 +13,10 @@ target_include_directories(${PROJECT_NAME}
         include
 )
 
+find_package(ImageMagick REQUIRED COMPONENTS Magick++)
+
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
         tracer-containers
+        ImageMagick::Magick++
 )

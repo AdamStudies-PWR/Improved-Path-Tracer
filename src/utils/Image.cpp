@@ -4,36 +4,55 @@
 #include <cstdio>
 #include <iostream>
 #include <math.h>
+#include <string>
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// TODO: This will require refactoring - I want to save as png
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#include <Magick++.h>
 
 namespace tracer::utils
 {
 
 namespace
 {
+using namespace Magick;
 using namespace containers;
 
-inline int toInt(double x)
+int toRgb(double x)
 {
-    return int(pow(std::clamp(x, 0.0, 1.0), 1/2.2) * 255 + 0.5);
+    return std::clamp(int(x * 255), 0, 255);
+}
+
+void getRgbArray(unsigned char* target, const std::vector<Vec3> image)
+{
+    int i = 0;
+    for (const auto pixel : image)
+    {
+        target[i] = toRgb(pixel.xx_);
+        target[i + 1] = toRgb(pixel.yy_);
+        target[i + 2] = toRgb(pixel.zz_);
+        i = i + 3;
+
+        if ((long unsigned int)i >= (image.size() * 3)) break;
+    }
 }
 }  // namespace
 
-void saveImage(Vec* image, int height, int width)
+void saveImage(const std::vector<Vec3>& image, const uint32_t height, const uint32_t width)
 {
-    std::cout << __func__ << " - saving render..." << std::endl;
+    std::cout << "Saving Image..." << std::endl;
 
-    FILE *f = fopen("image.ppm", "w");         // Write image to PPM file.
-    fprintf(f, "P3\n%d %d\n%d\n", width, height, 255);
-    for (int i=0; i<(width*height); i++)
+    if (width*height != image.size())
     {
-        fprintf(f,"%d %d %d ", toInt(image[i].xx_), toInt(image[i].yy_), toInt(image[i].zz_));
+        std::cout << "Error saving image! Size missmatch!" << std::endl;
+        return;
     }
 
-    std::cout << __func__ << " - Done" << std::endl;
+    unsigned char pixelArray[image.size() * 3];
+    getRgbArray(pixelArray, image);
+
+    InitializeMagick({});
+    Image pngImage;
+    pngImage.read(width, height, "RGB", Magick::CharPixel, pixelArray);
+    pngImage.write("image.png");
 }
 
 }  // namespace tracer::utils
