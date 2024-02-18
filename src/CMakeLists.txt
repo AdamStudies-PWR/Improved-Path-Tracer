@@ -4,7 +4,7 @@ add_subdirectory(scene)
 add_subdirectory(utils)
 
 add_executable(tracer
-    main.cpp
+    main.cu
 )
 
 target_link_libraries(tracer

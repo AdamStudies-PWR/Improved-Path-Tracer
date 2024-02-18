@@ -7,9 +7,20 @@
 namespace tracer::containers
 {
 
+#ifndef __device__
+#define __device__
+#endif
+
+#ifndef __host__
+#define __host__
+#endif
+
 struct Ray
 {
-    Ray(Vec3 origin=Vec3(), Vec3 direction=Vec3());
+    __host__ __device__ Ray(Vec3 origin=Vec3(), Vec3 direction=Vec3())
+        : origin_(origin)
+        , direction_(direction)
+    {}
 
     friend std::ostream& operator<<(std::ostream& os, const Ray& ray);
 

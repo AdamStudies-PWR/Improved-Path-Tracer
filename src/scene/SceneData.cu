@@ -3,9 +3,6 @@
 #include <fstream>
 #include <iostream>
 
-#include "objects/Plane.hpp"
-#include "objects/Sphere.hpp"
-
 namespace tracer::scene
 {
 
@@ -14,8 +11,6 @@ namespace
 using json = nlohmann::json;
 using namespace containers;
 using namespace objects;
-
-const double INF = 1e20;
 
 json loadJsonFile(const std::string filename)
 {
@@ -52,7 +47,29 @@ bool validateObject(const json& objectData)
 
     return true;
 }
+
 }  // namespace
+
+ObjectData::ObjectData(const char objectType[], double radius, Vec3 position, Vec3 emission, Vec3 color,
+    EReflectionType reflectionType)
+    : objectType_(objectType)
+    , radius_(radius)
+    , position_(position)
+    , emission_(emission)
+    , color_(color)
+    , reflectionType_(reflectionType)
+{}
+
+ObjectData::ObjectData(const char objectType[], Vec3 north, Vec3 east, Vec3 position, Vec3 emission, Vec3 color,
+    EReflectionType reflectionType)
+    : objectType_(objectType)
+    , north_(north)
+    , east_(east)
+    , position_(position)
+    , emission_(emission)
+    , color_(color)
+    , reflectionType_(reflectionType)
+{}
 
 SceneData::SceneData(const std::string& jsonPath)
     : jsonPath_(jsonPath)
@@ -87,7 +104,7 @@ bool SceneData::initScene()
         return false;
     }
 
-    if (objects_.empty())
+    if (objectCount_ <= 0)
     {
         std::cout << "Object list empty! Cannot build scene" << std::endl;
         return false;
@@ -96,29 +113,6 @@ bool SceneData::initScene()
     std::cout << "Data loaded successfully" << std::endl;
 
     return true;
-}
-
-Camera SceneData::getCamera() const { return camera_; }
-std::shared_ptr<AObject> SceneData::getObjectAt(int id) const { return objects_.at(id); }
-uint32_t SceneData::getWidth() const { return width_; }
-uint32_t SceneData::getHeight() const { return height_; }
-
-std::pair<int, double> SceneData::getHitObjectAndDistance(const Ray& ray) const
-{
-    int index = -1;
-    double distance = INF;
-
-    for (const auto& object : objects_)
-    {
-        auto temp = object->intersect(ray);
-        if (temp && temp < distance)
-        {
-            distance = temp;
-            index = &object - &objects_[0];
-        }
-    }
-
-    return {index, distance};
 }
 
 bool SceneData::loadBasicSceneData(const json& jsonData)
@@ -176,6 +170,8 @@ bool SceneData::loadObjects(const nlohmann::json& jsonData)
         return false;
     }
 
+    std::vector<ObjectData*> container;
+
     for (const auto& object : jsonData["objects"])
     {
         if (not validateObject(object))
@@ -186,7 +182,7 @@ bool SceneData::loadObjects(const nlohmann::json& jsonData)
 
         if (typeToHandler_[object["type"]])
         {
-            if (not (this->*typeToHandler_[object["type"]])(object))
+            if (not (this->*typeToHandler_[object["type"]])(object, container))
             {
                 return false;
             }
@@ -198,10 +194,19 @@ bool SceneData::loadObjects(const nlohmann::json& jsonData)
         }
     }
 
+    objectCount_ = container.size();
+    objectsData_ = container.data();
+
+    for (uint32_t i=0; i < objectCount_; i++)
+    {
+        // std::cout << " Val: " << objectsData_[i]->objectType_ << std::endl;
+        printf("Sanity check: %s\n", objectsData_[i]->objectType_);
+    }
+
     return true;
 }
 
-bool SceneData::addSpehere(const json& sphereData)
+bool SceneData::addSpehere(const json& sphereData, std::vector<ObjectData*>& container)
 {
     if (not sphereData.contains("radius"))
     {
@@ -213,16 +218,17 @@ bool SceneData::addSpehere(const json& sphereData)
     const auto color = sphereData["color"];
     const auto emission = sphereData["emission"];
 
-    objects_.push_back(std::make_shared<Sphere>(sphereData["radius"],
-                                                Vec3(position["xx"], position["yy"], position["zz"]),
-                                                Vec3(emission["xx"], emission["yy"], emission["zz"]),
-                                                Vec3(color["xx"], color["yy"], color["zz"]),
-                                                EReflectionType(sphereData["reflection"])));
+    ObjectData* sphere = new ObjectData("Sphere", sphereData["radius"],
+                                        Vec3(position["xx"], position["yy"], position["zz"]),
+                                        Vec3(emission["xx"], emission["yy"], emission["zz"]),
+                                        Vec3(color["xx"], color["yy"], color["zz"]),
+                                        EReflectionType(sphereData["reflection"]));
+    container.push_back(sphere);
 
     return true;
 }
 
-bool SceneData::addPlane(const json& planeData)
+bool SceneData::addPlane(const json& planeData, std::vector<ObjectData*>& container)
 {
     if (not planeData.contains("north") or not planeData.contains("east"))
     {
@@ -236,12 +242,13 @@ bool SceneData::addPlane(const json& planeData)
     const auto color = planeData["color"];
     const auto emission = planeData["emission"];
 
-    objects_.push_back(std::make_shared<Plane>(Vec3(north["xx"], north["yy"], north["zz"]),
-                                               Vec3(east["xx"], east["yy"], east["zz"]),
-                                               Vec3(position["xx"], position["yy"], position["zz"]),
-                                               Vec3(emission["xx"], emission["yy"], emission["zz"]),
-                                               Vec3(color["xx"], color["yy"], color["zz"]),
-                                               EReflectionType(planeData["reflection"])));
+    ObjectData* plane = new ObjectData("Plane", Vec3(north["xx"], north["yy"], north["zz"]),
+                                       Vec3(east["xx"], east["yy"], east["zz"]),
+                                       Vec3(position["xx"], position["yy"], position["zz"]),
+                                       Vec3(emission["xx"], emission["yy"], emission["zz"]),
+                                       Vec3(color["xx"], color["yy"], color["zz"]),
+                                       EReflectionType(planeData["reflection"]));
+    container.push_back(plane);
 
     return true;
 }

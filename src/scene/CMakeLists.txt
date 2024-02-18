@@ -1,11 +1,9 @@
 project(tracer-scene)
 
 set(SOURCES
-    objects/AObject.cpp
+    objects/AObject.cu
     objects/Camera.cpp
-    objects/Plane.cpp
-    objects/Sphere.cpp
-    SceneData.cpp
+    SceneData.cu
 )
 
 add_library(${PROJECT_NAME})

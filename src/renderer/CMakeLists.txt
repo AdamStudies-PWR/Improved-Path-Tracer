@@ -15,4 +15,5 @@ target_link_libraries(${PROJECT_NAME}
     PRIVATE
         tracer-containers
         tracer-scene
+        tracer-utils
 )
