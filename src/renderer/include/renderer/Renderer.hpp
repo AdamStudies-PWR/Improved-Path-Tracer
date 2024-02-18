@@ -10,6 +10,20 @@
 namespace tracer::renderer
 {
 
+#ifndef __device__
+#define __device__
+#endif
+
+struct Coordinates
+{
+    __device__ Coordinates(uint32_t xx, uint32_t zz, uint32_t loopX, uint32_t loopZ);
+
+    uint32_t xx_;
+    uint32_t zz_;
+    uint32_t loopX_;
+    uint32_t loopZ_;
+};
+
 class Renderer
 {
 public:
@@ -18,7 +32,7 @@ public:
     std::vector<containers::Vec3> render();
 
 private:
-    containers::Vec3 samplePixel(const containers::Vec3& vecX, const containers::Vec3& vecZ, const uint32_t pixelX,
+    containers::Vec3 samplePixel2(const containers::Vec3& vecX, const containers::Vec3& vecZ, const uint32_t pixelX,
         const uint32_t pixelZ);
     containers::Vec3 sendRay(const containers::Ray& ray, uint8_t depth);
 

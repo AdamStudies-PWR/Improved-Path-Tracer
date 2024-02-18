@@ -5,9 +5,11 @@
 #include "containers/Vec3.hpp"
 #include "renderer/Renderer.hpp"
 #include "scene/SceneData.hpp"
+#include "utils/CudaUtils.hpp"
 #include "utils/Image.hpp"
 #include "utils/Measurements.hpp"
 #include "utils/InputParser.hpp"
+
 
 namespace
 {
@@ -19,6 +21,11 @@ using namespace tracer::utils;
 
 int main(int argc, char* argv[])
 {
+    if (not checkCudaSupport())
+    {
+        return 0;
+    }
+
     InputParser inputParser((argc - 1), argv);
     if (not inputParser.isInputValid())
     {

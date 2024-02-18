@@ -22,4 +22,6 @@ FetchContent_MakeAvailable(json)
 
 project(tracer)
 
+enable_language(CUDA)
+
 add_subdirectory(src)

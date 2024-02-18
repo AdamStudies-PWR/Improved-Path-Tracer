@@ -1,11 +1,8 @@
 #include "renderer/Renderer.hpp"
 
-#include <omp.h>
-
-//debug
 #include <iostream>
-#include <fstream>
-//
+
+// #include "utils/CudaUtils.hpp"
 
 namespace tracer::renderer
 {
@@ -19,8 +16,59 @@ const uint16_t VIEWPORT_DISTANCE = 140;
 const uint8_t MAX_DEPTH = 10;
 const float FOV_SCALE = 0.0009;
 
+__device__ const uint32_t BLOCK_SIZE = 1024;
+
 std::uniform_real_distribution<> tent_filter(-1.0, 1.0);
+
+__device__ Coordinates calculateCoordinates(const uint32_t idX, const uint32_t idZ,
+    const uint32_t width, const uint32_t height)
+{
+    if (width <= BLOCK_SIZE && height <= BLOCK_SIZE)
+    {
+        return Coordinates(idX, idZ, 0, 0);
+    }
+
+    const uint32_t xAddition = width % BLOCK_SIZE;
+    const uint32_t zAddition = height % BLOCK_SIZE;
+    auto xStepping = width/BLOCK_SIZE;
+    auto zStepping = height/BLOCK_SIZE;
+
+    auto pixelX = idX * xStepping + ((idX > xAddition) ? xAddition : idX);
+    auto pixelZ = idZ * zStepping + ((idZ > zAddition) ? zAddition : idZ);
+
+    xStepping = xStepping + ((xAddition <= 0) ? 0 : ((idX < xAddition) ? 1 : 0));
+    zStepping = zStepping + ((zAddition <= 0) ? 0 : ((idZ < zAddition) ? 1 : 0));
+
+    return Coordinates(pixelX, pixelZ, xStepping, zStepping);
+}
+
+__global__ void samplePixel(Vec3* image, const uint32_t width, const uint32_t height)
+{
+    const auto coordinates = calculateCoordinates(threadIdx.x, blockIdx.x, width, height);
+    const auto limitZ = coordinates.zz_ + coordinates.loopZ_ + 1;
+    const auto limitX = coordinates.xx_ + coordinates.loopX_ + 1;
+
+    for (uint32_t z=coordinates.zz_; z<limitZ; z++)
+    {
+        for (uint32_t x=coordinates.xx_; x<limitX; x++)
+        {
+            const auto index = z * width + x;
+            image[index].xx_ = 255;
+            image[index].yy_ = 255;
+            image[index].zz_ = 255;
+        }
+    }
+}
+
+
 }  // namespace
+
+__device__ Coordinates::Coordinates(uint32_t xx, uint32_t zz, uint32_t loopX, uint32_t loopZ)
+    : xx_(xx)
+    , zz_(zz)
+    , loopX_(loopX)
+    , loopZ_(loopZ)
+{}
 
 Renderer::Renderer(SceneData& sceneData, const uint32_t samples)
     : samples_(samples)
@@ -33,18 +81,34 @@ Renderer::Renderer(SceneData& sceneData, const uint32_t samples)
 
 std::vector<Vec3> Renderer::render()
 {
-    std::vector<Vec3> image (sceneData_.getWidth() * sceneData_.getHeight());
-
-    // Check why I need to copy and store the camera first?
     auto camera = sceneData_.getCamera();
     const Vec3 vecZ = (camera.direction_%camera.orientation_).norm();
 
-    unsigned counter = 0;
-    #pragma omp parallel for
+    const auto imageSize = sceneData_.getHeight() * sceneData_.getWidth() * sizeof(Vec3);
+    Vec3* devImage;
+    cudaMalloc((void**)&devImage, imageSize);
+    cudaMemset(devImage, 0, imageSize);
+
+    const auto numBlocks = (sceneData_.getHeight() <= BLOCK_SIZE) ? sceneData_.getHeight() : BLOCK_SIZE;
+    const auto numThreads = (sceneData_.getWidth() <= BLOCK_SIZE) ? sceneData_.getWidth() : BLOCK_SIZE;
+
+    samplePixel <<<numBlocks, 1024>>> (devImage, sceneData_.getWidth(), sceneData_.getHeight());
+
+    Vec3* imagePtr = (Vec3*)malloc(imageSize);
+    cudaMemcpy(imagePtr, devImage, imageSize, cudaMemcpyDeviceToHost);
+    cudaFree(devImage);
+
+    std::vector<Vec3> image;
+    for (uint32_t iter = 0; iter < sceneData_.getHeight() * sceneData_.getWidth(); iter++)
+    {
+        //if (imagePtr[iter].xx_ != 0.0) std::cout << "It worked! " << std::endl;
+        image.push_back(imagePtr[iter]);
+    }
+
+    /*unsigned counter = 0;
     for (uint32_t z=0; z<sceneData_.getHeight(); z++)
     {
         fprintf(stdout, "\rRendering %.2f%%", (counter * 100.)/(sceneData_.getHeight() - 1));
-        #pragma omp parallel for
         for (uint32_t x=0; x<sceneData_.getWidth(); x++)
         {
             const auto index = z * sceneData_.getWidth() + x;
@@ -53,10 +117,13 @@ std::vector<Vec3> Renderer::render()
         counter++;
     }
 
+    return image;*/
+
+    free(imagePtr);
     return image;
 }
 
-Vec3 Renderer::samplePixel(const Vec3& vecX, const Vec3& vecZ, const uint32_t pixelX, const uint32_t pixelZ)
+Vec3 Renderer::samplePixel2(const Vec3& vecX, const Vec3& vecZ, const uint32_t pixelX, const uint32_t pixelZ)
 {
     const auto center = sceneData_.getCamera().origin_;
     const auto direction = sceneData_.getCamera().direction_;

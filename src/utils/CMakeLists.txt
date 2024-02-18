@@ -1,6 +1,7 @@
 project(tracer-utils)
 
 set(SOURCES
+    CudaUtils.cu
     Image.cpp
     InputParser.cpp
     Measurements.cpp
