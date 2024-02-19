@@ -13,6 +13,7 @@
 #include "containers/Vec3.hpp"
 #include "scene/objects/Camera.hpp"
 #include "scene/objects/EReflectionType.hpp"
+#include "scene/objects/ObjectData.hpp"
 
 namespace tracer::scene
 {
@@ -26,31 +27,13 @@ namespace tracer::scene
 
 struct HitData
 {
-    __device__ HitData(int index, double distance)
+    HitData(int index, double distance)
         : index_(index)
         , distance_(distance)
     {}
 
     int index_;
     double distance_;
-};
-
-struct ObjectData
-{
-    ObjectData(const char objectType[], double radius, containers::Vec3 position, containers::Vec3 emission,
-        containers::Vec3 color, objects::EReflectionType reflectionType);
-
-    ObjectData(const char objectType[], containers::Vec3 north, containers::Vec3 east, containers::Vec3 position,
-        containers::Vec3 emission, containers::Vec3 color, objects::EReflectionType reflectionType);
-
-    const char* objectType_;
-    double radius_;
-    containers::Vec3 north_;
-    containers::Vec3 east_;
-    containers::Vec3 position_;
-    containers::Vec3 emission_;
-    containers::Vec3 color_;
-    objects::EReflectionType reflectionType_;
 };
 
 class SceneData
@@ -62,12 +45,12 @@ public:
 
     // __device__ objects::AObject* getObjectAt(int id) { return objects_[id]; };
 
-    __device__ HitData getHitObjectAndDistance(const containers::Ray& ray) const
+    HitData getHitObjectAndDistance(const containers::Ray& /*ray*/) const
     {
         int index = -1;
         double distance = 1e20;
 
-        for (uint32_t i=0; i<objectCount_; i++)
+        for (uint32_t i=0; i<objectsData_.size(); i++)
         {
             // printf("Worke\n");
             auto temp = 0.0;
@@ -93,27 +76,19 @@ public:
     __host__ __device__ objects::Camera getCamera() const { return camera_; }
     __host__ __device__ uint32_t getWidth() const { return width_; }
     __host__ __device__ uint32_t getHeight() const { return height_; }
-    __device__ ObjectData** getObjectsData() const
-    {
-        for (uint32_t i=0; i<objectCount_; i++)
-        {
-            printf("Check2: %s\n", objectsData_[i]->objectType_);
-        }
-        return objectsData_; }
-    __host__ __device__ uint32_t getObjectCount() const { return objectCount_; }
+    std::vector<objects::ObjectData*> getObjectsData() const { return objectsData_; }
 
 private:
     bool loadBasicSceneData(const nlohmann::json& jsonData);
     bool loadCamera(const nlohmann::json& jsonData);
     bool loadObjects(const nlohmann::json& jsonData);
-    bool addSpehere(const nlohmann::json& sphereData, std::vector<ObjectData*>& container);
-    bool addPlane(const nlohmann::json& planeData, std::vector<ObjectData*>& container);
+    bool addSpehere(const nlohmann::json& sphereData);
+    bool addPlane(const nlohmann::json& planeData);
 
     const std::string jsonPath_;
     objects::Camera camera_;
-    std::map<std::string, bool (SceneData::*)(const nlohmann::json&, std::vector<ObjectData*>&)> typeToHandler_;
-    ObjectData** objectsData_;
-    uint32_t objectCount_;
+    std::map<std::string, bool (SceneData::*)(const nlohmann::json&)> typeToHandler_;
+    std::vector<objects::ObjectData*> objectsData_;
     uint32_t height_;
     uint32_t width_;
 };

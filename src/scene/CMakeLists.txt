@@ -3,6 +3,7 @@ project(tracer-scene)
 set(SOURCES
     objects/AObject.cu
     objects/Camera.cpp
+    objects/ObjectData.cpp
     SceneData.cu
 )
 

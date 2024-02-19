@@ -2,6 +2,7 @@ project(tracer-renderer)
 
 set(SOURCES
     Renderer.cu
+    RenderController.cu
 )
 
 add_library(${PROJECT_NAME})

@@ -3,7 +3,7 @@
 #include <memory>
 
 #include "containers/Vec3.hpp"
-#include "renderer/Renderer.hpp"
+#include "renderer/RenderController.hpp"
 #include "scene/SceneData.hpp"
 #include "utils/CudaUtils.hpp"
 #include "utils/Image.hpp"
@@ -38,9 +38,9 @@ int main(int argc, char* argv[])
         return 0;
     }
 
-    auto renderer = std::make_shared<Renderer>(sceneData, inputParser.getSamplingRate());
-    const auto wrappedRender = [renderer]() -> const std::vector<Vec3> {
-        return renderer->render();
+    auto controller = std::make_shared<RenderContoller>(sceneData, inputParser.getSamplingRate());
+    const auto wrappedRender = [controller]() -> const std::vector<Vec3> {
+        return controller->start();
     };
     const auto image = measure(std::move(wrappedRender));
     saveImage(image, sceneData.getHeight(), sceneData.getWidth());

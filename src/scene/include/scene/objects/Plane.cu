@@ -26,8 +26,8 @@ __device__ double distanceToBorder(const containers::Vec3& origin, const contain
 class Plane : public AObject
 {
 public:
-    __device__ Plane(containers::Vec3 north, containers::Vec3 east, containers::Vec3 position, containers::Vec3 emission,
-        containers::Vec3 color, EReflectionType reflection)
+    __device__ Plane(containers::Vec3 north, containers::Vec3 east, containers::Vec3 position,
+        containers::Vec3 emission, containers::Vec3 color, EReflectionType reflection)
         : AObject(position, emission, color, reflection)
     {
         planeVector_ = (north % east).norm();
