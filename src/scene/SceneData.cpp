@@ -95,6 +95,11 @@ bool SceneData::initScene()
     return true;
 }
 
+objects::Camera SceneData::getCamera() const { return camera_; }
+uint32_t SceneData::getWidth() const { return width_; }
+uint32_t SceneData::getHeight() const { return height_; }
+std::vector<ObjectData*> SceneData::getObjectsData() const { return objectsData_; }
+
 bool SceneData::loadBasicSceneData(const json& jsonData)
 {
     if (not jsonData.contains("height") || not jsonData.contains("width"))

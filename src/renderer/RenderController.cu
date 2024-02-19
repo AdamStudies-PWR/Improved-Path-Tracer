@@ -2,9 +2,11 @@
 
 #include <iostream>
 
-#include "scene/objects/AObject.hpp"
+#include "objects/AObject.hpp"
 
+#include "Constants.hpp"
 #include "Renderer.cu"
+
 
 namespace tracer::renderer
 {
@@ -14,8 +16,6 @@ namespace
 using namespace containers;
 using namespace scene;
 using namespace scene::objects;
-
-const uint32_t BLOCK_SIZE = 1024;
 }  // namespace
 
 RenderContoller::RenderContoller(SceneData& sceneData, const uint32_t samples)
@@ -25,6 +25,9 @@ RenderContoller::RenderContoller(SceneData& sceneData, const uint32_t samples)
 
 std::vector<containers::Vec3> RenderContoller::start()
 {
+    auto camera = sceneData_.getCamera();
+    const Vec3 vecZ = (camera.direction_%camera.orientation_).norm();
+
     const auto imageSize = sceneData_.getHeight() * sceneData_.getWidth() * sizeof(Vec3);
     Vec3* devImage;
     cudaMalloc((void**)&devImage, imageSize);
@@ -36,7 +39,8 @@ std::vector<containers::Vec3> RenderContoller::start()
 
     const auto numBlocks = (sceneData_.getHeight() <= BLOCK_SIZE) ? sceneData_.getHeight() : BLOCK_SIZE;
     const auto numThreads = (sceneData_.getWidth() <= BLOCK_SIZE) ? sceneData_.getWidth() : BLOCK_SIZE;
-    cudaMain <<<numBlocks, numThreads>>> (devImage, devObjects, objectDataVec.data(), objectDataVec.size());
+    cudaMain <<<numBlocks, numThreads>>> (devImage, devObjects, objectDataVec.data(), objectDataVec.size(),
+        sceneData_.getWidth(), sceneData_.getHeight(), camera, vecZ, samples_);
 
     Vec3* imagePtr = (Vec3*)malloc(imageSize);
     cudaMemcpy(imagePtr, devImage, imageSize, cudaMemcpyDeviceToHost);

@@ -1,10 +1,11 @@
 project(tracer-scene)
 
 set(SOURCES
-    objects/AObject.cu
+    cuda/objects/Plane.cu
+    cuda/objects/Sphere.cu
     objects/Camera.cpp
     objects/ObjectData.cpp
-    SceneData.cu
+    SceneData.cpp
 )
 
 add_library(${PROJECT_NAME})
@@ -12,6 +13,7 @@ target_sources(${PROJECT_NAME} PRIVATE ${SOURCES})
 target_include_directories(${PROJECT_NAME}
     PUBLIC
         include
+        cuda
 )
 
 target_link_libraries(${PROJECT_NAME}
@@ -19,4 +21,5 @@ target_link_libraries(${PROJECT_NAME}
         nlohmann_json::nlohmann_json
     PRIVATE
         tracer-containers
+        tracer-utils
 )
