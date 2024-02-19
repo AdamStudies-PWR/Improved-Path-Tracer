@@ -72,15 +72,13 @@ public:
         {
             if (objectsData[i]->objectType_ == SphereData)
             {
-                auto* sphere = new Sphere(objectsData[i]->radius_, objectsData[i]->position_, objectsData[i]->emission_,
+                objects_[i] = new Sphere(objectsData[i]->radius_, objectsData[i]->position_, objectsData[i]->emission_,
                     objectsData[i]->color_, objectsData[i]->reflectionType_);
-                objects_[i] = sphere;
             }
             else if (objectsData[i]->objectType_ == PlaneData)
             {
-                auto* plane = new Plane(objectsData[i]->north_, objectsData[i]->east_, objectsData[i]->position_,
-                objectsData[i]->emission_, objectsData[i]->color_, objectsData[i]->reflectionType_);
-                objects_[i] = plane;
+                objects_[i] = new Plane(objectsData[i]->north_, objectsData[i]->east_, objectsData[i]->position_,
+                    objectsData[i]->emission_, objectsData[i]->color_, objectsData[i]->reflectionType_);
             }
         }
     }
@@ -100,7 +98,8 @@ public:
             for (uint32_t x=coordinates.xx_; x<limitX; x++)
             {
                 const auto index = z * width_ + x;
-                image[index] = samplePixel(camera_.orientation_, vecZ, x, z, samples_, state);
+                image[index] = Vec3(0.33, 0.66, 0.99);
+                //image[index] = samplePixel(camera_.orientation_, vecZ, x, z, samples_, state);
             }
         }
     }
@@ -140,6 +139,7 @@ private:
         pixel.yy_ = pixel.yy_/samples;
         pixel.zz_ = pixel.zz_/samples;
 
+        //printf("Pixel R: %f, G: %f, B: %f\n", pixel.xx_, pixel.yy_, pixel.zz_);
         return pixel;
     }
 
@@ -154,9 +154,9 @@ private:
 
         /*Some stopping condition based on reflectivness - should be random*/
         /*Skipping for now*/
-        // return object->getColor();
+        return object->getColor();
 
-        const auto intersection = ray.origin_ + ray.direction_ * hitData.distance_;
+        /*const auto intersection = ray.origin_ + ray.direction_ * hitData.distance_;
 
         RayData reflected[2];
         const auto reflectedCount = object->calculateReflections(reflected, intersection, ray.direction_, state, depth);
@@ -170,10 +170,10 @@ private:
         ++depth;
         for (int i=0; i<reflectedCount; i++)
         {
-            path = path + sendRay(reflected[i].ray_, depth, state) * reflected[i].power_;
+            // path = path + sendRay(reflected[i].ray_, depth, state) * reflected[i].power_;
         }
 
-        return object->getEmission() + object->getColor().mult(path);
+        return object->getEmission() + object->getColor().mult(path);*/
     }
 
     __device__ HitData getHitObjectAndDistance(const containers::Ray& ray) const
@@ -206,7 +206,7 @@ __global__ void cudaMain(Vec3* image, objects::AObject** objects, ObjectData** o
     const uint32_t width, const uint32_t height, Camera camera, Vec3 vecZ, uint32_t samples)
 {
     Renderer render = Renderer(objects, samples, width, height, camera);
-    render.setUp(objectsData, objectsCount);
+    // render.setUp(objectsData, objectsCount);
     render.start(image, vecZ);
 }
 

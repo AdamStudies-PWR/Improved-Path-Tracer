@@ -86,7 +86,7 @@ private:
     __device__ bool checkIfInBounds(const Vec3& impact) const
     {
         auto vertical = distanceToBorder(bottomLeft_, (bottomLeft_ - bottomRight_).norm(), impact);
-        if ((distanceVertical_ - vertical) > MARGIN) return false;
+        if (distanceVertical_ - vertical < -MARGIN) return false;
         vertical = vertical + distanceToBorder(topLeft_, (topLeft_ - topRight_).norm(), impact);
         if (distanceVertical_  - vertical < -MARGIN or distanceVertical_  - vertical > MARGIN) return false;
 

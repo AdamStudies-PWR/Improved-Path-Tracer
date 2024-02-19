@@ -43,8 +43,15 @@ int main(int argc, char* argv[])
         return controller->start();
     };
     const auto image = measure(std::move(wrappedRender));
-    saveImage(image, sceneData.getHeight(), sceneData.getWidth());
 
+    cudaError_t maybeError = cudaGetLastError();
+    if (maybeError != cudaSuccess)
+    {
+        std::cout << "CUDA error: " << cudaGetErrorString(maybeError) << std::endl;
+        // return 0;
+    }
+
+    saveImage(image, sceneData.getHeight(), sceneData.getWidth());
     return 0;
 }
 

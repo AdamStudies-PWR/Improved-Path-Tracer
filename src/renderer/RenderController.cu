@@ -39,7 +39,7 @@ std::vector<containers::Vec3> RenderContoller::start()
 
     const auto numBlocks = (sceneData_.getHeight() <= BLOCK_SIZE) ? sceneData_.getHeight() : BLOCK_SIZE;
     const auto numThreads = (sceneData_.getWidth() <= BLOCK_SIZE) ? sceneData_.getWidth() : BLOCK_SIZE;
-    cudaMain <<<numBlocks, numThreads>>> (devImage, devObjects, objectDataVec.data(), objectDataVec.size(),
+    cudaMain <<</*1, 1*/numBlocks, numThreads>>> (devImage, devObjects, objectDataVec.data(), objectDataVec.size(),
         sceneData_.getWidth(), sceneData_.getHeight(), camera, vecZ, samples_);
 
     Vec3* imagePtr = (Vec3*)malloc(imageSize);
