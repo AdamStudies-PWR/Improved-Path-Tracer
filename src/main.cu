@@ -48,7 +48,7 @@ int main(int argc, char* argv[])
     if (maybeError != cudaSuccess)
     {
         std::cout << "CUDA error: " << cudaGetErrorString(maybeError) << std::endl;
-        return 0;
+        return 1;
     }
 
     saveImage(image, sceneData.getHeight(), sceneData.getWidth());

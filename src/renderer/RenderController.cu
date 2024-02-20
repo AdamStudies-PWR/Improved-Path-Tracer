@@ -52,7 +52,7 @@ std::vector<containers::Vec3> RenderContoller::start()
     return image;
 }
 
-std::vector<containers::Vec3> RenderContoller::convertToVector(containers::Vec3* imagePtr)
+std::vector<Vec3> RenderContoller::convertToVector(Vec3* imagePtr)
 {
     std::vector<Vec3> image;
     for (uint32_t iter = 0; iter < sceneData_.getHeight() * sceneData_.getWidth(); iter++)
