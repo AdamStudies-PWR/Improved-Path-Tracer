@@ -34,18 +34,17 @@ std::vector<containers::Vec3> RenderContoller::start()
     cudaMemset(devImage, 0, imageSize);
 
     auto objectDataVec = sceneData_.getObjectsData();
-    AObject* devObjects[objectDataVec.size()];
-    cudaMalloc(devObjects, sizeof(devObjects));
+    AObject** devObjects = new AObject*[objectDataVec.size()];
+    cudaMalloc(devObjects, sizeof(devObjects) * BLOCK_SIZE * BLOCK_SIZE);
 
-    const auto numBlocks = (sceneData_.getHeight() <= BLOCK_SIZE) ? sceneData_.getHeight() : BLOCK_SIZE;
     const auto numThreads = (sceneData_.getWidth() <= BLOCK_SIZE) ? sceneData_.getWidth() : BLOCK_SIZE;
-    cudaMain <<</*1, 1*/numBlocks, numThreads>>> (devImage, devObjects, objectDataVec.data(), objectDataVec.size(),
+    const auto numBlocks = (sceneData_.getHeight() <= BLOCK_SIZE) ? sceneData_.getHeight() : BLOCK_SIZE;
+    cudaMain <<<numBlocks, numThreads>>> (devImage, devObjects, objectDataVec.data(), objectDataVec.size(),
         sceneData_.getWidth(), sceneData_.getHeight(), camera, vecZ, samples_);
 
     Vec3* imagePtr = (Vec3*)malloc(imageSize);
     cudaMemcpy(imagePtr, devImage, imageSize, cudaMemcpyDeviceToHost);
-    cudaFree(devImage);
-    cudaFree(devObjects);
+    cudaDeviceReset();
 
     const auto image = convertToVector(imagePtr);
     free(imagePtr);

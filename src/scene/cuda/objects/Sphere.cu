@@ -24,6 +24,7 @@ public:
 
     __device__ double intersect(const Ray& ray) const override
     {
+        // printf("I am a sphere\n");
         double intersection = 0.0;
 
         Vec3 op = ray.origin_ - position_;
@@ -33,8 +34,8 @@ public:
         if (delta < 0) return 0;
         else delta = sqrt(delta);
 
-        return (intersection = -b - delta) > MARGIN
-            ? intersection : ((intersection = -b + delta) > MARGIN ? intersection : 0.0);
+        return ((intersection = -b - delta) > MARGIN)
+            ? intersection : (((intersection = -b + delta) > MARGIN) ? intersection : 0.0);
         return 0.0;
     }
 

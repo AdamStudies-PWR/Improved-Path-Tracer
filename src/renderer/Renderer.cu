@@ -55,7 +55,7 @@ __device__ Coordinates calculateCoordinates(const uint32_t idX, const uint32_t i
 class Renderer
 {
 public:
-    __device__ Renderer(objects::AObject** objects, const uint32_t samples, const uint32_t width, const uint32_t height,
+    __device__ Renderer(AObject** objects, const uint32_t samples, const uint32_t width, const uint32_t height,
         const Camera& camera)
         : objects_(objects)
         , objectsCount_(0)
@@ -68,6 +68,8 @@ public:
     __device__ void setUp(ObjectData** objectsData, const uint32_t objectCount)
     {
         objectsCount_ = objectCount;
+        // objects_ = new AObject*[objectCount];
+
         for (uint32_t i=0; i<objectsCount_; i++)
         {
             if (objectsData[i]->objectType_ == SphereData)
@@ -98,8 +100,8 @@ public:
             for (uint32_t x=coordinates.xx_; x<limitX; x++)
             {
                 const auto index = z * width_ + x;
-                image[index] = Vec3(0.33, 0.66, 0.99);
-                //image[index] = samplePixel(camera_.orientation_, vecZ, x, z, samples_, state);
+                // image[index] = Vec3(0.33, 0.66, 0.99);
+                image[index] = samplePixel(camera_.orientation_, vecZ, x, z, samples_, state);
             }
         }
     }
@@ -120,7 +122,7 @@ private:
             ? height_/2 - pixelZ - correctionZ
             : ((double)height_/2 - pixelZ - 1.0) + ((correctionZ == 0.0) ? 1.0 : correctionZ);
 
-        const auto gaze = direction + vecX*stepX*FOV_SCALE + vecZ*stepZ*FOV_SCALE;
+        const auto gaze = (direction + vecX*stepX*FOV_SCALE + vecZ*stepZ*FOV_SCALE).norm();
 
         Vec3 pixel = Vec3();
         for (uint32_t i=0; i<samples; i++)
@@ -149,15 +151,13 @@ private:
 
         const auto hitData = getHitObjectAndDistance(ray);
         if (hitData.index_ == -1) return Vec3();
-
-        const auto* object = objects_[hitData.index_];
+        const auto& object = objects_[hitData.index_];
 
         /*Some stopping condition based on reflectivness - should be random*/
         /*Skipping for now*/
         return object->getColor();
 
         /*const auto intersection = ray.origin_ + ray.direction_ * hitData.distance_;
-
         RayData reflected[2];
         const auto reflectedCount = object->calculateReflections(reflected, intersection, ray.direction_, state, depth);
 
@@ -170,7 +170,7 @@ private:
         ++depth;
         for (int i=0; i<reflectedCount; i++)
         {
-            // path = path + sendRay(reflected[i].ray_, depth, state) * reflected[i].power_;
+            path = path + sendRay(reflected[i].ray_, depth, state) * reflected[i].power_;
         }
 
         return object->getEmission() + object->getColor().mult(path);*/
@@ -183,7 +183,9 @@ private:
 
         for (uint32_t i=0; i<objectsCount_; i++)
         {
+            // printf("Iterating: %d\n", i);
             auto temp = objects_[i]->intersect(ray);
+            // printf("Object acess ok!\n");
             if (temp && temp < distance)
             {
                 distance = temp;
@@ -194,7 +196,7 @@ private:
         return HitData(index, distance);
     }
 
-    objects::AObject** objects_;
+    AObject** objects_;
     uint32_t objectsCount_;
     Camera camera_;
     const uint32_t samples_;
@@ -202,11 +204,11 @@ private:
     const uint32_t height_;
 };
 
-__global__ void cudaMain(Vec3* image, objects::AObject** objects, ObjectData** objectsData, const uint32_t objectsCount,
+__global__ void cudaMain(Vec3* image, AObject** objects, ObjectData** objectsData, const uint32_t objectsCount,
     const uint32_t width, const uint32_t height, Camera camera, Vec3 vecZ, uint32_t samples)
 {
     Renderer render = Renderer(objects, samples, width, height, camera);
-    // render.setUp(objectsData, objectsCount);
+    render.setUp(objectsData, objectsCount);
     render.start(image, vecZ);
 }
 

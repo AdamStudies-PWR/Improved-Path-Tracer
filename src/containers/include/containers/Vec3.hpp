@@ -39,6 +39,11 @@ struct Vec3
         return sqrt(pow((xx_ - vec2.xx_), 2) + pow((yy_ - vec2.yy_), 2) + pow((zz_ - vec2.zz_), 2));
     }
 
+    __device__ double length() const
+    {
+        return sqrt(pow(xx_, 2) + pow(yy_, 2) + pow(zz_, 2));
+    }
+
     // Normalizacja wektora
     __host__ __device__ Vec3& norm()
     {
@@ -70,8 +75,6 @@ struct Vec3
     {
         return xx_ == vec2.xx_ and yy_ == vec2.yy_ and zz_ == vec2.zz_;
     }
-
-    double length() const;
 
     friend std::ostream& operator<<(std::ostream& os, const Vec3& vec);
 

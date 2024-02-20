@@ -46,6 +46,7 @@ public:
 
     __device__ double intersect(const Ray& ray) const override
     {
+        // printf("I am a plane\n");
         const auto refPoint = position_ - ray.origin_;
         const auto top = planeVector_.xx_ * refPoint.xx_ + planeVector_.yy_ * refPoint.yy_
             + planeVector_.zz_ * refPoint.zz_;
