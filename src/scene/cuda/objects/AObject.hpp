@@ -30,12 +30,8 @@ public:
         , reflection_(reflection)
     {}
 
-    __device__ virtual double intersect(const containers::Ray& ray) const
-    {
-        printf("I am Abstract\n");
-        return 0.0;
-    }
-    __device__ virtual uint32_t calculateReflections(RayData* reflected, const containers::Vec3& intersection,
+    __device__ virtual double intersect(const containers::Ray& ray) const = 0;
+    __device__ virtual RayData calculateReflections(const containers::Vec3& intersection,
         const containers::Vec3& incoming, curandState& state, const uint8_t depth) const = 0;
 
     __device__ containers::Vec3 getEmission() const { return emission_; }

@@ -28,8 +28,7 @@ __device__ containers::Vec3 calculateDiffuse(const containers::Vec3& normal, cur
     return (direction.dot(normal) < 0) ? direction * -1 : direction;
 }
 
-__device__ void calculateRefreactive(containers::Vec3* refractive, const containers::Vec3& incoming,
-    const containers::Vec3& normal)
+__device__ containers::Vec3 calculateRefreactive(const containers::Vec3& incoming, const containers::Vec3& normal)
 {
     const auto index = AIR_IOR/GLASS_IOR;
     const auto cosIncoming = fabs(normal.dot(incoming));
@@ -37,12 +36,11 @@ __device__ void calculateRefreactive(containers::Vec3* refractive, const contain
 
     if (sinRefracted2 > 1.0)
     {
-        refractive = nullptr;
-        return;
+        return containers::Vec3();
     }
 
     const double cosRefracted = sqrt(1.0 - sinRefracted2);
-    *refractive = incoming * index + normal * (index * cosIncoming - cosRefracted);
+    return incoming * index + normal * (index * cosIncoming - cosRefracted);
 }
 }  // namespace
 

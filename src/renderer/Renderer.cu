@@ -68,8 +68,6 @@ public:
     __device__ void setUp(ObjectData** objectsData, const uint32_t objectCount)
     {
         objectsCount_ = objectCount;
-        // objects_ = new AObject*[objectCount];
-
         for (uint32_t i=0; i<objectsCount_; i++)
         {
             if (objectsData[i]->objectType_ == SphereData)
@@ -100,7 +98,6 @@ public:
             for (uint32_t x=coordinates.xx_; x<limitX; x++)
             {
                 const auto index = z * width_ + x;
-                // image[index] = Vec3(0.33, 0.66, 0.99);
                 image[index] = samplePixel(camera_.orientation_, vecZ, x, z, samples_, state);
             }
         }
@@ -134,46 +131,44 @@ private:
             // Tent filter
 
             const auto origin = center + vecX*stepX + vecZ*stepZ + tentFilter;
-            pixel = pixel + sendRay(Ray(origin + direction * VIEWPORT_DISTANCE, gaze), 0, state);
+            pixel = pixel + sendRay(Ray(origin + direction * VIEWPORT_DISTANCE, gaze), state);
         }
 
         pixel.xx_ = pixel.xx_/samples;
         pixel.yy_ = pixel.yy_/samples;
         pixel.zz_ = pixel.zz_/samples;
 
-        //printf("Pixel R: %f, G: %f, B: %f\n", pixel.xx_, pixel.yy_, pixel.zz_);
         return pixel;
     }
 
-    __device__ Vec3 sendRay(const Ray& ray, uint8_t depth, curandState& state) const
+    __device__ Vec3 sendRay(Ray ray, curandState& state) const
     {
-        if (depth > MAX_DEPTH) return Vec3();
+        Vec3 objectEmissions[MAX_DEPTH];
+        Vec3 objectColors[MAX_DEPTH];
 
-        const auto hitData = getHitObjectAndDistance(ray);
-        if (hitData.index_ == -1) return Vec3();
-        const auto& object = objects_[hitData.index_];
-
-        /*Some stopping condition based on reflectivness - should be random*/
-        /*Skipping for now*/
-        return object->getColor();
-
-        /*const auto intersection = ray.origin_ + ray.direction_ * hitData.distance_;
-        RayData reflected[2];
-        const auto reflectedCount = object->calculateReflections(reflected, intersection, ray.direction_, state, depth);
-
-        if (reflectedCount <= 0)
+        int8_t depth=0;
+        for (; depth<MAX_DEPTH; depth++)
         {
-            return Vec3();
+            const auto hitData = getHitObjectAndDistance(ray);
+            if (hitData.index_ == -1) break;
+
+            const auto& object = objects_[hitData.index_];
+
+            const auto intersection = ray.origin_ + ray.direction_ * hitData.distance_;
+            const auto reflected = object->calculateReflections(intersection, ray.direction_, state, depth);
+            ray = reflected.ray_;
+
+            objectEmissions[depth] = object->getEmission();
+            objectColors[depth] = object->getColor();
         }
 
-        Vec3 path = Vec3();
-        ++depth;
-        for (int i=0; i<reflectedCount; i++)
+        Vec3 pixel;
+        for (; depth >= 0; depth--)
         {
-            path = path + sendRay(reflected[i].ray_, depth, state) * reflected[i].power_;
+            pixel = objectEmissions[depth] + objectColors[depth].mult(pixel);
         }
 
-        return object->getEmission() + object->getColor().mult(path);*/
+        return pixel;
     }
 
     __device__ HitData getHitObjectAndDistance(const containers::Ray& ray) const
@@ -183,9 +178,7 @@ private:
 
         for (uint32_t i=0; i<objectsCount_; i++)
         {
-            // printf("Iterating: %d\n", i);
             auto temp = objects_[i]->intersect(ray);
-            // printf("Object acess ok!\n");
             if (temp && temp < distance)
             {
                 distance = temp;
