@@ -18,8 +18,9 @@ using namespace scene;
 using namespace scene::objects;
 }  // namespace
 
-RenderContoller::RenderContoller(SceneData& sceneData, const uint32_t samples)
+RenderContoller::RenderContoller(SceneData& sceneData, const uint32_t samples, const uint8_t maxDepth)
     : sceneData_(sceneData)
+    , maxDepth_(maxDepth)
     , samples_(samples)
 {}
 
@@ -40,7 +41,7 @@ std::vector<containers::Vec3> RenderContoller::start()
     const auto numThreads = (sceneData_.getWidth() <= BLOCK_SIZE) ? sceneData_.getWidth() : BLOCK_SIZE;
     const auto numBlocks = (sceneData_.getHeight() <= BLOCK_SIZE) ? sceneData_.getHeight() : BLOCK_SIZE;
     cudaMain <<<numBlocks, numThreads>>> (devImage, devObjects, objectDataVec.data(), objectDataVec.size(),
-        sceneData_.getWidth(), sceneData_.getHeight(), camera, vecZ, samples_);
+        sceneData_.getWidth(), sceneData_.getHeight(), camera, vecZ, samples_, maxDepth_);
 
     Vec3* imagePtr = (Vec3*)malloc(imageSize);
     cudaMemcpy(imagePtr, devImage, imageSize, cudaMemcpyDeviceToHost);

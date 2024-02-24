@@ -38,7 +38,8 @@ int main(int argc, char* argv[])
         return 0;
     }
 
-    auto controller = std::make_shared<RenderContoller>(sceneData, inputParser.getSamplingRate());
+    auto controller = std::make_shared<RenderContoller>(sceneData, inputParser.getSamplingRate(),
+        inputParser.getMaxDepth());
     const auto wrappedRender = [controller]() -> const std::vector<Vec3> {
         return controller->start();
     };

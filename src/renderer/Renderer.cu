@@ -26,7 +26,6 @@ using namespace utils;
 
 const float FOV_SCALE = 0.0009;
 const uint16_t VIEWPORT_DISTANCE = 140;
-const uint8_t MAX_DEPTH = 10;
 const double INF = 1e20;
 
 __device__ Coordinates calculateCoordinates(const uint32_t idX, const uint32_t idZ,
@@ -56,13 +55,14 @@ class Renderer
 {
 public:
     __device__ Renderer(AObject** objects, const uint32_t samples, const uint32_t width, const uint32_t height,
-        const Camera& camera)
+        const uint8_t maxDepth, const Camera& camera)
         : objects_(objects)
-        , objectsCount_(0)
         , camera_(camera)
+        , height_(height)
         , samples_(samples)
         , width_(width)
-        , height_(height)
+        , maxDepth_(maxDepth)
+        , objectsCount_(0)
     {}
 
     __device__ void setUp(ObjectData** objectsData, const uint32_t objectCount)
@@ -143,11 +143,11 @@ private:
 
     __device__ Vec3 sendRay(Ray ray, curandState& state) const
     {
-        Vec3 objectEmissions[MAX_DEPTH];
-        Vec3 objectColors[MAX_DEPTH];
+        Vec3* objectEmissions = new Vec3[maxDepth_];
+        Vec3* objectColors = new Vec3[maxDepth_];
 
         int8_t depth=0;
-        for (; depth<MAX_DEPTH; depth++)
+        for (; depth<maxDepth_; depth++)
         {
             const auto hitData = getHitObjectAndDistance(ray);
             if (hitData.index_ == -1) break;
@@ -167,6 +167,9 @@ private:
         {
             pixel = objectEmissions[depth] + objectColors[depth].mult(pixel);
         }
+
+        delete objectEmissions;
+        delete objectColors;
 
         return pixel;
     }
@@ -190,17 +193,18 @@ private:
     }
 
     AObject** objects_;
-    uint32_t objectsCount_;
     Camera camera_;
+    const uint32_t height_;
     const uint32_t samples_;
     const uint32_t width_;
-    const uint32_t height_;
+    const uint8_t maxDepth_;
+    uint32_t objectsCount_;
 };
 
 __global__ void cudaMain(Vec3* image, AObject** objects, ObjectData** objectsData, const uint32_t objectsCount,
-    const uint32_t width, const uint32_t height, Camera camera, Vec3 vecZ, uint32_t samples)
+    const uint32_t width, const uint32_t height, Camera camera, Vec3 vecZ, uint32_t samples, const uint8_t maxDepth)
 {
-    Renderer render = Renderer(objects, samples, width, height, camera);
+    Renderer render = Renderer(objects, samples, width, height, maxDepth, camera);
     render.setUp(objectsData, objectsCount);
     render.start(image, vecZ);
 }
