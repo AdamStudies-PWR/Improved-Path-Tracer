@@ -31,7 +31,8 @@ int main(int argc, char* argv[])
         return 0;
     }
 
-    auto renderer = std::make_shared<Renderer>(sceneData, inputParser.getSamplingRate());
+    auto renderer = std::make_shared<Renderer>(sceneData, inputParser.getSamplingRate(),
+        inputParser.getMaxDepth());
     const auto wrappedRender = [renderer]() -> const std::vector<Vec3> {
         return renderer->render();
     };

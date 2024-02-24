@@ -13,7 +13,7 @@ namespace tracer::renderer
 class Renderer
 {
 public:
-    Renderer(scene::SceneData& sceneData, const uint32_t samples);
+    Renderer(scene::SceneData& sceneData, const uint32_t samples, const uint8_t maxDepth);
 
     std::vector<containers::Vec3> render();
 
@@ -22,6 +22,7 @@ private:
         const uint32_t pixelZ);
     containers::Vec3 sendRay(const containers::Ray& ray, uint8_t depth);
 
+    const uint8_t maxDepth_;
     const uint32_t samples_;
     scene::SceneData& sceneData_;
     std::mt19937 generator_;

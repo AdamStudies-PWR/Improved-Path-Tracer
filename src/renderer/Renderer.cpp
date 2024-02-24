@@ -16,14 +16,14 @@ using namespace containers;
 using namespace scene;
 
 const uint16_t VIEWPORT_DISTANCE = 140;
-const uint8_t MAX_DEPTH = 10;
 const float FOV_SCALE = 0.0009;
 
 std::uniform_real_distribution<> tent_filter(-1.0, 1.0);
 }  // namespace
 
-Renderer::Renderer(SceneData& sceneData, const uint32_t samples)
-    : samples_(samples)
+Renderer::Renderer(SceneData& sceneData, const uint32_t samples, const uint8_t maxDepth)
+    : maxDepth_(maxDepth)
+    , samples_(samples)
     , sceneData_(sceneData)
 {
     std::random_device rd;
@@ -35,7 +35,6 @@ std::vector<Vec3> Renderer::render()
 {
     std::vector<Vec3> image (sceneData_.getWidth() * sceneData_.getHeight());
 
-    // Check why I need to copy and store the camera first?
     auto camera = sceneData_.getCamera();
     const Vec3 vecZ = (camera.direction_%camera.orientation_).norm();
 
@@ -94,7 +93,7 @@ Vec3 Renderer::samplePixel(const Vec3& vecX, const Vec3& vecZ, const uint32_t pi
 
 Vec3 Renderer::sendRay(const Ray& ray, uint8_t depth)
 {
-    if (depth > MAX_DEPTH) return Vec3();
+    if (depth > maxDepth_) return Vec3();
 
     const auto hitData = sceneData_.getHitObjectAndDistance(ray);
     if (hitData.first == -1) return Vec3();
