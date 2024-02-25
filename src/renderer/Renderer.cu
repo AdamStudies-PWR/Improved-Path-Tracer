@@ -54,10 +54,9 @@ __device__ Coordinates calculateCoordinates(const uint32_t idX, const uint32_t i
 class Renderer
 {
 public:
-    __device__ Renderer(AObject** objects, const uint32_t samples, const uint32_t width, const uint32_t height,
-        const uint8_t maxDepth, const Camera& camera)
-        : objects_(objects)
-        , camera_(camera)
+    __device__ Renderer(const uint32_t samples, const uint32_t width, const uint32_t height, const uint8_t maxDepth,
+        const Camera& camera)
+        : camera_(camera)
         , height_(height)
         , samples_(samples)
         , width_(width)
@@ -65,20 +64,21 @@ public:
         , objectsCount_(0)
     {}
 
-    __device__ void setUp(ObjectData** objectsData, const uint32_t objectCount)
+    __device__ void setUp(ObjectData* objectsData, const uint32_t objectCount)
     {
         objectsCount_ = objectCount;
+        objects_ = new AObject*[objectsCount_];
         for (uint32_t i=0; i<objectsCount_; i++)
         {
-            if (objectsData[i]->objectType_ == SphereData)
+            if (objectsData[i].objectType_ == SphereData)
             {
-                objects_[i] = new Sphere(objectsData[i]->radius_, objectsData[i]->position_, objectsData[i]->emission_,
-                    objectsData[i]->color_, objectsData[i]->reflectionType_);
+                objects_[i] = new Sphere(objectsData[i].radius_, objectsData[i].position_, objectsData[i].emission_,
+                    objectsData[i].color_, objectsData[i].reflectionType_);
             }
-            else if (objectsData[i]->objectType_ == PlaneData)
+            else if (objectsData[i].objectType_ == PlaneData)
             {
-                objects_[i] = new Plane(objectsData[i]->north_, objectsData[i]->east_, objectsData[i]->position_,
-                    objectsData[i]->emission_, objectsData[i]->color_, objectsData[i]->reflectionType_);
+                objects_[i] = new Plane(objectsData[i].north_, objectsData[i].east_, objectsData[i].position_,
+                    objectsData[i].emission_, objectsData[i].color_, objectsData[i].reflectionType_);
             }
         }
     }
@@ -201,10 +201,10 @@ private:
     uint32_t objectsCount_;
 };
 
-__global__ void cudaMain(Vec3* image, AObject** objects, ObjectData** objectsData, const uint32_t objectsCount,
-    const uint32_t width, const uint32_t height, Camera camera, Vec3 vecZ, uint32_t samples, const uint8_t maxDepth)
+__global__ void cudaMain(Vec3* image, ObjectData* objectsData, const uint32_t objectsCount, const uint32_t width,
+    const uint32_t height, Camera camera, Vec3 vecZ, uint32_t samples, const uint8_t maxDepth)
 {
-    Renderer render = Renderer(objects, samples, width, height, maxDepth, camera);
+    Renderer render = Renderer(samples, width, height, maxDepth, camera);
     render.setUp(objectsData, objectsCount);
     render.start(image, vecZ);
 }

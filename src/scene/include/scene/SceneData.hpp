@@ -28,7 +28,7 @@ public:
     objects::Camera getCamera() const;
     uint32_t getWidth() const;
     uint32_t getHeight() const;
-    std::vector<objects::ObjectData*> getObjectsData() const;
+    std::vector<objects::ObjectData> getObjectsData() const;
 
 private:
     bool loadBasicSceneData(const nlohmann::json& jsonData);
@@ -40,7 +40,7 @@ private:
     const std::string jsonPath_;
     objects::Camera camera_;
     std::map<std::string, bool (SceneData::*)(const nlohmann::json&)> typeToHandler_;
-    std::vector<objects::ObjectData*> objectsData_;
+    std::vector<objects::ObjectData> objectsData_;
     uint32_t height_;
     uint32_t width_;
 };
