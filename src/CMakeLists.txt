@@ -11,11 +11,14 @@ if (CMAKE_BUILD_TYPE STREQUAL Debug)
     target_compile_options(tracer
         PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
         -G
+        -v
     >)
 else()
     target_compile_options(tracer
         PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:
             -use_fast_math
+            -Xptxas
+            -O3
     >)
 endif()
 

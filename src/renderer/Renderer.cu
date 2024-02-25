@@ -148,7 +148,6 @@ private:
         if (hitData.index_ == -1) return Vec3();
 
         const auto& object = objects_[hitData.index_];
-
         const auto intersection = ray.origin_ + ray.direction_ * hitData.distance_;
         const auto reflected = object->calculateReflections(intersection, ray.direction_, state, depth);
 
@@ -172,7 +171,6 @@ private:
         if (hitData.index_ == -1) return Vec3();
 
         const auto& object = objects_[hitData.index_];
-
         const auto intersection = ray.origin_ + ray.direction_ * hitData.distance_;
         const auto reflected = object->calculateReflections(intersection, ray.direction_, state, depth);
 
@@ -180,17 +178,17 @@ private:
         Vec3 backData;
         if (depth < maxDepth_)
         {
-            backData = sendRay(reflected.ray_, depth, state) * reflected.power_;
+            backData = deepLayers(reflected.ray_, depth, state) * reflected.power_;
             if (reflected.useSecond_)
             {
-                backData = backData + sendRay(reflected.secondRay_, depth, state) * reflected.secondPower_;
+                backData = backData + deepLayers(reflected.secondRay_, depth, state) * reflected.secondPower_;
             }
         }
 
         return object->getEmission() + object->getColor().mult(backData);
     }
 
-    __device__ Vec3 sendRay(Ray ray, uint8_t depth, curandState& state) const
+    __device__ Vec3 deepLayers(Ray ray, uint8_t depth, curandState& state) const
     {
         Vec3* objectEmissions = new Vec3[maxDepth_ - 2];
         Vec3* objectColors = new Vec3[maxDepth_ - 2];
@@ -201,7 +199,6 @@ private:
             if (hitData.index_ == -1) break;
 
             const auto& object = objects_[hitData.index_];
-
             const auto intersection = ray.origin_ + ray.direction_ * hitData.distance_;
             const auto reflected = object->calculateReflections(intersection, ray.direction_, state, depth);
             ray = reflected.ray_;
