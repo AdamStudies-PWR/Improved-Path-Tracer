@@ -88,12 +88,17 @@ protected:
 
         if (depth < 2)
         {
-            if (curand_uniform_double(&state) > 0.9) return {Ray(intersection, diffuse), 0.08};
-            else return {Ray(intersection, specular), 0.92};
+            return {Ray(intersection, specular), 0.92, Ray(intersection, diffuse), 0.08, true};
         }
 
-        if (curand_uniform_double(&state) > 0.9) return {Ray(intersection, diffuse), 1.0};
-        else return {Ray(intersection, specular), 1.0};
+        if (curand_uniform_double(&state) > 0.9)
+        {
+            return {Ray(intersection, diffuse), 1.0};
+        }
+        else
+        {
+            return {Ray(intersection, specular), 1.0};
+        }
     }
 
     __device__ RayData handleDiffuse(const Vec3& intersection, const Vec3& normal, curandState& state) const
@@ -116,8 +121,7 @@ protected:
 
         if (depth < 2)
         {
-            if (curand_uniform_double(&state) > 0.9) return {Ray(intersection, specular), 0.05};
-            else return {Ray(intersection, refractive), 0.95};
+            return {Ray(intersection, refractive), 0.95, Ray(intersection, specular), 0.05, true};
         }
 
         if (curand_uniform_double(&state) > 0.95)

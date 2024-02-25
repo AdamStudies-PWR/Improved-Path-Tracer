@@ -131,7 +131,7 @@ private:
             // Tent filter
 
             const auto origin = center + vecX*stepX + vecZ*stepZ + tentFilter;
-            pixel = pixel + sendRay(Ray(origin + direction * VIEWPORT_DISTANCE, gaze), state);
+            pixel = pixel + firstLayer(Ray(origin + direction * VIEWPORT_DISTANCE, gaze), state);
         }
 
         pixel.xx_ = pixel.xx_/samples;
@@ -141,12 +141,60 @@ private:
         return pixel;
     }
 
-    __device__ Vec3 sendRay(Ray ray, curandState& state) const
+    __device__ Vec3 firstLayer(Ray ray, curandState& state) const
     {
-        Vec3* objectEmissions = new Vec3[maxDepth_];
-        Vec3* objectColors = new Vec3[maxDepth_];
+        uint8_t depth = 0;
+        const auto hitData = getHitObjectAndDistance(ray);
+        if (hitData.index_ == -1) return Vec3();
 
-        int8_t depth=0;
+        const auto& object = objects_[hitData.index_];
+
+        const auto intersection = ray.origin_ + ray.direction_ * hitData.distance_;
+        const auto reflected = object->calculateReflections(intersection, ray.direction_, state, depth);
+
+        depth++;
+        Vec3 backData;
+        if (depth < maxDepth_)
+        {
+            backData = secondLayer(reflected.ray_, depth, state) * reflected.power_;
+            if (reflected.useSecond_)
+            {
+                backData = backData + secondLayer(reflected.secondRay_, depth, state) * reflected.secondPower_;
+            }
+        }
+
+        return object->getEmission() + object->getColor().mult(backData);
+    }
+
+    __device__ Vec3 secondLayer(Ray ray, uint8_t& depth, curandState& state) const
+    {
+        const auto hitData = getHitObjectAndDistance(ray);
+        if (hitData.index_ == -1) return Vec3();
+
+        const auto& object = objects_[hitData.index_];
+
+        const auto intersection = ray.origin_ + ray.direction_ * hitData.distance_;
+        const auto reflected = object->calculateReflections(intersection, ray.direction_, state, depth);
+
+        depth++;
+        Vec3 backData;
+        if (depth < maxDepth_)
+        {
+            backData = sendRay(reflected.ray_, depth, state) * reflected.power_;
+            if (reflected.useSecond_)
+            {
+                backData = backData + sendRay(reflected.secondRay_, depth, state) * reflected.secondPower_;
+            }
+        }
+
+        return object->getEmission() + object->getColor().mult(backData);
+    }
+
+    __device__ Vec3 sendRay(Ray ray, uint8_t depth, curandState& state) const
+    {
+        Vec3* objectEmissions = new Vec3[maxDepth_ - 2];
+        Vec3* objectColors = new Vec3[maxDepth_ - 2];
+
         for (; depth<maxDepth_; depth++)
         {
             const auto hitData = getHitObjectAndDistance(ray);
@@ -158,14 +206,14 @@ private:
             const auto reflected = object->calculateReflections(intersection, ray.direction_, state, depth);
             ray = reflected.ray_;
 
-            objectEmissions[depth] = object->getEmission();
-            objectColors[depth] = object->getColor();
+            objectEmissions[depth - 2] = object->getEmission();
+            objectColors[depth - 2] = object->getColor();
         }
 
         Vec3 pixel;
-        for (; depth >= 0; depth--)
+        for (int8_t i=(depth - 2); i>= 0; i--)
         {
-            pixel = objectEmissions[depth] + objectColors[depth].mult(pixel);
+            pixel = objectEmissions[i] + objectColors[i].mult(pixel);
         }
 
         delete objectEmissions;
