@@ -2,8 +2,8 @@
 
 #include "math.h"
 
-#include "Common.hpp"
 #include "Constants.hpp"
+
 
 namespace tracer::scene::objects
 {
@@ -97,56 +97,6 @@ private:
         if (distanceHorizontal_ - horizontal < -MARGIN or distanceHorizontal_ - horizontal > MARGIN) return false;
 
         return true;
-    }
-
-    __device__ RayData handleSpecular(const Vec3& intersection, const Vec3& incoming, const Vec3& normal,
-        curandState& state, const uint8_t depth) const
-    {
-        auto specular = calculateSpecular(incoming, normal);
-        auto diffuse = calculateDiffuse(normal, state);
-
-        if (depth < 2)
-        {
-            if (curand_uniform_double(&state) > 0.9) return {Ray(intersection, diffuse), 0.08};
-            else return {Ray(intersection, specular), 0.92};
-        }
-
-        if (curand_uniform_double(&state) > 0.9) return {Ray(intersection, diffuse), 1.0};
-        else return {Ray(intersection, specular), 1.0};
-    }
-
-    __device__ RayData handleDiffuse(const Vec3& intersection, const Vec3& normal, curandState& state) const
-    {
-        auto diffuse = calculateDiffuse(normal, state);
-        return {Ray(intersection, diffuse), 1.0};
-    }
-
-    __device__ RayData handleRefractive(const Vec3& intersection, const Vec3& incoming, const Vec3& rawNormal,
-        const Vec3& normal, curandState& state, const uint8_t depth) const
-    {
-        auto specular = calculateSpecular(incoming, normal);
-
-        auto refractive = calculateRefreactive(incoming, rawNormal);
-
-        if (refractive == Vec3())
-        {
-            return {Ray(intersection, specular), 1.0};
-        }
-
-        if (depth < 2)
-        {
-            if (curand_uniform_double(&state) > 0.9) return {Ray(intersection, specular), 0.05};
-            else return {Ray(intersection, refractive), 0.95};
-        }
-
-        if (curand_uniform_double(&state) > 0.95)
-        {
-            return {Ray(intersection, specular), 1.0};
-        }
-        else
-        {
-            return {Ray(intersection, refractive), 1.0};
-        }
     }
 
     Vec3 bottomLeft_;
