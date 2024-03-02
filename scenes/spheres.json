@@ -2,22 +2,51 @@
     "camera": {
         "direction": {
             "xx": 0.0,
-            "yy": -0.04257336554299295,
-            "zz": -0.9990933432599491
+            "yy": 1.0,
+            "zz": 0.0
         },
         "orientation": {
-            "xx": -0.998025,
-            "yy": 0.0444207,
-            "zz": 0.0444207
+            "xx": -1.0,
+            "yy": 0.0,
+            "zz": 0.0
         },
         "position": {
-            "xx": 50.0,
-            "yy": 52.0,
-            "zz": 295.6
+            "xx": 640.0,
+            "yy": 0.0,
+            "zz": 360.0
         }
     },
     "height": 720,
     "objects": [
+        {
+            "color": {
+                "xx": 0.75,
+                "yy": 0.75,
+                "zz": 0.75
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "position": {
+                "xx": 640.0,
+                "yy": 720.0,
+                "zz": 360.0
+            },
+            "north": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 370.0
+            },
+            "east": {
+                "xx": 650.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "reflection": 0,
+            "type": "plane"
+        },
         {
             "color": {
                 "xx": 0.75,
@@ -30,13 +59,22 @@
                 "zz": 0.0
             },
             "position": {
-                "xx": 99991.0,
-                "yy": 40.8,
-                "zz": 81.6
+                "xx": 0.0,
+                "yy": 95.0,
+                "zz": 360.0
             },
-            "radius": 100000.0,
+            "north": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 370.0
+            },
+            "east": {
+                "xx": 0.0,
+                "yy": 640.0,
+                "zz": 0.0
+            },
             "reflection": 0,
-            "type": "sphere"
+            "type": "plane"
         },
         {
             "color": {
@@ -50,13 +88,51 @@
                 "zz": 0.0
             },
             "position": {
-                "xx": -99891.0,
-                "yy": 40.8,
-                "zz": 81.6
+                "xx": 1280.0,
+                "yy": 95.0,
+                "zz": 360.0
             },
-            "radius": 100000.0,
+            "north": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 370.0
+            },
+            "east": {
+                "xx": 0.0,
+                "yy": 640.0,
+                "zz": 0.0
+            },
             "reflection": 0,
-            "type": "sphere"
+            "type": "plane"
+        },
+        {
+            "color": {
+                "xx": 0.25,
+                "yy": 0.75,
+                "zz": 0.25
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "position": {
+                "xx": 640.0,
+                "yy": -540.0,
+                "zz": 360.0
+            },
+            "north": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 370.0
+            },
+            "east": {
+                "xx": -650.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "reflection": 0,
+            "type": "plane"
         },
         {
             "color": {
@@ -70,33 +146,22 @@
                 "zz": 0.0
             },
             "position": {
-                "xx": 50.0,
-                "yy": 40.8,
-                "zz": 100000.0
+                "xx": 640.0,
+                "yy": 95.0,
+                "zz": -5.0
             },
-            "radius": 100000.0,
-            "reflection": 0,
-            "type": "sphere"
-        },
-        {
-            "color": {
+            "north": {
                 "xx": 0.0,
-                "yy": 0.44,
+                "yy": 640.0,
                 "zz": 0.0
             },
-            "emission": {
-                "xx": 0.0,
+            "east": {
+                "xx": 650.0,
                 "yy": 0.0,
                 "zz": 0.0
             },
-            "position": {
-                "xx": 50.0,
-                "yy": 40.8,
-                "zz": -99825.0
-            },
-            "radius": 100000.0,
             "reflection": 0,
-            "type": "sphere"
+            "type": "plane"
         },
         {
             "color": {
@@ -110,33 +175,22 @@
                 "zz": 0.0
             },
             "position": {
-                "xx": 50.0,
-                "yy": 100000.0,
-                "zz": 81.6
+                "xx": 640.0,
+                "yy": 95.0,
+                "zz": 721.0
             },
-            "radius": 100000.0,
-            "reflection": 0,
-            "type": "sphere"
-        },
-        {
-            "color": {
-                "xx": 0.75,
-                "yy": 0.75,
-                "zz": 0.75
-            },
-            "emission": {
+            "north": {
                 "xx": 0.0,
+                "yy": 640.0,
+                "zz": 0.0
+            },
+            "east": {
+                "xx": -650.0,
                 "yy": 0.0,
                 "zz": 0.0
             },
-            "position": {
-                "xx": 50.0,
-                "yy": -99918.4,
-                "zz": 81.6
-            },
-            "radius": 100000.0,
             "reflection": 0,
-            "type": "sphere"
+            "type": "plane"
         },
         {
             "color": {
@@ -150,11 +204,11 @@
                 "zz": 0.0
             },
             "position": {
-                "xx": 27.0,
-                "yy": 16.5,
-                "zz": 47.0
+                "xx": 390.0,
+                "yy": 520.0,
+                "zz": 150.0
             },
-            "radius": 16.5,
+            "radius": 150.0,
             "reflection": 1,
             "type": "sphere"
         },
@@ -170,11 +224,11 @@
                 "zz": 0.0
             },
             "position": {
-                "xx": 73.0,
-                "yy": 16.5,
-                "zz": 78.0
+                "xx": 890.0,
+                "yy": 350.0,
+                "zz": 150.0
             },
-            "radius": 16.5,
+            "radius": 150.0,
             "reflection": 2,
             "type": "sphere"
         },
@@ -185,14 +239,14 @@
                 "zz": 0.0
             },
             "emission": {
-                "xx": 12.0,
-                "yy": 12.0,
-                "zz": 12.0
+                "xx": 20.0,
+                "yy": 20.0,
+                "zz": 20.0
             },
             "position": {
-                "xx": 50.0,
-                "yy": 681.33,
-                "zz": 81.6
+                "xx": 640.0,
+                "yy": 380.0,
+                "zz": 1305.0
             },
             "radius": 600.0,
             "reflection": 0,

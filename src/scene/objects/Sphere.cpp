@@ -34,8 +34,8 @@ double Sphere::intersect(const Ray& ray) const
     if (delta < 0) return 0;
     else delta = sqrt(delta);
 
-    return (intersection = -b - delta) > MARGIN
-        ? intersection : ((intersection = -b + delta) > MARGIN ? intersection : 0.0);
+    return ((intersection = -b - delta)) > MARGIN
+        ? intersection : (((intersection = -b + delta) > MARGIN) ? intersection : 0.0);
 }
 
 RayData Sphere::calculateReflections(const Vec3& intersection, const Vec3& incoming, std::mt19937& generator,
