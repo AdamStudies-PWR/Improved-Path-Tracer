@@ -252,13 +252,1289 @@
             }
         },
         {
+            "type": "plane",
+            "reflection": 1,
+            "position": {
+                "xx": 320.0,
+                "yy": 240.0,
+                "zz": 100.0
+            },
+            "north": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 100.0
+            },
+            "east": {
+                "xx": 192.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "color": {
+                "xx": 0.75,
+                "yy": 0.75,
+                "zz": 0.75
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            }
+        },
+        {
+            "type": "plane",
+            "reflection": 1,
+            "position": {
+                "xx": 320.0,
+                "yy": 240.0,
+                "zz": 200.0
+            },
+            "north": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 10.0
+            },
+            "east": {
+                "xx": 64.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "color": {
+                "xx": 0.75,
+                "yy": 0.75,
+                "zz": 0.75
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            }
+        },
+        {
+            "type": "plane",
+            "reflection": 1,
+            "position": {
+                "xx": 576.0,
+                "yy": 360.0,
+                "zz": 100.0
+            },
+            "north": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 100.0
+            },
+            "east": {
+                "xx": 64.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "color": {
+                "xx": 0.75,
+                "yy": 0.75,
+                "zz": 0.75
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            }
+        },
+        {
+            "type": "plane",
+            "reflection": 1,
+            "position": {
+                "xx": 576.0,
+                "yy": 360.0,
+                "zz": 200.0
+            },
+            "north": {
+                "xx": 0.0,
+                "yy": 10.0,
+                "zz": 0.0
+            },
+            "east": {
+                "xx": 64.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "color": {
+                "xx": 0.75,
+                "yy": 0.75,
+                "zz": 0.75
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            }
+        },
+        {
+            "type": "plane",
+            "reflection": 1,
+            "position": {
+                "xx": 512.0,
+                "yy": 300.0,
+                "zz": 100.0
+            },
+            "north": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 100.0
+            },
+            "east": {
+                "xx": 0.0,
+                "yy": 60.0,
+                "zz": 0.0
+            },
+            "color": {
+                "xx": 0.75,
+                "yy": 0.75,
+                "zz": 0.75
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            }
+        },
+        {
+            "type": "plane",
+            "reflection": 1,
+            "position": {
+                "xx": 512.0,
+                "yy": 300.0,
+                "zz": 200.0
+            },
+            "north": {
+                "xx": 10.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "east": {
+                "xx": 0.0,
+                "yy": 60.0,
+                "zz": 0.0
+            },
+            "color": {
+                "xx": 0.75,
+                "yy": 0.75,
+                "zz": 0.75
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            }
+        },
+        {
+            "type": "plane",
+            "reflection": 1,
+            "position": {
+                "xx": 640.0,
+                "yy": 240.0,
+                "zz": 100.0
+            },
+            "north": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 100.0
+            },
+            "east": {
+                "xx": 0.0,
+                "yy": 120.0,
+                "zz": 0.0
+            },
+            "color": {
+                "xx": 0.75,
+                "yy": 0.75,
+                "zz": 0.75
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            }
+        },
+        {
+            "type": "plane",
+            "reflection": 1,
+            "position": {
+                "xx": 640.0,
+                "yy": 240.0,
+                "zz": 200.0
+            },
+            "north": {
+                "xx": 10.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "east": {
+                "xx": 0.0,
+                "yy": 120.0,
+                "zz": 0.0
+            },
+            "color": {
+                "xx": 0.75,
+                "yy": 0.75,
+                "zz": 0.75
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            }
+        },
+        {
+            "type": "plane",
+            "reflection": 1,
+            "position": {
+                "xx": 128.0,
+                "yy": 60.0,
+                "zz": 100.0
+            },
+            "north": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 100.0
+            },
+            "east": {
+                "xx": 0.0,
+                "yy": 60.0,
+                "zz": 0.0
+            },
+            "color": {
+                "xx": 0.75,
+                "yy": 0.75,
+                "zz": 0.75
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            }
+        },
+        {
+            "type": "plane",
+            "reflection": 1,
+            "position": {
+                "xx": 128.0,
+                "yy": 60.0,
+                "zz": 200.0
+            },
+            "north": {
+                "xx": 10.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "east": {
+                "xx": 0.0,
+                "yy": 60.0,
+                "zz": 0.0
+            },
+            "color": {
+                "xx": 0.75,
+                "yy": 0.75,
+                "zz": 0.75
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            }
+        },
+        {
+            "type": "plane",
+            "reflection": 1,
+            "position": {
+                "xx": 320.0,
+                "yy": 120.0,
+                "zz": 100.0
+            },
+            "north": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 100.0
+            },
+            "east": {
+                "xx": 192.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "color": {
+                "xx": 0.75,
+                "yy": 0.75,
+                "zz": 0.75
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            }
+        },
+        {
+            "type": "plane",
+            "reflection": 1,
+            "position": {
+                "xx": 320.0,
+                "yy": 120.0,
+                "zz": 200.0
+            },
+            "north": {
+                "xx": 0.0,
+                "yy": 10.0,
+                "zz": 0.0
+            },
+            "east": {
+                "xx": 192.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "color": {
+                "xx": 0.75,
+                "yy": 0.75,
+                "zz": 0.75
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            }
+        },
+        {
+            "type": "plane",
+            "reflection": 1,
+            "position": {
+                "xx": 256.0,
+                "yy": 480.0,
+                "zz": 100.0
+            },
+            "north": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 100.0
+            },
+            "east": {
+                "xx": 0.0,
+                "yy": 120.0,
+                "zz": 0.0
+            },
+            "color": {
+                "xx": 0.75,
+                "yy": 0.75,
+                "zz": 0.75
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            }
+        },
+        {
+            "type": "plane",
+            "reflection": 1,
+            "position": {
+                "xx": 256.0,
+                "yy": 480.0,
+                "zz": 200.0
+            },
+            "north": {
+                "xx": 10.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "east": {
+                "xx": 0.0,
+                "yy": 120.0,
+                "zz": 0.0
+            },
+            "color": {
+                "xx": 0.75,
+                "yy": 0.75,
+                "zz": 0.75
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            }
+        },
+        {
+            "type": "plane",
+            "reflection": 1,
+            "position": {
+                "xx": 320.0,
+                "yy": 360.0,
+                "zz": 100.0
+            },
+            "north": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 100.0
+            },
+            "east": {
+                "xx": 64.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "color": {
+                "xx": 0.75,
+                "yy": 0.75,
+                "zz": 0.75
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            }
+        },
+        {
+            "type": "plane",
+            "reflection": 1,
+            "position": {
+                "xx": 320.0,
+                "yy": 360.0,
+                "zz": 200.0
+            },
+            "north": {
+                "xx": 0.0,
+                "yy": 10.0,
+                "zz": 0.0
+            },
+            "east": {
+                "xx": 64.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "color": {
+                "xx": 0.75,
+                "yy": 0.75,
+                "zz": 0.75
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            }
+        },
+        {
+            "type": "plane",
+            "reflection": 1,
+            "position": {
+                "xx": 384.0,
+                "yy": 480.0,
+                "zz": 100.0
+            },
+            "north": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 100.0
+            },
+            "east": {
+                "xx": 0.0,
+                "yy": 120.0,
+                "zz": 0.0
+            },
+            "color": {
+                "xx": 0.75,
+                "yy": 0.75,
+                "zz": 0.75
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            }
+        },
+        {
+            "type": "plane",
+            "reflection": 1,
+            "position": {
+                "xx": 384.0,
+                "yy": 480.0,
+                "zz": 200.0
+            },
+            "north": {
+                "xx": 10.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "east": {
+                "xx": 0.0,
+                "yy": 120.0,
+                "zz": 0.0
+            },
+            "color": {
+                "xx": 0.75,
+                "yy": 0.75,
+                "zz": 0.75
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            }
+        },
+        {
+            "type": "plane",
+            "reflection": 1,
+            "position": {
+                "xx": 512.0,
+                "yy": 600.0,
+                "zz": 100.0
+            },
+            "north": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 100.0
+            },
+            "east": {
+                "xx": 128.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "color": {
+                "xx": 0.75,
+                "yy": 0.75,
+                "zz": 0.75
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            }
+        },
+        {
+            "type": "plane",
+            "reflection": 1,
+            "position": {
+                "xx": 512.0,
+                "yy": 600.0,
+                "zz": 200.0
+            },
+            "north": {
+                "xx": 0.0,
+                "yy": 10.0,
+                "zz": 0.0
+            },
+            "east": {
+                "xx": 128.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "color": {
+                "xx": 0.75,
+                "yy": 0.75,
+                "zz": 0.75
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            }
+        },
+        {
+            "type": "plane",
+            "reflection": 1,
+            "position": {
+                "xx": 640.0,
+                "yy": 600.0,
+                "zz": 100.0
+            },
+            "north": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 100.0
+            },
+            "east": {
+                "xx": 0.0,
+                "yy": 120.0,
+                "zz": 0.0
+            },
+            "color": {
+                "xx": 0.75,
+                "yy": 0.75,
+                "zz": 0.75
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            }
+        },
+        {
+            "type": "plane",
+            "reflection": 1,
+            "position": {
+                "xx": 640.0,
+                "yy": 600.0,
+                "zz": 200.0
+            },
+            "north": {
+                "xx": 10.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "east": {
+                "xx": 0.0,
+                "yy": 120.0,
+                "zz": 0.0
+            },
+            "color": {
+                "xx": 0.75,
+                "yy": 0.75,
+                "zz": 0.75
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            }
+        },
+        {
+            "type": "plane",
+            "reflection": 1,
+            "position": {
+                "xx": 576.0,
+                "yy": 480.0,
+                "zz": 100.0
+            },
+            "north": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 100.0
+            },
+            "east": {
+                "xx": 64.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "color": {
+                "xx": 0.75,
+                "yy": 0.75,
+                "zz": 0.75
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            }
+        },
+        {
+            "type": "plane",
+            "reflection": 1,
+            "position": {
+                "xx": 576.0,
+                "yy": 480.0,
+                "zz": 200.0
+            },
+            "north": {
+                "xx": 0.0,
+                "yy": 10.0,
+                "zz": 0.0
+            },
+            "east": {
+                "xx": 64.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "color": {
+                "xx": 0.75,
+                "yy": 0.75,
+                "zz": 0.75
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            }
+        },
+        {
+            "type": "plane",
+            "reflection": 1,
+            "position": {
+                "xx": 960.0,
+                "yy": 600.0,
+                "zz": 100.0
+            },
+            "north": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 100.0
+            },
+            "east": {
+                "xx": 192.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "color": {
+                "xx": 0.75,
+                "yy": 0.75,
+                "zz": 0.75
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            }
+        },
+        {
+            "type": "plane",
+            "reflection": 1,
+            "position": {
+                "xx": 960.0,
+                "yy": 600.0,
+                "zz": 200.0
+            },
+            "north": {
+                "xx": 0.0,
+                "yy": 10.0,
+                "zz": 0.0
+            },
+            "east": {
+                "xx": 192.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "color": {
+                "xx": 0.75,
+                "yy": 0.75,
+                "zz": 0.75
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            }
+        },
+        {
+            "type": "plane",
+            "reflection": 1,
+            "position": {
+                "xx": 960.0,
+                "yy": 480.0,
+                "zz": 100.0
+            },
+            "north": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 100.0
+            },
+            "east": {
+                "xx": 192.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "color": {
+                "xx": 0.75,
+                "yy": 0.75,
+                "zz": 0.75
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            }
+        },
+        {
+            "type": "plane",
+            "reflection": 1,
+            "position": {
+                "xx": 960.0,
+                "yy": 480.0,
+                "zz": 200.0
+            },
+            "north": {
+                "xx": 0.0,
+                "yy": 10.0,
+                "zz": 0.0
+            },
+            "east": {
+                "xx": 192.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "color": {
+                "xx": 0.75,
+                "yy": 0.75,
+                "zz": 0.75
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            }
+        },
+        {
+            "type": "plane",
+            "reflection": 1,
+            "position": {
+                "xx": 768.0,
+                "yy": 600.0,
+                "zz": 100.0
+            },
+            "north": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 100.0
+            },
+            "east": {
+                "xx": 0.0,
+                "yy": 120.0,
+                "zz": 0.0
+            },
+            "color": {
+                "xx": 0.75,
+                "yy": 0.75,
+                "zz": 0.75
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            }
+        },
+        {
+            "type": "plane",
+            "reflection": 1,
+            "position": {
+                "xx": 768.0,
+                "yy": 600.0,
+                "zz": 200.0
+            },
+            "north": {
+                "xx": 10.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "east": {
+                "xx": 0.0,
+                "yy": 120.0,
+                "zz": 0.0
+            },
+            "color": {
+                "xx": 0.75,
+                "yy": 0.75,
+                "zz": 0.75
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            }
+        },
+        {
+            "type": "plane",
+            "reflection": 1,
+            "position": {
+                "xx": 1024.0,
+                "yy": 360.0,
+                "zz": 100.0
+            },
+            "north": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 100.0
+            },
+            "east": {
+                "xx": 256.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "color": {
+                "xx": 0.75,
+                "yy": 0.75,
+                "zz": 0.75
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            }
+        },
+        {
+            "type": "plane",
+            "reflection": 1,
+            "position": {
+                "xx": 1024.0,
+                "yy": 360.0,
+                "zz": 200.0
+            },
+            "north": {
+                "xx": 0.0,
+                "yy": 10.0,
+                "zz": 0.0
+            },
+            "east": {
+                "xx": 256.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "color": {
+                "xx": 0.75,
+                "yy": 0.75,
+                "zz": 0.75
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            }
+        },
+        {
+            "type": "plane",
+            "reflection": 1,
+            "position": {
+                "xx": 768.0,
+                "yy": 240.0,
+                "zz": 100.0
+            },
+            "north": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 100.0
+            },
+            "east": {
+                "xx": 0.0,
+                "yy": 120.0,
+                "zz": 0.0
+            },
+            "color": {
+                "xx": 0.75,
+                "yy": 0.75,
+                "zz": 0.75
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            }
+        },
+        {
+            "type": "plane",
+            "reflection": 1,
+            "position": {
+                "xx": 768.0,
+                "yy": 240.0,
+                "zz": 200.0
+            },
+            "north": {
+                "xx": 10.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "east": {
+                "xx": 0.0,
+                "yy": 120.0,
+                "zz": 0.0
+            },
+            "color": {
+                "xx": 0.75,
+                "yy": 0.75,
+                "zz": 0.75
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            }
+        },
+        {
+            "type": "plane",
+            "reflection": 1,
+            "position": {
+                "xx": 896.0,
+                "yy": 120.0,
+                "zz": 100.0
+            },
+            "north": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 100.0
+            },
+            "east": {
+                "xx": 128.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "color": {
+                "xx": 0.75,
+                "yy": 0.75,
+                "zz": 0.75
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            }
+        },
+        {
+            "type": "plane",
+            "reflection": 1,
+            "position": {
+                "xx": 896.0,
+                "yy": 120.0,
+                "zz": 200.0
+            },
+            "north": {
+                "xx": 0.0,
+                "yy": 10.0,
+                "zz": 0.0
+            },
+            "east": {
+                "xx": 128.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "color": {
+                "xx": 0.75,
+                "yy": 0.75,
+                "zz": 0.75
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            }
+        },
+        {
+            "type": "plane",
+            "reflection": 1,
+            "position": {
+                "xx": 1024.0,
+                "yy": 180.0,
+                "zz": 100.0
+            },
+            "north": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 100.0
+            },
+            "east": {
+                "xx": 0.0,
+                "yy": 60.0,
+                "zz": 0.0
+            },
+            "color": {
+                "xx": 0.75,
+                "yy": 0.75,
+                "zz": 0.75
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            }
+        },
+        {
+            "type": "plane",
+            "reflection": 1,
+            "position": {
+                "xx": 1024.0,
+                "yy": 180.0,
+                "zz": 200.0
+            },
+            "north": {
+                "xx": 10.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "east": {
+                "xx": 0.0,
+                "yy": 60.0,
+                "zz": 0.0
+            },
+            "color": {
+                "xx": 0.75,
+                "yy": 0.75,
+                "zz": 0.75
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            }
+        },
+        {
+            "type": "plane",
+            "reflection": 1,
+            "position": {
+                "xx": 960.0,
+                "yy": 240.0,
+                "zz": 100.0
+            },
+            "north": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 100.0
+            },
+            "east": {
+                "xx": 64.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "color": {
+                "xx": 0.75,
+                "yy": 0.75,
+                "zz": 0.75
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            }
+        },
+        {
+            "type": "plane",
+            "reflection": 1,
+            "position": {
+                "xx": 960.0,
+                "yy": 240.0,
+                "zz": 200.0
+            },
+            "north": {
+                "xx": 0.0,
+                "yy": 10.0,
+                "zz": 0.0
+            },
+            "east": {
+                "xx": 64.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "color": {
+                "xx": 0.75,
+                "yy": 0.75,
+                "zz": 0.75
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            }
+        },
+        {
+            "type": "plane",
+            "reflection": 1,
+            "position": {
+                "xx": 1216.0,
+                "yy": 240.0,
+                "zz": 100.0
+            },
+            "north": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 100.0
+            },
+            "east": {
+                "xx": 64.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "color": {
+                "xx": 0.75,
+                "yy": 0.75,
+                "zz": 0.75
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            }
+        },
+        {
+            "type": "plane",
+            "reflection": 1,
+            "position": {
+                "xx": 1216.0,
+                "yy": 240.0,
+                "zz": 200.0
+            },
+            "north": {
+                "xx": 0.0,
+                "yy": 10.0,
+                "zz": 0.0
+            },
+            "east": {
+                "xx": 64.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "color": {
+                "xx": 0.75,
+                "yy": 0.75,
+                "zz": 0.75
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            }
+        },
+        {
+            "type": "plane",
+            "reflection": 1,
+            "position": {
+                "xx": 1152.0,
+                "yy": 180.0,
+                "zz": 100.0
+            },
+            "north": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 100.0
+            },
+            "east": {
+                "xx": 0.0,
+                "yy": 60.0,
+                "zz": 0.0
+            },
+            "color": {
+                "xx": 0.75,
+                "yy": 0.75,
+                "zz": 0.75
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            }
+        },
+        {
+            "type": "plane",
+            "reflection": 1,
+            "position": {
+                "xx": 1152.0,
+                "yy": 180.0,
+                "zz": 200.0
+            },
+            "north": {
+                "xx": 10.0,
+                "yy": 0.0,
+                "zz": 0.0
+            },
+            "east": {
+                "xx": 0.0,
+                "yy": 60.0,
+                "zz": 0.0
+            },
+            "color": {
+                "xx": 0.75,
+                "yy": 0.75,
+                "zz": 0.75
+            },
+            "emission": {
+                "xx": 0.0,
+                "yy": 0.0,
+                "zz": 0.0
+            }
+        },
+        {
             "type": "sphere",
             "reflection": 0,
-            "radius": 50.0,
+            "radius": 30.0,
             "position": {
                 "xx": 576.0,
                 "yy": 300.0,
-                "zz": 51.0
+                "zz": 31.0
             },
             "color": {
                 "xx": 0.0,
@@ -274,11 +1550,11 @@
         {
             "type": "sphere",
             "reflection": 0,
-            "radius": 50.0,
+            "radius": 30.0,
             "position": {
                 "xx": 64.0,
                 "yy": 660.0,
-                "zz": 51.0
+                "zz": 31.0
             },
             "color": {
                 "xx": 0.0,
@@ -294,11 +1570,11 @@
         {
             "type": "sphere",
             "reflection": 0,
-            "radius": 50.0,
+            "radius": 30.0,
             "position": {
                 "xx": 320.0,
                 "yy": 660.0,
-                "zz": 51.0
+                "zz": 31.0
             },
             "color": {
                 "xx": 0.0,
@@ -314,11 +1590,11 @@
         {
             "type": "sphere",
             "reflection": 0,
-            "radius": 50.0,
+            "radius": 30.0,
             "position": {
-                "xx": 832.0,
+                "xx": 1216.0,
                 "yy": 660.0,
-                "zz": 51.0
+                "zz": 31.0
             },
             "color": {
                 "xx": 0.0,
@@ -334,11 +1610,11 @@
         {
             "type": "sphere",
             "reflection": 0,
-            "radius": 50.0,
+            "radius": 30.0,
             "position": {
-                "xx": 960.0,
-                "yy": 180.0,
-                "zz": 51.0
+                "xx": 1088.0,
+                "yy": 300.0,
+                "zz": 31.0
             },
             "color": {
                 "xx": 0.0,
