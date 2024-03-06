@@ -195,7 +195,7 @@
         },
         {
             "type": "plane",
-            "reflection": 1,
+            "reflection": 0,
             "position": {
                 "xx": 128.0,
                 "yy": 480.0,
@@ -224,7 +224,7 @@
         },
         {
             "type": "plane",
-            "reflection": 1,
+            "reflection": 0,
             "position": {
                 "xx": 128.0,
                 "yy": 480.0,
@@ -253,7 +253,7 @@
         },
         {
             "type": "plane",
-            "reflection": 1,
+            "reflection": 0,
             "position": {
                 "xx": 320.0,
                 "yy": 240.0,
@@ -282,7 +282,7 @@
         },
         {
             "type": "plane",
-            "reflection": 1,
+            "reflection": 0,
             "position": {
                 "xx": 320.0,
                 "yy": 240.0,
@@ -311,7 +311,7 @@
         },
         {
             "type": "plane",
-            "reflection": 1,
+            "reflection": 0,
             "position": {
                 "xx": 576.0,
                 "yy": 360.0,
@@ -340,7 +340,7 @@
         },
         {
             "type": "plane",
-            "reflection": 1,
+            "reflection": 0,
             "position": {
                 "xx": 576.0,
                 "yy": 360.0,
@@ -369,7 +369,7 @@
         },
         {
             "type": "plane",
-            "reflection": 1,
+            "reflection": 0,
             "position": {
                 "xx": 512.0,
                 "yy": 300.0,
@@ -398,7 +398,7 @@
         },
         {
             "type": "plane",
-            "reflection": 1,
+            "reflection": 0,
             "position": {
                 "xx": 512.0,
                 "yy": 300.0,
@@ -427,7 +427,7 @@
         },
         {
             "type": "plane",
-            "reflection": 1,
+            "reflection": 0,
             "position": {
                 "xx": 640.0,
                 "yy": 240.0,
@@ -456,7 +456,7 @@
         },
         {
             "type": "plane",
-            "reflection": 1,
+            "reflection": 0,
             "position": {
                 "xx": 640.0,
                 "yy": 240.0,
@@ -485,7 +485,7 @@
         },
         {
             "type": "plane",
-            "reflection": 1,
+            "reflection": 0,
             "position": {
                 "xx": 128.0,
                 "yy": 60.0,
@@ -514,7 +514,7 @@
         },
         {
             "type": "plane",
-            "reflection": 1,
+            "reflection": 0,
             "position": {
                 "xx": 128.0,
                 "yy": 60.0,
@@ -543,7 +543,7 @@
         },
         {
             "type": "plane",
-            "reflection": 1,
+            "reflection": 0,
             "position": {
                 "xx": 320.0,
                 "yy": 120.0,
@@ -572,7 +572,7 @@
         },
         {
             "type": "plane",
-            "reflection": 1,
+            "reflection": 0,
             "position": {
                 "xx": 320.0,
                 "yy": 120.0,
@@ -601,7 +601,7 @@
         },
         {
             "type": "plane",
-            "reflection": 1,
+            "reflection": 0,
             "position": {
                 "xx": 256.0,
                 "yy": 480.0,
@@ -630,7 +630,7 @@
         },
         {
             "type": "plane",
-            "reflection": 1,
+            "reflection": 0,
             "position": {
                 "xx": 256.0,
                 "yy": 480.0,
@@ -659,7 +659,7 @@
         },
         {
             "type": "plane",
-            "reflection": 1,
+            "reflection": 0,
             "position": {
                 "xx": 320.0,
                 "yy": 360.0,
@@ -688,7 +688,7 @@
         },
         {
             "type": "plane",
-            "reflection": 1,
+            "reflection": 0,
             "position": {
                 "xx": 320.0,
                 "yy": 360.0,
@@ -717,7 +717,7 @@
         },
         {
             "type": "plane",
-            "reflection": 1,
+            "reflection": 0,
             "position": {
                 "xx": 384.0,
                 "yy": 480.0,
@@ -746,7 +746,7 @@
         },
         {
             "type": "plane",
-            "reflection": 1,
+            "reflection": 0,
             "position": {
                 "xx": 384.0,
                 "yy": 480.0,
@@ -775,7 +775,7 @@
         },
         {
             "type": "plane",
-            "reflection": 1,
+            "reflection": 0,
             "position": {
                 "xx": 512.0,
                 "yy": 600.0,
@@ -804,7 +804,7 @@
         },
         {
             "type": "plane",
-            "reflection": 1,
+            "reflection": 0,
             "position": {
                 "xx": 512.0,
                 "yy": 600.0,
@@ -833,7 +833,7 @@
         },
         {
             "type": "plane",
-            "reflection": 1,
+            "reflection": 0,
             "position": {
                 "xx": 640.0,
                 "yy": 600.0,
@@ -862,7 +862,7 @@
         },
         {
             "type": "plane",
-            "reflection": 1,
+            "reflection": 0,
             "position": {
                 "xx": 640.0,
                 "yy": 600.0,
@@ -891,7 +891,7 @@
         },
         {
             "type": "plane",
-            "reflection": 1,
+            "reflection": 0,
             "position": {
                 "xx": 576.0,
                 "yy": 480.0,
@@ -920,7 +920,7 @@
         },
         {
             "type": "plane",
-            "reflection": 1,
+            "reflection": 0,
             "position": {
                 "xx": 576.0,
                 "yy": 480.0,
@@ -949,7 +949,7 @@
         },
         {
             "type": "plane",
-            "reflection": 1,
+            "reflection": 0,
             "position": {
                 "xx": 960.0,
                 "yy": 600.0,
@@ -978,7 +978,7 @@
         },
         {
             "type": "plane",
-            "reflection": 1,
+            "reflection": 0,
             "position": {
                 "xx": 960.0,
                 "yy": 600.0,
@@ -1007,7 +1007,7 @@
         },
         {
             "type": "plane",
-            "reflection": 1,
+            "reflection": 0,
             "position": {
                 "xx": 960.0,
                 "yy": 480.0,
@@ -1036,7 +1036,7 @@
         },
         {
             "type": "plane",
-            "reflection": 1,
+            "reflection": 0,
             "position": {
                 "xx": 960.0,
                 "yy": 480.0,
@@ -1065,7 +1065,7 @@
         },
         {
             "type": "plane",
-            "reflection": 1,
+            "reflection": 0,
             "position": {
                 "xx": 768.0,
                 "yy": 600.0,
@@ -1094,7 +1094,7 @@
         },
         {
             "type": "plane",
-            "reflection": 1,
+            "reflection": 0,
             "position": {
                 "xx": 768.0,
                 "yy": 600.0,
@@ -1123,7 +1123,7 @@
         },
         {
             "type": "plane",
-            "reflection": 1,
+            "reflection": 0,
             "position": {
                 "xx": 1024.0,
                 "yy": 360.0,
@@ -1152,7 +1152,7 @@
         },
         {
             "type": "plane",
-            "reflection": 1,
+            "reflection": 0,
             "position": {
                 "xx": 1024.0,
                 "yy": 360.0,
@@ -1181,7 +1181,7 @@
         },
         {
             "type": "plane",
-            "reflection": 1,
+            "reflection": 0,
             "position": {
                 "xx": 768.0,
                 "yy": 240.0,
@@ -1210,7 +1210,7 @@
         },
         {
             "type": "plane",
-            "reflection": 1,
+            "reflection": 0,
             "position": {
                 "xx": 768.0,
                 "yy": 240.0,
@@ -1239,7 +1239,7 @@
         },
         {
             "type": "plane",
-            "reflection": 1,
+            "reflection": 0,
             "position": {
                 "xx": 896.0,
                 "yy": 120.0,
@@ -1268,7 +1268,7 @@
         },
         {
             "type": "plane",
-            "reflection": 1,
+            "reflection": 0,
             "position": {
                 "xx": 896.0,
                 "yy": 120.0,
@@ -1297,7 +1297,7 @@
         },
         {
             "type": "plane",
-            "reflection": 1,
+            "reflection": 0,
             "position": {
                 "xx": 1024.0,
                 "yy": 180.0,
@@ -1326,7 +1326,7 @@
         },
         {
             "type": "plane",
-            "reflection": 1,
+            "reflection": 0,
             "position": {
                 "xx": 1024.0,
                 "yy": 180.0,
@@ -1355,7 +1355,7 @@
         },
         {
             "type": "plane",
-            "reflection": 1,
+            "reflection": 0,
             "position": {
                 "xx": 960.0,
                 "yy": 240.0,
@@ -1384,7 +1384,7 @@
         },
         {
             "type": "plane",
-            "reflection": 1,
+            "reflection": 0,
             "position": {
                 "xx": 960.0,
                 "yy": 240.0,
@@ -1413,7 +1413,7 @@
         },
         {
             "type": "plane",
-            "reflection": 1,
+            "reflection": 0,
             "position": {
                 "xx": 1216.0,
                 "yy": 240.0,
@@ -1442,7 +1442,7 @@
         },
         {
             "type": "plane",
-            "reflection": 1,
+            "reflection": 0,
             "position": {
                 "xx": 1216.0,
                 "yy": 240.0,
@@ -1471,7 +1471,7 @@
         },
         {
             "type": "plane",
-            "reflection": 1,
+            "reflection": 0,
             "position": {
                 "xx": 1152.0,
                 "yy": 180.0,
@@ -1500,7 +1500,7 @@
         },
         {
             "type": "plane",
-            "reflection": 1,
+            "reflection": 0,
             "position": {
                 "xx": 1152.0,
                 "yy": 180.0,
@@ -1530,16 +1530,16 @@
         {
             "type": "sphere",
             "reflection": 0,
-            "radius": 30.0,
+            "radius": 45.0,
             "position": {
                 "xx": 576.0,
                 "yy": 300.0,
-                "zz": 31.0
+                "zz": 43.0
             },
             "color": {
-                "xx": 0.0,
-                "yy": 0.0,
-                "zz": 0.0
+                "xx": 0.25,
+                "yy": 0.25,
+                "zz": 0.25
             },
             "emission": {
                 "xx": 15.0,
@@ -1550,16 +1550,16 @@
         {
             "type": "sphere",
             "reflection": 0,
-            "radius": 30.0,
+            "radius": 45.0,
             "position": {
                 "xx": 64.0,
                 "yy": 660.0,
-                "zz": 31.0
+                "zz": 43.0
             },
             "color": {
-                "xx": 0.0,
-                "yy": 0.0,
-                "zz": 0.0
+                "xx": 0.75,
+                "yy": 0.25,
+                "zz": 0.25
             },
             "emission": {
                 "xx": 20.0,
@@ -1570,16 +1570,16 @@
         {
             "type": "sphere",
             "reflection": 0,
-            "radius": 30.0,
+            "radius": 45.0,
             "position": {
                 "xx": 320.0,
                 "yy": 660.0,
-                "zz": 31.0
+                "zz": 43.0
             },
             "color": {
-                "xx": 0.0,
-                "yy": 0.0,
-                "zz": 0.0
+                "xx": 0.25,
+                "yy": 0.75,
+                "zz": 0.25
             },
             "emission": {
                 "xx": 5.0,
@@ -1590,16 +1590,16 @@
         {
             "type": "sphere",
             "reflection": 0,
-            "radius": 30.0,
+            "radius": 45.0,
             "position": {
                 "xx": 1216.0,
                 "yy": 660.0,
-                "zz": 31.0
+                "zz": 43.0
             },
             "color": {
-                "xx": 0.0,
-                "yy": 0.0,
-                "zz": 0.0
+                "xx": 0.25,
+                "yy": 0.25,
+                "zz": 0.75
             },
             "emission": {
                 "xx": 5.0,
@@ -1610,20 +1610,40 @@
         {
             "type": "sphere",
             "reflection": 0,
-            "radius": 30.0,
+            "radius": 45.0,
             "position": {
                 "xx": 1088.0,
                 "yy": 300.0,
-                "zz": 31.0
+                "zz": 43.0
             },
             "color": {
-                "xx": 0.0,
-                "yy": 0.0,
-                "zz": 0.0
+                "xx": 0.75,
+                "yy": 0.25,
+                "zz": 0.75
             },
             "emission": {
                 "xx": 15.0,
                 "yy": 5.0,
+                "zz": 15.0
+            }
+        },
+        {
+            "type": "sphere",
+            "reflection": 0,
+            "radius": 45.0,
+            "position": {
+                "xx": 704.0,
+                "yy": 420.0,
+                "zz": 43.0
+            },
+            "color": {
+                "xx": 0.25,
+                "yy": 0.75,
+                "zz": 0.75
+            },
+            "emission": {
+                "xx": 5.0,
+                "yy": 15.0,
                 "zz": 15.0
             }
         }
