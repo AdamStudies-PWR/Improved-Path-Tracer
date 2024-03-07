@@ -69,7 +69,7 @@ Vec3 Renderer::samplePixel(const Vec3& vecX, const Vec3& vecZ, const uint32_t pi
         ? sceneData_.getHeight()/2 - pixelZ - correctionZ
         : ((double)sceneData_.getHeight()/2 - pixelZ - 1.0) + ((correctionZ == 0.0) ? 1.0 : correctionZ);
 
-    const auto gaze = direction + vecX*stepX*FOV_SCALE + vecZ*stepZ*FOV_SCALE;
+    const auto gaze = (direction + vecX*stepX*FOV_SCALE + vecZ*stepZ*FOV_SCALE).norm();
 
     Vec3 pixel = Vec3();
     for (uint32_t i=0; i<samples_; i++)
