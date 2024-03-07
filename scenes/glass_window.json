@@ -96,9 +96,9 @@
                 "zz": 0.0
             },
             "color": {
-                "xx": 0.8,
-                "yy": 0.8,
-                "zz": 0.8
+                "xx": 0.25,
+                "yy": 0.25,
+                "zz": 0.75
             },
             "emission": {
                 "xx": 0.0,
@@ -125,9 +125,9 @@
                 "zz": 0.0
             },
             "color": {
-                "xx": 0.8,
-                "yy": 0.8,
-                "zz": 0.8
+                "xx": 0.75,
+                "yy": 0.25,
+                "zz": 0.25
             },
             "emission": {
                 "xx": 0.0,
@@ -212,9 +212,9 @@
                 "zz": 0.0
             },
             "color": {
-                "xx": 0.75,
+                "xx": 0.25,
                 "yy": 0.75,
-                "zz": 0.75
+                "zz": 0.25
             },
             "emission": {
                 "xx": 0.0,
@@ -362,7 +362,7 @@
         },
         {
             "type": "sphere",
-            "reflection": 0,
+            "reflection": 1,
             "radius": 600.0,
             "position": {
                 "xx": 700.0,
@@ -382,7 +382,7 @@
         },
         {
             "type": "sphere",
-            "reflection": 0,
+            "reflection": 1,
             "radius": 600.0,
             "position": {
                 "xx": 700.0,
