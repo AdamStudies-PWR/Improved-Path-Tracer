@@ -10,3 +10,6 @@ build
 # Output
 *.ppm
 *.png
+
+# Massif
+massif.out.*
