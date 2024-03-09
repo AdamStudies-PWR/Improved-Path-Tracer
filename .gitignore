@@ -10,3 +10,8 @@ build
 # Output
 *.ppm
 *.png
+
+# nsys
+*.nsys-rep
+*.sqlite
+*Summary.html
