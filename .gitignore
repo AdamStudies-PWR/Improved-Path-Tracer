@@ -11,7 +11,5 @@ build
 *.ppm
 *.png
 
-# nsys
-*.nsys-rep
-*.sqlite
-*Summary.html
+# log files
+*.csv
