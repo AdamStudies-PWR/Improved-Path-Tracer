@@ -1,4 +1,4 @@
-# ImprovedPathTracer
+# Improved Path-Tracer
 Prgram used for my master thesis.
 
 ## Usage
