@@ -17,6 +17,14 @@ tracer --depth=10 --samples=40 scene.json
 <br>[-s / --samples] - Specifies number of samples per pixel. This value is optional. Default value is 40.
 <br>[scene.json] - Path to json file with scene data. This value is mandatory. Example scenes can be found in *scenes* folder.
 
+Use
+
+```
+tracer --help
+```
+
+To display up to date help message.
+
 ## Memory profiling
 
 To determin memory usage use valgrind.

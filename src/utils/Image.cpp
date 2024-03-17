@@ -36,7 +36,7 @@ void getRgbArray(unsigned char* target, const std::vector<Vec3> image)
 }
 }  // namespace
 
-void saveImage(const std::vector<Vec3>& image, const uint32_t height, const uint32_t width)
+void saveImage(const std::vector<Vec3>& image, const uint32_t height, const uint32_t width, const std::string filename)
 {
     std::cout << "Saving Image..." << std::endl;
 
@@ -52,7 +52,7 @@ void saveImage(const std::vector<Vec3>& image, const uint32_t height, const uint
     InitializeMagick({});
     Image pngImage;
     pngImage.read(width, height, "RGB", Magick::CharPixel, pixelArray);
-    pngImage.write("image.png");
+    pngImage.write(filename + ".png");
 }
 
 }  // namespace tracer::utils

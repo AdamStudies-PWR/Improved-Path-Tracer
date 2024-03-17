@@ -37,7 +37,11 @@ int main(int argc, char* argv[])
         return renderer->render();
     };
     const auto image = measure(std::move(wrappedRender));
-    saveImage(image, sceneData.getHeight(), sceneData.getWidth());
+
+    std::ostringstream filename;
+    filename << inputParser.getSceneName() << "_d" << +inputParser.getMaxDepth() << "_s"
+        << +inputParser.getSamplingRate() << std::endl;
+    saveImage(image, sceneData.getHeight(), sceneData.getWidth(), filename.str());
 
     return 0;
 }
