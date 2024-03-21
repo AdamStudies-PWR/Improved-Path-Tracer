@@ -207,7 +207,7 @@ bool InputParser::validateSamples(const std::string& number)
         return false;
     }
 
-    sampleRate_ = (uint16_t)temp / 4;
+    sampleRate_ = (uint16_t)temp;
     return true;
 }
 
