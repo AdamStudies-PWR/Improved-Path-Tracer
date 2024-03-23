@@ -39,60 +39,9 @@ int main(int argc, char* argv[])
     const auto image = measure(std::move(wrappedRender));
 
     std::ostringstream filename;
-    filename << inputParser.getSceneName() << "d" << +inputParser.getMaxDepth() << "s"
+    filename << inputParser.getSceneName() << "D" << +inputParser.getMaxDepth() << "S"
         << +inputParser.getSamplingRate();
     saveImage(image, sceneData.getHeight(), sceneData.getWidth(), filename.str());
 
     return 0;
 }
-
-/*
-SCENE SAVING LOGIC
-
-#include <string>
-#include <vector>
-#include <fstream>
-#include <nlohmann/json.hpp>
-using json = nlohmann::json;
-
-   json j;
-
-    j["width"] = 1280;
-    j["height"] = 720;
-
-    auto camera = sceneData.getCamera();
-    j["camera"]["position"] = {{"xx", camera.origin_.xx_}, {"yy", camera.origin_.yy_}, {"zz", camera.origin_.zz_}};
-    j["camera"]["direction"] = {{"xx", camera.direction_.xx_}, {"yy", camera.direction_.yy_}, {"zz", camera.direction_.zz_}};
-
-    std::vector<json> obj_array;
-    for (const auto obj : sceneData.objects_)
-    {
-        json temp = {
-            {"type", "sphere"},
-            {"radius", obj->radius_},
-            {"position", {
-                {"xx", obj->getPosition().xx_},
-                {"yy", obj->getPosition().yy_},
-                {"zz", obj->getPosition().zz_}
-            }},
-            {"emission", {
-                {"xx", obj->getEmission().xx_},
-                {"yy", obj->getEmission().yy_},
-                {"zz", obj->getEmission().zz_}
-            }},
-            {"color", {
-                {"xx", obj->getColor().xx_},
-                {"yy", obj->getColor().yy_},
-                {"zz", obj->getColor().zz_}
-            }},
-            {"reflection", obj->getReflectionType()}
-        };
-
-        obj_array.push_back(temp);
-    }
-
-    j["objects"] = obj_array;
-    std::ofstream o("spheres.json");
-    o << std::setw(4) << j << std::endl;
-
-*/
