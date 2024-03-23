@@ -39,8 +39,8 @@ int main(int argc, char* argv[])
     const auto image = measure(std::move(wrappedRender));
 
     std::ostringstream filename;
-    filename << inputParser.getSceneName() << "_d" << +inputParser.getMaxDepth() << "_s"
-        << +inputParser.getSamplingRate() << std::endl;
+    filename << inputParser.getSceneName() << "d" << +inputParser.getMaxDepth() << "s"
+        << +inputParser.getSamplingRate();
     saveImage(image, sceneData.getHeight(), sceneData.getWidth(), filename.str());
 
     return 0;
