@@ -245,7 +245,6 @@ void InputParser::printErrorMessage(const std::string& error)
     std::cout << "Cause: " << error << std::endl;
     std::cout << "Usage:" << std::endl;
     printHelpMessage();
-
 }
 
 void InputParser::printHelpMessage()
