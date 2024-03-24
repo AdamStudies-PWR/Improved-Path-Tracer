@@ -251,9 +251,9 @@ void InputParser::printHelpMessage()
 {
     std::cout << "tracer [arguments] [path_to_scene]" << std::endl;
     std::cout << "[arguments] are [-s/--samples] or [-d/--depth]" << std::endl;
-    std::cout << "\t [OPTIONAL] -s=number or --samples=number - Specifies number of samples per pixel."
+    std::cout << "\t [OPTIONAL] -s=number or --samples=number - Specifies number of samples per pixel. "
               << "It must be between " << MIN_SAMPLES << " and " << MAX_SAMPLES << std::endl;
-    std::cout << "\t [OPTIONAL] -d=number or --depth=number - Specifies max number of reflections per ray"
+    std::cout << "\t [OPTIONAL] -d=number or --depth=number - Specifies max number of reflections per ray. "
               << "It must be between " << (int)MIN_DEPTH << " and " << (int)MAX_DEPTH << std::endl;
     std::cout << "[path_to_scene] - specifies path to json file with scene data. It is mandatory." << std::endl;
 }
