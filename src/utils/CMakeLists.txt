@@ -14,7 +14,7 @@ target_include_directories(${PROJECT_NAME}
         include
 )
 
-find_package(ImageMagick REQUIRED COMPONENTS Magick++)
+find_package(ImageMagick COMPONENTS Magick++ REQUIRED)
 
 target_link_libraries(${PROJECT_NAME}
     PRIVATE

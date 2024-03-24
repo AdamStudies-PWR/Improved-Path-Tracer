@@ -52,7 +52,11 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    saveImage(image, sceneData.getHeight(), sceneData.getWidth());
+    std::ostringstream filename;
+    filename << inputParser.getSceneName() << "D" << +inputParser.getMaxDepth() << "S"
+        << +inputParser.getSamplingRate();
+    saveImage(image, sceneData.getHeight(), sceneData.getWidth(), filename.str());
+
     return 0;
 }
 

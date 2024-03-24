@@ -7,6 +7,8 @@ add_executable(tracer
     main.cu
 )
 
+set_property(TARGET tracer PROPERTY CUDA_STANDARD 20)
+
 if (CMAKE_BUILD_TYPE STREQUAL Debug)
     target_compile_options(tracer
         PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:

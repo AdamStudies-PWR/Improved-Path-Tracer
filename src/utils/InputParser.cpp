@@ -14,11 +14,12 @@ namespace
 const uint8_t EXPECTED_ARGUMENT_COUNT_MIN = 1;
 const uint8_t EXPECTED_ARGUMENT_COUNT_MAX = 3;
 const uint8_t DEFAULT_DEPTH = 10;
-const uint8_t MIN_DEPTH = 1;
+const uint8_t MIN_DEPTH = 3;
 const uint8_t MAX_DEPTH = 255;
 const uint16_t DEFAULT_SAMPLES = 40;
 const uint16_t MIN_SAMPLES = 4;
 const uint16_t MAX_SAMPLES = 65535;
+const std::string HELP_REQUEST = "--help";
 const std::vector<std::string> SHORT_ALLOWED_ARGS = {"s", "d"};
 const std::vector<std::string> LONG_ALLOWED_ARGS = {"samples", "depth"};
 
@@ -37,11 +38,27 @@ std::vector<std::string> split(std::string input, const std::string& separator)
     return out;
 }
 
+std::string getSceneNameFromFile(std::string str)
+{
+    auto posSlash = str.rfind("/");
+    if (posSlash != std::string::npos)
+    {
+        str.replace(str.begin(), str.begin() + posSlash + 1, "");
+    }
+    auto posDot = str.rfind(".");
+    if (posDot != std::string::npos)
+    {
+        str.replace(str.begin() + posDot, str.end(), "");
+    }
+
+    return str;
+}
 }  // namespace
 
 InputParser::InputParser(int argumentCount, char* argumentList[])
-    : maxDepth_(DEFAULT_DEPTH)
+    : sceneName_("")
     , sampleRate_(DEFAULT_SAMPLES)
+    , maxDepth_(DEFAULT_DEPTH)
 {
     isValid_ = validateInput(argumentCount, argumentList);
 }
@@ -50,6 +67,7 @@ bool InputParser::isInputValid() const { return isValid_; }
 std::string InputParser::getScenePath() const { return scenePath_; }
 uint8_t InputParser::getMaxDepth() const { return maxDepth_; }
 uint16_t InputParser::getSamplingRate() const { return sampleRate_; }
+std::string InputParser::getSceneName() const { return sceneName_; }
 
 bool InputParser::validateInput(const int argumentCount, char* argumentList[])
 {
@@ -66,6 +84,7 @@ bool InputParser::validateInput(const int argumentCount, char* argumentList[])
     {
         case 1:
         {
+            if (isHelpRequest(argumentList[1])) return false;
             if (not validatePath(argumentList[1])) return false;
         } break;
         case 2:
@@ -84,6 +103,13 @@ bool InputParser::validateInput(const int argumentCount, char* argumentList[])
     return true;
 }
 
+bool InputParser::isHelpRequest(const std::string& arg)
+{
+    if (arg != HELP_REQUEST) return false;
+    printHelpMessage();
+    return true;
+}
+
 bool InputParser::validatePath(const std::string& path)
 {
     if (not std::filesystem::exists(path))
@@ -97,6 +123,7 @@ bool InputParser::validatePath(const std::string& path)
         return false;
     }
 
+    sceneName_ = getSceneNameFromFile(path);
     scenePath_ = path;
     return true;
 }
@@ -179,7 +206,7 @@ bool InputParser::validateSamples(const std::string& number)
         return false;
     }
 
-    sampleRate_ = (uint16_t)temp / 4;
+    sampleRate_ = (uint16_t)temp;
     return true;
 }
 
@@ -216,11 +243,16 @@ void InputParser::printErrorMessage(const std::string& error)
     std::cout << "Error parsing input!" << std::endl;
     std::cout << "Cause: " << error << std::endl;
     std::cout << "Usage:" << std::endl;
+    printHelpMessage();
+}
+
+void InputParser::printHelpMessage()
+{
     std::cout << "tracer [arguments] [path_to_scene]" << std::endl;
     std::cout << "[arguments] are [-s/--samples] or [-d/--depth]" << std::endl;
-    std::cout << "\t [OPTIONAL] -s=number or --samples=number - Specifies number of samples per pixel."
+    std::cout << "\t [OPTIONAL] -s=number or --samples=number - Specifies number of samples per pixel. "
               << "It must be between " << MIN_SAMPLES << " and " << MAX_SAMPLES << std::endl;
-    std::cout << "\t [OPTIONAL] -d=number or --depth=number - Specifies max number of reflections per ray"
+    std::cout << "\t [OPTIONAL] -d=number or --depth=number - Specifies max number of reflections per ray. "
               << "It must be between " << (int)MIN_DEPTH << " and " << (int)MAX_DEPTH << std::endl;
     std::cout << "[path_to_scene] - specifies path to json file with scene data. It is mandatory." << std::endl;
 }
