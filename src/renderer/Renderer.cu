@@ -28,6 +28,8 @@ const float FOV_SCALE = 0.0009;
 const uint16_t VIEWPORT_DISTANCE = 140;
 const double INF = 1e20;
 
+__device__ uint32_t counter = 0;
+
 __device__ Coordinates calculateCoordinates(const uint32_t idX, const uint32_t idZ,
     const uint32_t width, const uint32_t height)
 {
@@ -41,8 +43,8 @@ __device__ Coordinates calculateCoordinates(const uint32_t idX, const uint32_t i
     auto xStepping = width/BLOCK_SIZE;
     auto zStepping = height/BLOCK_SIZE;
 
-    auto pixelX = idX * xStepping + ((idX > xAddition) ? xAddition : idX);
-    auto pixelZ = idZ * zStepping + ((idZ > zAddition) ? zAddition : idZ);
+    auto pixelX = idX * xStepping + ((idX >= xAddition) ? xAddition : idX);
+    auto pixelZ = idZ * zStepping + ((idZ >= zAddition) ? zAddition : idZ);
 
     xStepping = xStepping + ((xAddition <= 0) ? 0 : ((idX < xAddition) ? 1 : 0));
     zStepping = zStepping + ((zAddition <= 0) ? 0 : ((idZ < zAddition) ? 1 : 0));
@@ -85,9 +87,10 @@ public:
 
     __device__ void start(Vec3* image, const Vec3& vecZ)
     {
+        const auto totalPixels = width_ * height_;
         const auto coordinates = calculateCoordinates(threadIdx.x, blockIdx.x, width_, height_);
-        const auto limitZ = coordinates.zz_ + coordinates.loopZ_ + 1;
-        const auto limitX = coordinates.xx_ + coordinates.loopX_ + 1;
+        const auto limitZ = coordinates.zz_ + coordinates.loopZ_;
+        const auto limitX = coordinates.xx_ + coordinates.loopX_;
 
         curandState state;
         auto seed = threadIdx.x + blockIdx.x * blockDim.x;
@@ -99,7 +102,9 @@ public:
             {
                 const auto index = z * width_ + x;
                 image[index] = samplePixel(camera_.orientation_, vecZ, x, z, samples_, state);
+                atomicAdd(&counter, 1);
             }
+            printf("\rRendering %.2f%%", ((float)counter/(totalPixels)*100));
         }
     }
 
@@ -249,6 +254,11 @@ private:
 __global__ void cudaMain(Vec3* image, ObjectData* objectsData, const uint32_t objectsCount, const uint32_t width,
     const uint32_t height, Camera camera, Vec3 vecZ, uint32_t samples, const uint8_t maxDepth)
 {
+    if (blockIdx.x == 0 && threadIdx.x == 0)
+    {
+        printf("\rRendering %.2f%%", (float)counter);
+    }
+
     Renderer render = Renderer(samples, width, height, maxDepth, camera);
     render.setUp(objectsData, objectsCount);
     render.start(image, vecZ);

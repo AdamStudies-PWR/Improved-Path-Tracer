@@ -48,7 +48,6 @@ int main(int argc, char* argv[])
     cudaError_t maybeError = cudaGetLastError();
     if (maybeError != cudaSuccess)
     {
-        std::cout << "CUDA error: " << cudaGetErrorString(maybeError) << std::endl;
         return 1;
     }
 
