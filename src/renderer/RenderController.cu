@@ -17,6 +17,15 @@ using namespace containers;
 using namespace scene;
 using namespace scene::objects;
 
+void cudaErrorCheck(const std::string& message)
+{
+    cudaError_t maybeError = cudaGetLastError();
+    if (maybeError != cudaSuccess)
+    {
+        std::cout << message << " - error: " << cudaGetErrorString(maybeError) << std::endl;
+    }
+}
+
 __global__ void cudaCreateObjects(AObject** objects, ObjectData* objectsData)
 {
     if (objectsData[threadIdx.x].objectType_ == SphereData)
@@ -46,14 +55,18 @@ std::vector<containers::Vec3> RenderContoller::start()
 
     AObject** devObjects;
     cudaMalloc((void**)&devObjects, sizeof(AObject) * objectDataVec.size());
+    cudaErrorCheck("Allocate memory for blueprint data");
 
     ObjectData* devData;
     cudaMalloc((void**)&devData, sizeof(ObjectData) * objectDataVec.size());
     cudaMemcpy(devData, objectDataVec.data(), sizeof(ObjectData) * objectDataVec.size(), cudaMemcpyHostToDevice);
+    cudaErrorCheck("Allocate memory for objects");
 
     cudaCreateObjects <<<1, objectDataVec.size()>>> (devObjects, devData);
+    cudaErrorCheck("cudaCreateObjects kernel");
 
     cudaFree(devData);
+    cudaErrorCheck("Clear object blueprint data");
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -64,21 +77,25 @@ std::vector<containers::Vec3> RenderContoller::start()
     Vec3* devImage;
     cudaMalloc((void**)&devImage, imageSize);
     cudaMemset(devImage, 0, imageSize);
+    cudaErrorCheck("Set image array");
 
     const auto numThreads = (sceneData_.getWidth() <= BLOCK_SIZE) ? sceneData_.getWidth() : BLOCK_SIZE;
     const auto numBlocks = (sceneData_.getHeight() <= BLOCK_SIZE) ? sceneData_.getHeight() : BLOCK_SIZE;
     cudaMain <<<numBlocks, numThreads>>> (devImage, devObjects, objectDataVec.size(), sceneData_.getWidth(),
         sceneData_.getHeight(), camera, vecZ, samples_, maxDepth_);
+    cudaErrorCheck("cudaMain kernel");
 
     Vec3* imagePtr = (Vec3*)malloc(imageSize);
     cudaMemcpy(imagePtr, devImage, imageSize, cudaMemcpyDeviceToHost);
+    cudaErrorCheck("Copy to device");
+
     cudaDeviceReset();
+    cudaErrorCheck("Reset device");
 
     const auto image = convertToVector(imagePtr);
     free(imagePtr);
 
     return image;
-    // return {};
 }
 
 std::vector<Vec3> RenderContoller::convertToVector(Vec3* imagePtr)
