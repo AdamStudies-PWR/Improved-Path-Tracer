@@ -4,6 +4,7 @@ set(SOURCES
     Renderer.cu
     RenderController.cu
     Coordinates.cu
+    ImageData.cpp
 )
 
 add_library(${PROJECT_NAME})

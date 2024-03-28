@@ -1,6 +1,7 @@
 #pragma once
 
-#include <stdio.h>
+#include <cstdint>
+
 
 namespace tracer::renderer
 {
@@ -8,7 +9,7 @@ namespace tracer::renderer
 namespace
 {
 // 1024 is MAX
-const uint32_t BLOCK_SIZE = 100;
+const uint32_t BLOCK_SIZE = 256;
 }  // namesapce
 
 }  // namespace tracer::renderer

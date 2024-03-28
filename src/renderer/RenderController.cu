@@ -6,6 +6,7 @@
 
 #include "Constants.hpp"
 #include "Renderer.cu"
+#include "ImageData.hpp"
 
 
 namespace tracer::renderer
@@ -55,7 +56,7 @@ std::vector<containers::Vec3> RenderContoller::start()
 
     AObject** devObjects;
     cudaMalloc((void**)&devObjects, sizeof(AObject) * objectDataVec.size());
-    cudaErrorCheck("Allocate memory for blueprint data");
+    cudaErrorCheck("Copy object blueprint data");
 
     ObjectData* devData;
     cudaMalloc((void**)&devData, sizeof(ObjectData) * objectDataVec.size());
@@ -68,10 +69,23 @@ std::vector<containers::Vec3> RenderContoller::start()
     cudaFree(devData);
     cudaErrorCheck("Clear object blueprint data");
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
     auto camera = sceneData_.getCamera();
-    const Vec3 vecZ = (camera.direction_%camera.orientation_).norm();
+    Camera* devCamera;
+    cudaMalloc((void**)&devCamera, sizeof(Camera));
+    cudaMemcpy(devCamera, &camera, sizeof(Camera), cudaMemcpyHostToDevice);
+    cudaErrorCheck("Copy camera data");
+
+    Vec3* devVecZ;
+    cudaMalloc((void**)&devVecZ, sizeof(Vec3));
+    cudaMemcpy(devVecZ, &(camera.direction_%camera.orientation_).norm(), sizeof(Vec3), cudaMemcpyHostToDevice);
+    cudaErrorCheck("Copy vecZ data");
+
+    ImageData* devImageData;
+    const auto imageProperties = ImageData(sceneData_.getWidth(), sceneData_.getHeight(), samples_, maxDepth_,
+        objectDataVec.size());
+    cudaMalloc((void**)&devImageData, sizeof(ImageData));
+    cudaMemcpy(devImageData, &imageProperties, sizeof(ImageData), cudaMemcpyHostToDevice);
+    cudaErrorCheck("Copy image properties data");
 
     const auto imageSize = sceneData_.getHeight() * sceneData_.getWidth() * sizeof(Vec3);
     Vec3* devImage;
@@ -81,8 +95,7 @@ std::vector<containers::Vec3> RenderContoller::start()
 
     const auto numThreads = (sceneData_.getWidth() <= BLOCK_SIZE) ? sceneData_.getWidth() : BLOCK_SIZE;
     const auto numBlocks = (sceneData_.getHeight() <= BLOCK_SIZE) ? sceneData_.getHeight() : BLOCK_SIZE;
-    cudaMain <<<numBlocks, numThreads>>> (devImage, devObjects, objectDataVec.size(), sceneData_.getWidth(),
-        sceneData_.getHeight(), camera, vecZ, samples_, maxDepth_);
+    cudaMain <<<numBlocks, numThreads>>> (devImage, devObjects, devCamera, devVecZ, devImageData);
     cudaErrorCheck("cudaMain kernel");
 
     Vec3* imagePtr = (Vec3*)malloc(imageSize);

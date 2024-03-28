@@ -9,9 +9,10 @@
 #include "scene/objects/RayData.hpp"
 #include "utils/CudaUtils.hpp"
 
-#include "Coordinates.cu"
 #include "Constants.hpp"
+#include "Coordinates.cu"
 #include "HitData.cu"
+#include "ImageData.hpp"
 
 
 namespace tracer::renderer
@@ -58,16 +59,15 @@ class Renderer
 {
 public:
     __device__ Renderer(const uint32_t samples, const uint32_t width, const uint32_t height, const uint8_t maxDepth,
-        const Camera& camera, const uint32_t objectsCount)
-        : camera_(camera)
-        , height_(height)
+        const uint32_t objectsCount)
+        : height_(height)
         , samples_(samples)
         , width_(width)
         , maxDepth_(maxDepth)
         , objectsCount_(objectsCount)
     {}
 
-    __device__ void start(Vec3* image, AObject** objects, const Vec3& vecZ)
+    __device__ void start(Vec3* image, AObject** objects, Camera* camera, const Vec3* vecZ)
     {
         const auto totalPixels = width_ * height_;
         const auto coordinates = calculateCoordinates(threadIdx.x, blockIdx.x, width_, height_);
@@ -83,7 +83,7 @@ public:
             for (uint32_t x=coordinates.xx_; x<limitX; x++)
             {
                 const auto index = z * width_ + x;
-                image[index] = samplePixel(objects, camera_.orientation_, vecZ, x, z, samples_, state);
+                image[index] = samplePixel(objects, camera, vecZ, x, z, samples_, state);
                 atomicAdd(&counter, 1);
             }
             printf("\rRendering %.2f%%", ((float)counter/(totalPixels)*100));
@@ -91,11 +91,12 @@ public:
     }
 
 private:
-    __device__ Vec3 samplePixel(AObject** objects, const containers::Vec3& vecX, const containers::Vec3& vecZ,
-        const uint32_t pixelX, const uint32_t pixelZ, const uint32_t samples, curandState& state) const
+    __device__ Vec3 samplePixel(AObject** objects, const Camera* camera, const Vec3* vecZ, const uint32_t pixelX,
+        const uint32_t pixelZ, const uint32_t samples, curandState& state) const
     {
-        const auto center = camera_.origin_;
-        const auto direction = camera_.direction_;
+        const auto center = camera->origin_;
+        const auto direction = camera->direction_;
+        const auto vecX = camera->orientation_;
 
         auto correctionX = (width_ % 2 == 0) ? 0.5 : 0.0;
         auto correctionZ = (width_ % 2 == 0) ? 0.5 : 0.0;
@@ -106,7 +107,7 @@ private:
             ? height_/2 - pixelZ - correctionZ
             : ((double)height_/2 - pixelZ - 1.0) + ((correctionZ == 0.0) ? 1.0 : correctionZ);
 
-        const auto gaze = (direction + vecX*stepX*FOV_SCALE + vecZ*stepZ*FOV_SCALE).norm();
+        const auto gaze = (direction + vecX*stepX*FOV_SCALE + (*vecZ)*stepZ*FOV_SCALE).norm();
 
         Vec3 pixel = Vec3();
         for (uint32_t i=0; i<samples; i++)
@@ -114,10 +115,10 @@ private:
             // Tent filter
             const auto xFactor = tent_filter(state);
             const auto zFactor = tent_filter(state);
-            const auto tentFilter = vecX * xFactor + vecZ * zFactor;
+            const auto tentFilter = vecX*xFactor + (*vecZ)*zFactor;
             // Tent filter
 
-            const auto origin = center + vecX*stepX + vecZ*stepZ + tentFilter;
+            const auto origin = center + vecX*stepX + (*vecZ)*stepZ + tentFilter;
             pixel = pixel + firstLayer(objects, Ray(origin + direction * VIEWPORT_DISTANCE, gaze), state);
         }
 
@@ -227,7 +228,6 @@ private:
         return HitData(index, distance);
     }
 
-    Camera camera_;
     const uint32_t height_;
     const uint32_t samples_;
     const uint32_t width_;
@@ -235,8 +235,7 @@ private:
     uint32_t objectsCount_;
 };
 
-__global__ void cudaMain(Vec3* image, AObject** objects, const uint32_t objectsCount, const uint32_t width,
-    const uint32_t height, Camera camera, Vec3 vecZ, uint32_t samples, const uint8_t maxDepth)
+__global__ void cudaMain(Vec3* image, AObject** objects, Camera* camera, Vec3* vecZ, ImageData* imageProperties)
 {
     if (blockIdx.x == 0 and threadIdx.x == 0)
     {
@@ -245,10 +244,10 @@ __global__ void cudaMain(Vec3* image, AObject** objects, const uint32_t objectsC
 
     __shared__ AObject* sharedObjects[MAX_OBJECT_COUNT];
     const auto id = threadIdx.x;
-    if (id < objectsCount)
+    if (id < imageProperties->objectCount_)
     {
-        auto assignedObjects = objectsCount/BLOCK_SIZE;
-        const auto overflow = objectsCount % BLOCK_SIZE;
+        auto assignedObjects = imageProperties->objectCount_/BLOCK_SIZE;
+        const auto overflow = imageProperties->objectCount_ % BLOCK_SIZE;
         const auto startingPoint = id * assignedObjects + ((id < overflow) ? id : overflow);
         assignedObjects = assignedObjects + ((id < overflow) ? 1 : 0);
         const auto target = startingPoint + assignedObjects;
@@ -260,8 +259,9 @@ __global__ void cudaMain(Vec3* image, AObject** objects, const uint32_t objectsC
     }
     __syncthreads();
 
-    Renderer render = Renderer(samples, width, height, maxDepth, camera, objectsCount);
-    render.start(image, sharedObjects, vecZ);
+    Renderer render = Renderer(imageProperties->samples_, imageProperties->width_, imageProperties->height_,
+        imageProperties->maxDepth_, imageProperties->objectCount_);
+    render.start(image, sharedObjects, camera, vecZ);
 }
 
 }  // namespace tracer::render
