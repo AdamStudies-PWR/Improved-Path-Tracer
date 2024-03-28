@@ -153,7 +153,6 @@ private:
 
     __device__ Vec3 secondLayer(AObject** objects, Ray ray, uint8_t& depth, curandState& state) const
     {
-        // printf("second\n");
         const auto hitData = getHitObjectAndDistance(objects, ray);
         if (hitData.index_ == -1) return Vec3();
 
@@ -177,7 +176,6 @@ private:
 
     __device__ Vec3 deepLayers(AObject** objects, Ray ray, uint8_t depth, curandState& state) const
     {
-        // printf("third\n");
         Vec3* objectEmissions = new Vec3[maxDepth_ - 2];
         Vec3* objectColors = new Vec3[maxDepth_ - 2];
 
@@ -236,14 +234,25 @@ private:
 __global__ void cudaMain(Vec3* image, AObject** objects, const uint32_t objectsCount, const uint32_t width,
     const uint32_t height, Camera camera, Vec3 vecZ, uint32_t samples, const uint8_t maxDepth)
 {
-    // printf("BLID: %d, THID: %d", blockIdx.x, threadIdx.x);
+    if (blockIdx.x == 0 and threadIdx.x == 0)
+    {
+        // TODO
+    }
 
     __shared__ AObject* sharedObjects[MAX_OBJECT_COUNT];
     const auto id = threadIdx.x;
     if (id < objectsCount)
     {
-        //printf("Setting up id: %d\n", id);
-        sharedObjects[id] = objects[id];
+        auto assignedObjects = objectsCount/BLOCK_SIZE;
+        const auto overflow = objectsCount % BLOCK_SIZE;
+        const auto startingPoint = id * assignedObjects + ((id < overflow) ? id : overflow);
+        assignedObjects = assignedObjects + ((id < overflow) ? 1 : 0);
+        const auto target = startingPoint + assignedObjects;
+
+        for (auto ii = startingPoint; ii < target; ii++)
+        {
+            sharedObjects[ii] = objects[ii];
+        }
     }
     __syncthreads();
 
