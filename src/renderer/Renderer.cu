@@ -29,6 +29,8 @@ const float FOV_SCALE = 0.0009;
 const uint16_t VIEWPORT_DISTANCE = 140;
 const double INF = 1e20;
 
+__device__ uint32_t counter = 0;
+
 __device__ Coordinates calculateCoordinates(const uint32_t idX, const uint32_t idZ,
     const uint32_t width, const uint32_t height)
 {
@@ -42,8 +44,8 @@ __device__ Coordinates calculateCoordinates(const uint32_t idX, const uint32_t i
     auto xStepping = width/BLOCK_SIZE;
     auto zStepping = height/BLOCK_SIZE;
 
-    auto pixelX = idX * xStepping + ((idX > xAddition) ? xAddition : idX);
-    auto pixelZ = idZ * zStepping + ((idZ > zAddition) ? zAddition : idZ);
+    auto pixelX = idX * xStepping + ((idX >= xAddition) ? xAddition : idX);
+    auto pixelZ = idZ * zStepping + ((idZ >= zAddition) ? zAddition : idZ);
 
     xStepping = xStepping + ((xAddition <= 0) ? 0 : ((idX < xAddition) ? 1 : 0));
     zStepping = zStepping + ((zAddition <= 0) ? 0 : ((idZ < zAddition) ? 1 : 0));
@@ -67,9 +69,10 @@ public:
 
     __device__ void start(Vec3* image, AObject** objects, const Vec3& vecZ)
     {
+        const auto totalPixels = width_ * height_;
         const auto coordinates = calculateCoordinates(threadIdx.x, blockIdx.x, width_, height_);
-        const auto limitZ = coordinates.zz_ + coordinates.loopZ_ + 1;
-        const auto limitX = coordinates.xx_ + coordinates.loopX_ + 1;
+        const auto limitZ = coordinates.zz_ + coordinates.loopZ_;
+        const auto limitX = coordinates.xx_ + coordinates.loopX_;
 
         curandState state;
         auto seed = threadIdx.x + blockIdx.x * blockDim.x;
@@ -81,8 +84,9 @@ public:
             {
                 const auto index = z * width_ + x;
                 image[index] = samplePixel(objects, camera_.orientation_, vecZ, x, z, samples_, state);
-                // printf("[%d] R:%f, G:%f, B:%f", index, image[index].xx_, image[index].yy_, image[index].zz_);
+                atomicAdd(&counter, 1);
             }
+            printf("\rRendering %.2f%%", ((float)counter/(totalPixels)*100));
         }
     }
 
@@ -236,7 +240,7 @@ __global__ void cudaMain(Vec3* image, AObject** objects, const uint32_t objectsC
 {
     if (blockIdx.x == 0 and threadIdx.x == 0)
     {
-        // TODO
+        printf("\rRendering %.2f%%", (float)counter);
     }
 
     __shared__ AObject* sharedObjects[MAX_OBJECT_COUNT];
