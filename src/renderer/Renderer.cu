@@ -35,23 +35,17 @@ __device__ uint32_t counter = 0;
 __device__ Coordinates calculateCoordinates(const uint32_t idX, const uint32_t idZ,
     const uint32_t width, const uint32_t height)
 {
-    if (width <= BLOCK_SIZE && height <= BLOCK_SIZE)
-    {
-        return Coordinates(idX, idZ, 0, 0);
-    }
+    auto widthAssigned = width/THREAD_SIZE;
+    const auto widthOverflow = width % THREAD_SIZE;
+    const auto startWidth = idX * widthAssigned + ((idX < widthOverflow) ? idX : widthOverflow);
+    widthAssigned = widthAssigned + ((idX < widthOverflow) ? 1 : 0);
 
-    const uint32_t xAddition = width % BLOCK_SIZE;
-    const uint32_t zAddition = height % BLOCK_SIZE;
-    auto xStepping = width/BLOCK_SIZE;
-    auto zStepping = height/BLOCK_SIZE;
+    auto heightAssigned = height/BLOCK_SIZE;
+    const auto heightOverflow = height % BLOCK_SIZE;
+    const auto startHeight = idZ * heightAssigned + ((idZ < heightOverflow) ? idZ : heightOverflow);
+    heightAssigned = heightAssigned + ((idZ < heightOverflow) ? 1 : 0);
 
-    auto pixelX = idX * xStepping + ((idX >= xAddition) ? xAddition : idX);
-    auto pixelZ = idZ * zStepping + ((idZ >= zAddition) ? zAddition : idZ);
-
-    xStepping = xStepping + ((xAddition <= 0) ? 0 : ((idX < xAddition) ? 1 : 0));
-    zStepping = zStepping + ((zAddition <= 0) ? 0 : ((idZ < zAddition) ? 1 : 0));
-
-    return Coordinates(pixelX, pixelZ, xStepping, zStepping);
+    return Coordinates(startWidth, startHeight, widthAssigned, heightAssigned);
 }
 }  // namespace
 
@@ -246,8 +240,8 @@ __global__ void cudaMain(Vec3* image, AObject** objects, Camera* camera, Vec3* v
     const auto id = threadIdx.x;
     if (id < imageProperties->objectCount_)
     {
-        auto assignedObjects = imageProperties->objectCount_/BLOCK_SIZE;
-        const auto overflow = imageProperties->objectCount_ % BLOCK_SIZE;
+        auto assignedObjects = imageProperties->objectCount_/THREAD_SIZE;
+        const auto overflow = imageProperties->objectCount_ % THREAD_SIZE;
         const auto startingPoint = id * assignedObjects + ((id < overflow) ? id : overflow);
         assignedObjects = assignedObjects + ((id < overflow) ? 1 : 0);
         const auto target = startingPoint + assignedObjects;
