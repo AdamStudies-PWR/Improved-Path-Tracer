@@ -10,9 +10,9 @@
 #include "utils/CudaUtils.hpp"
 
 #include "Constants.hpp"
-#include "Coordinates.cu"
-#include "HitData.cu"
-#include "ImageData.hpp"
+#include "helpers/Coordinates.cu"
+#include "helpers/HitData.cu"
+#include "helpers/ImageData.hpp"
 
 
 namespace tracer::renderer

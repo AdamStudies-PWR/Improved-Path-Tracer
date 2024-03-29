@@ -5,8 +5,8 @@
 #include "objects/AObject.hpp"
 
 #include "Constants.hpp"
+#include "helpers/ImageData.hpp"
 #include "Renderer.cu"
-#include "ImageData.hpp"
 
 
 namespace tracer::renderer
