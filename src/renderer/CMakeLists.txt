@@ -3,8 +3,8 @@ project(tracer-renderer)
 set(SOURCES
     Renderer.cu
     RenderController.cu
-    Coordinates.cu
-    ImageData.cpp
+    helpers/Coordinates.cu
+    helpers/ImageData.cpp
 )
 
 add_library(${PROJECT_NAME})
