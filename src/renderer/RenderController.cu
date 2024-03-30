@@ -5,8 +5,10 @@
 #include "objects/AObject.hpp"
 
 #include "Constants.hpp"
-#include "helpers/ImageData.hpp"
-#include "Renderer.cu"
+#include "helpers/SceneConstants.hpp"
+#include "helpers/PixelData.hpp"
+#include "RendererCPU.hpp"
+#include "RendererGPU.cu"
 
 
 namespace tracer::renderer
@@ -17,6 +19,8 @@ namespace
 using namespace containers;
 using namespace scene;
 using namespace scene::objects;
+
+const float FOV_SCALE = 0.0009;
 
 void cudaErrorCheck(const std::string& message)
 {
@@ -44,13 +48,14 @@ __global__ void cudaCreateObjects(AObject** objects, ObjectData* objectsData)
 }
 }  // namespace
 
-RenderContoller::RenderContoller(SceneData& sceneData, const uint32_t samples, const uint8_t maxDepth)
+RenderController::RenderController(SceneData& sceneData, const uint32_t samples, const uint8_t maxDepth)
     : sceneData_(sceneData)
     , maxDepth_(maxDepth)
     , samples_(samples)
+    , image_(std::vector<Vec3> (sceneData_.getWidth() * sceneData_.getHeight()))
 {}
 
-std::vector<containers::Vec3> RenderContoller::start()
+std::vector<containers::Vec3> RenderController::start()
 {
     auto objectDataVec = sceneData_.getObjectsData();
 
@@ -70,56 +75,93 @@ std::vector<containers::Vec3> RenderContoller::start()
     cudaErrorCheck("Clear object blueprint data");
 
     auto camera = sceneData_.getCamera();
-    Camera* devCamera;
-    cudaMalloc((void**)&devCamera, sizeof(Camera));
-    cudaMemcpy(devCamera, &camera, sizeof(Camera), cudaMemcpyHostToDevice);
-    cudaErrorCheck("Copy camera data");
+    const Vec3 vecZ = (camera.direction_%camera.orientation_).norm();
 
-    Vec3* devVecZ;
-    cudaMalloc((void**)&devVecZ, sizeof(Vec3));
-    cudaMemcpy(devVecZ, &(camera.direction_%camera.orientation_).norm(), sizeof(Vec3), cudaMemcpyHostToDevice);
-    cudaErrorCheck("Copy vecZ data");
+    SceneConstants* devConstants;
+    const auto constants = SceneConstants(camera.orientation_, vecZ, camera.origin_, camera.direction_, samples_,
+        maxDepth_, objectDataVec.size());
+    cudaMalloc((void**)&devConstants, sizeof(SceneConstants));
+    cudaMemcpy(devConstants, &constants, sizeof(SceneConstants), cudaMemcpyHostToDevice);
+    cudaErrorCheck("Copy scene constants");
 
-    ImageData* devImageData;
-    const auto imageProperties = ImageData(sceneData_.getWidth(), sceneData_.getHeight(), samples_, maxDepth_,
-        objectDataVec.size());
-    cudaMalloc((void**)&devImageData, sizeof(ImageData));
-    cudaMemcpy(devImageData, &imageProperties, sizeof(ImageData), cudaMemcpyHostToDevice);
-    cudaErrorCheck("Copy image properties data");
+    const auto callback = [this, devObjects, devConstants, &vecZ](uint32_t z)
+    {
+        renderGPU(z, devObjects, devConstants, vecZ);
+    };
 
-    const auto imageSize = sceneData_.getHeight() * sceneData_.getWidth() * sizeof(Vec3);
-    Vec3* devImage;
-    cudaMalloc((void**)&devImage, imageSize);
-    cudaMemset(devImage, 0, imageSize);
-    cudaErrorCheck("Set image array");
-
-    const auto numThreads = (sceneData_.getWidth() <= BLOCK_SIZE) ? sceneData_.getWidth() : BLOCK_SIZE;
-    const auto numBlocks = (sceneData_.getHeight() <= BLOCK_SIZE) ? sceneData_.getHeight() : BLOCK_SIZE;
-    cudaMain <<<numBlocks, numThreads>>> (devImage, devObjects, devCamera, devVecZ, devImageData);
-    cudaErrorCheck("cudaMain kernel");
-
-    Vec3* imagePtr = (Vec3*)malloc(imageSize);
-    cudaMemcpy(imagePtr, devImage, imageSize, cudaMemcpyDeviceToHost);
-    cudaErrorCheck("Copy to device");
+    renderCPU(sceneData_.getHeight(), callback);
 
     cudaDeviceReset();
     cudaErrorCheck("Reset device");
 
-    const auto image = convertToVector(imagePtr);
-    free(imagePtr);
-
-    return image;
+    return image_;
 }
 
-std::vector<Vec3> RenderContoller::convertToVector(Vec3* imagePtr)
+void RenderController::renderGPU(const uint32_t z, AObject** devObjects, SceneConstants* devConstants, const Vec3& vecZ)
 {
-    std::vector<Vec3> image;
-    for (uint32_t iter = 0; iter < sceneData_.getHeight() * sceneData_.getWidth(); iter++)
+    Vec3* devSamples;
+    cudaMalloc((void**)&devSamples, sizeof(Vec3) * samples_);
+    cudaMemset(devSamples, 0, sizeof(Vec3) * samples_);
+    cudaErrorCheck("Set image array");
+
+    PixelData* devPixelData;
+    cudaMalloc((void**)&devPixelData, sizeof(PixelData));
+    cudaErrorCheck("Allocate pixel data");
+
+    for (uint32_t x=0; x<sceneData_.getWidth(); x++)
     {
-        image.push_back(imagePtr[iter]);
+        const auto index = z * sceneData_.getWidth() + x;
+        image_[index] = startKernel(devObjects, devSamples, devConstants, devPixelData, vecZ, x, z);
     }
 
-    return image;
+    cudaFree(devPixelData);
+    cudaFree(devSamples);
+    cudaErrorCheck("Free samples and pixel data arrays");
+}
+
+Vec3 RenderController::startKernel(AObject** devObjects, Vec3* devSamples, SceneConstants* devConstants,
+    PixelData* devPixelData, const Vec3& vecZ, const uint32_t pixelX, const uint32_t pixelZ)
+{
+    const auto vecX = sceneData_.getCamera().orientation_;
+    const auto center = sceneData_.getCamera().origin_;
+    const auto direction = sceneData_.getCamera().direction_;
+
+    auto correctionX = (sceneData_.getWidth() % 2 == 0) ? 0.5 : 0.0;
+    auto correctionZ = (sceneData_.getWidth() % 2 == 0) ? 0.5 : 0.0;
+    double stepX = (pixelX < sceneData_.getWidth()/2)
+        ? sceneData_.getWidth()/2 - pixelX - correctionX
+        : ((double)sceneData_.getWidth()/2 - pixelX - 1.0) + ((correctionX == 0.0) ? 1.0 : correctionX);
+    double stepZ = (pixelZ < sceneData_.getHeight()/2)
+        ? sceneData_.getHeight()/2 - pixelZ - correctionZ
+        : ((double)sceneData_.getHeight()/2 - pixelZ - 1.0) + ((correctionZ == 0.0) ? 1.0 : correctionZ);
+
+    const auto gaze = (direction + vecX*stepX*FOV_SCALE + vecZ*stepZ*FOV_SCALE).norm();
+
+    const auto pixelData = PixelData(stepX, stepZ, gaze);
+    cudaMemcpy(devPixelData, &pixelData, sizeof(PixelData), cudaMemcpyHostToDevice);
+    cudaErrorCheck("Copy pixel data");
+
+    const auto numThreads = (samples_ <= THREAD_LIMIT) ? samples_ : THREAD_LIMIT;
+    cudaMain <<<1, numThreads>>> (devSamples, devObjects, devConstants, devPixelData);
+    cudaErrorCheck("Main kernel");
+
+    Vec3* samplesPtr = (Vec3*)malloc(sizeof(Vec3) * samples_);
+    cudaMemcpy(samplesPtr, devSamples, sizeof(Vec3) * samples_, cudaMemcpyDeviceToHost);
+    cudaErrorCheck("Copy samples from device");
+
+    Vec3 pixel = Vec3();
+    for (uint32_t i=0; i<samples_; i++)
+    {
+        pixel = pixel + samplesPtr[i];
+    }
+
+    free(samplesPtr);
+
+    pixel.xx_ = pixel.xx_/samples_;
+    pixel.yy_ = pixel.yy_/samples_;
+    pixel.zz_ = pixel.zz_/samples_;
+
+    return pixel;
 }
 
 }  // namespace tracer::renderer

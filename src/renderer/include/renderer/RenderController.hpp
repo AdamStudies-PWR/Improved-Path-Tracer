@@ -3,24 +3,33 @@
 #include <vector>
 
 #include "containers/Vec3.hpp"
+#include "objects/AObject.hpp"
 #include "scene/SceneData.hpp"
+
 
 namespace tracer::renderer
 {
 
-class RenderContoller
+class PixelData;
+class SceneConstants;
+
+class RenderController
 {
 public:
-    RenderContoller(scene::SceneData& sceneData, const uint32_t samples, const uint8_t maxDepth);
+    RenderController(scene::SceneData& sceneData, const uint32_t samples, const uint8_t maxDepth);
 
     std::vector<containers::Vec3> start();
-
 private:
-    std::vector<containers::Vec3> convertToVector(containers::Vec3* imagePtr);
+    void renderGPU(const uint32_t z, scene::objects::AObject** devObjects, SceneConstants* devConstants,
+        const containers::Vec3& vecZ);
+    containers::Vec3 startKernel(scene::objects::AObject** devObjects, containers::Vec3* devSamples,
+        SceneConstants* devConstants, PixelData* devPixelData, const containers::Vec3& vecZ, const uint32_t pixelX,
+        const uint32_t pixelZ);
 
     scene::SceneData& sceneData_;
     const uint8_t maxDepth_;
     const uint32_t samples_;
+    std::vector<containers::Vec3> image_;
 };
 
 }  // namespace tracer::renderer

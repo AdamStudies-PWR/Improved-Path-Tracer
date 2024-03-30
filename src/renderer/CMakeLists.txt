@@ -1,10 +1,12 @@
 project(tracer-renderer)
 
 set(SOURCES
-    Renderer.cu
+    helpers/LoopRange.cu
+    helpers/PixelData.cpp
+    helpers/SceneConstants.cpp
     RenderController.cu
-    helpers/Coordinates.cu
-    helpers/ImageData.cpp
+    RendererCPU.cpp
+    RendererGPU.cu
 )
 
 add_library(${PROJECT_NAME})
@@ -13,6 +15,13 @@ target_include_directories(${PROJECT_NAME}
     PUBLIC
         include
 )
+
+find_package(OpenMP)
+if(OpenMP_CXX_FOUND)
+    target_link_libraries(${PROJECT_NAME}
+        PUBLIC
+            OpenMP::OpenMP_CXX)
+endif()
 
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
