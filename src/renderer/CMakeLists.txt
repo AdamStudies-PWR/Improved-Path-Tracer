@@ -2,7 +2,6 @@ project(tracer-renderer)
 
 set(SOURCES
     helpers/LoopRange.cu
-    helpers/PixelData.cpp
     helpers/SceneConstants.cpp
     RenderController.cu
     RendererCPU.cpp

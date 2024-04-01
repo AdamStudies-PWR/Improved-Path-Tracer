@@ -10,7 +10,6 @@
 namespace tracer::renderer
 {
 
-class PixelData;
 class SceneConstants;
 
 class RenderController
@@ -20,11 +19,9 @@ public:
 
     std::vector<containers::Vec3> start();
 private:
-    void renderGPU(const uint32_t z, scene::objects::AObject** devObjects, SceneConstants* devConstants,
-        const containers::Vec3& vecZ);
-    containers::Vec3 startKernel(scene::objects::AObject** devObjects, containers::Vec3* devSamples,
-        SceneConstants* devConstants, PixelData* devPixelData, const containers::Vec3& vecZ, const uint32_t pixelX,
-        const uint32_t pixelZ);
+    void renderGPU(const uint32_t z, scene::objects::AObject** devObjects, SceneConstants* devConstants);
+    void startKernel(containers::Vec3* devRow, scene::objects::AObject** devObjects, SceneConstants* devConstants,
+        const uint32_t z);
 
     scene::SceneData& sceneData_;
     const uint8_t maxDepth_;

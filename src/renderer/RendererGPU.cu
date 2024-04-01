@@ -12,7 +12,6 @@
 #include "Constants.hpp"
 #include "helpers/HitData.cu"
 #include "helpers/LoopRange.cu"
-#include "helpers/PixelData.hpp"
 #include "helpers/SceneConstants.hpp"
 
 
@@ -28,12 +27,13 @@ using namespace utils;
 
 const uint32_t MAX_OBJECT_COUNT = 100;
 const uint16_t VIEWPORT_DISTANCE = 140;
+const float FOV_SCALE = 0.0009;
 const double INF = 1e20;
 
-__device__ inline LoopRange calculateCoordinates(const uint32_t id, const uint32_t samples)
+__device__ inline LoopRange caculateRange(const uint32_t id, const uint32_t width)
 {
-    auto range = samples / THREAD_LIMIT;
-    const auto overflow = samples % THREAD_LIMIT;
+    auto range = width / THREAD_LIMIT;
+    const auto overflow = width % THREAD_LIMIT;
     const auto start = id * range + ((id < overflow) ? id : overflow);
     range = range + ((id < overflow) ? 1 : 0);
 
@@ -128,6 +128,7 @@ __device__ inline Vec3 firstLayer(AObject** objects, const uint32_t objectsCount
     }
 
     const auto& object = objects[hitData.index_];
+
     const auto intersection = ray.origin_ + ray.direction_ * hitData.distance_;
     const auto reflected = object->calculateReflections(intersection, ray.direction_, state, depth);
 
@@ -146,14 +147,48 @@ __device__ inline Vec3 firstLayer(AObject** objects, const uint32_t objectsCount
 
     return object->getEmission() + object->getColor().mult(backData);
 }
+
+__device__ inline Vec3 probePixel(AObject** objects, const uint32_t pixelX, const uint32_t pixelZ, const Vec3& vecX,
+    const Vec3& vecZ, const Vec3& center, const Vec3& direction, const uint32_t width, const uint32_t height,
+    const uint32_t samples, const uint32_t objectsCount, const uint32_t maxDepth, curandState& state)
+{
+    auto correctionX = (width % 2 == 0) ? 0.5 : 0.0;
+    auto correctionZ = (width % 2 == 0) ? 0.5 : 0.0;
+    double stepX = (pixelX < width/2)
+        ? width/2 - pixelX - correctionX
+        : ((double)width/2 - pixelX - 1.0) + ((correctionX == 0.0) ? 1.0 : correctionX);
+    double stepZ = (pixelZ < height/2)
+        ? height/2 - pixelZ - correctionZ
+        : ((double)height/2 - pixelZ - 1.0) + ((correctionZ == 0.0) ? 1.0 : correctionZ);
+
+    const auto gaze = (direction + vecX*stepX*FOV_SCALE + vecZ*stepZ*FOV_SCALE).norm();
+
+    auto pixel = Vec3();
+    for (uint32_t i=0; i<samples; i++)
+    {
+        const auto xFactor = tent_filter(state);
+        const auto zFactor = tent_filter(state);
+        const auto tentFilter = vecX * xFactor + vecZ * zFactor;
+
+        const auto origin = center + vecX*stepX + vecZ*stepZ + tentFilter;
+        pixel = pixel + firstLayer(objects, objectsCount, Ray(origin + direction * VIEWPORT_DISTANCE, gaze), maxDepth,
+            state);
+    }
+
+    pixel.xx_ = pixel.xx_/samples;
+    pixel.yy_ = pixel.yy_/samples;
+    pixel.zz_ = pixel.zz_/samples;
+
+    return pixel;
+}
 }  // namespace
 
-__global__ void cudaMain(Vec3* samples, AObject** objects, SceneConstants* constants, PixelData* pixel)
+__global__ void cudaMain(Vec3* row, AObject** objects, SceneConstants* constants, uint32_t z)
 {
     __shared__ AObject* sharedObjects[MAX_OBJECT_COUNT];
     const auto id = threadIdx.x;
 
-    const auto limit = (THREAD_LIMIT < constants->samples_) ? THREAD_LIMIT : constants->samples_;
+    const auto limit = (THREAD_LIMIT < constants->width_) ? THREAD_LIMIT : constants->width_;
     if (id < constants->objectCount_)
     {
         auto assignedObjects = constants->objectCount_/limit;
@@ -173,19 +208,13 @@ __global__ void cudaMain(Vec3* samples, AObject** objects, SceneConstants* const
     auto seed = threadIdx.x + blockIdx.x * blockDim.x;
     curand_init(123456, seed, 0, &state);
 
-    const auto range = calculateCoordinates(id, constants->samples_);
+    const auto range = caculateRange(id, constants->width_);
 
-    for (auto i=range.start_; i<range.stop_; i++)
+    for (uint32_t x=range.start_; x<range.stop_; x++)
     {
-        const auto xFactor = tent_filter(state);
-        const auto zFactor = tent_filter(state);
-        const auto tentFilter = constants->vecX_*xFactor + constants->vecZ_*zFactor;
-
-        const auto origin = constants->center_ + constants->vecX_*pixel->stepX_ + constants->vecZ_*pixel->stepZ_
-            + tentFilter;
-
-        samples[i] = firstLayer(sharedObjects, constants->objectCount_,
-            Ray(origin + constants->direction_ * VIEWPORT_DISTANCE, pixel->gaze_), constants->maxDepth_, state);
+        row[x] = probePixel(sharedObjects, x, z, constants->vecX_, constants->vecZ_, constants->center_,
+            constants->direction_, constants->width_, constants->height_, constants->samples_, constants->objectCount_,
+            constants->maxDepth_, state);
     }
 }
 
