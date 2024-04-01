@@ -153,7 +153,7 @@ __device__ inline Vec3 probePixel(AObject** objects, const uint32_t pixelX, cons
     const uint32_t samples, const uint32_t objectsCount, const uint32_t maxDepth, curandState& state)
 {
     auto correctionX = (width % 2 == 0) ? 0.5 : 0.0;
-    auto correctionZ = (width % 2 == 0) ? 0.5 : 0.0;
+    auto correctionZ = (height % 2 == 0) ? 0.5 : 0.0;
     double stepX = (pixelX < width/2)
         ? width/2 - pixelX - correctionX
         : ((double)width/2 - pixelX - 1.0) + ((correctionX == 0.0) ? 1.0 : correctionX);
