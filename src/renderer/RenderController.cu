@@ -46,6 +46,12 @@ __global__ void cudaCreateObjects(AObject** objects, ObjectData* objectsData)
             objectsData[threadIdx.x].reflectionType_);
     }
 }
+
+__global__ void cudaInitRandomGenerator(curandState* state, const uint32_t seed)
+{
+    curand_init(123456, seed, 0, state);
+}
+
 }  // namespace
 
 RenderController::RenderController(SceneData& sceneData, const uint32_t samples, const uint8_t maxDepth)
@@ -101,33 +107,38 @@ void RenderController::renderGPU(const uint32_t z, AObject** devObjects, SceneCo
 {
     Vec3* devSamples;
     cudaMalloc((void**)&devSamples, sizeof(Vec3) * samples_);
-    cudaMemset(devSamples, 0, sizeof(Vec3) * samples_);
     cudaErrorCheck("Set image array");
 
     PixelData* devPixelData;
     cudaMalloc((void**)&devPixelData, sizeof(PixelData));
     cudaErrorCheck("Allocate pixel data");
 
+    curandState* devState;
+    cudaMalloc((void**)&devState, sizeof(curandState));
+    cudaInitRandomGenerator <<<1, 1>>> (devState, rand());
+    cudaErrorCheck("Init random generator");
+
     for (uint32_t x=0; x<sceneData_.getWidth(); x++)
     {
         const auto index = z * sceneData_.getWidth() + x;
-        image_[index] = startKernel(devObjects, devSamples, devConstants, devPixelData, vecZ, x, z);
+        image_[index] = startKernel(devObjects, devSamples, devPixelData, devConstants, devState, vecZ, x, z);
     }
 
-    cudaFree(devPixelData);
     cudaFree(devSamples);
+    cudaFree(devPixelData);
+    cudaFree(devState);
     cudaErrorCheck("Free samples and pixel data arrays");
 }
 
-Vec3 RenderController::startKernel(AObject** devObjects, Vec3* devSamples, SceneConstants* devConstants,
-    PixelData* devPixelData, const Vec3& vecZ, const uint32_t pixelX, const uint32_t pixelZ)
+Vec3 RenderController::startKernel(AObject** devObjects, Vec3* devSamples, PixelData* devPixelData,
+    SceneConstants* devConstants, curandState* devState, const Vec3& vecZ, const uint32_t pixelX, const uint32_t pixelZ)
 {
     const auto vecX = sceneData_.getCamera().orientation_;
     const auto center = sceneData_.getCamera().origin_;
     const auto direction = sceneData_.getCamera().direction_;
 
     auto correctionX = (sceneData_.getWidth() % 2 == 0) ? 0.5 : 0.0;
-    auto correctionZ = (sceneData_.getWidth() % 2 == 0) ? 0.5 : 0.0;
+    auto correctionZ = (sceneData_.getHeight() % 2 == 0) ? 0.5 : 0.0;
     double stepX = (pixelX < sceneData_.getWidth()/2)
         ? sceneData_.getWidth()/2 - pixelX - correctionX
         : ((double)sceneData_.getWidth()/2 - pixelX - 1.0) + ((correctionX == 0.0) ? 1.0 : correctionX);
@@ -138,18 +149,22 @@ Vec3 RenderController::startKernel(AObject** devObjects, Vec3* devSamples, Scene
     const auto gaze = (direction + vecX*stepX*FOV_SCALE + vecZ*stepZ*FOV_SCALE).norm();
 
     const auto pixelData = PixelData(stepX, stepZ, gaze);
+
     cudaMemcpy(devPixelData, &pixelData, sizeof(PixelData), cudaMemcpyHostToDevice);
-    cudaErrorCheck("Copy pixel data");
+    cudaErrorCheck("Allocate and copy pixel data");
+
+    cudaMemset(devSamples, 0, sizeof(Vec3) * samples_);
+    cudaErrorCheck("Zero sample array");
 
     const auto numThreads = (samples_ <= THREAD_LIMIT) ? samples_ : THREAD_LIMIT;
-    cudaMain <<<1, numThreads>>> (devSamples, devObjects, devConstants, devPixelData);
+    cudaMain <<<1, numThreads>>> (devSamples, devObjects, devConstants, devPixelData, devState);
     cudaErrorCheck("Main kernel");
 
     Vec3* samplesPtr = (Vec3*)malloc(sizeof(Vec3) * samples_);
     cudaMemcpy(samplesPtr, devSamples, sizeof(Vec3) * samples_, cudaMemcpyDeviceToHost);
     cudaErrorCheck("Copy samples from device");
 
-    Vec3 pixel = Vec3();
+    auto pixel = Vec3();
     for (uint32_t i=0; i<samples_; i++)
     {
         pixel = pixel + samplesPtr[i];

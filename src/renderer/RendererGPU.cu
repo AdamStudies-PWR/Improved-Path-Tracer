@@ -59,7 +59,7 @@ __device__ inline HitData getHitObjectAndDistance(AObject** objects, const uint3
     return HitData(index, distance);
 }
 
-__device__ inline Vec3 deepLayers(AObject** objects, const uint32_t objectsCount, Ray ray, uint8_t depth,
+__device__ inline Vec3 deepLayers(AObject** objects, const uint32_t objectsCount, Ray ray, uint8_t& depth,
     const uint32_t maxDepth, curandState& state)
 {
     Vec3* objectEmissions = new Vec3[maxDepth - 2];
@@ -80,7 +80,7 @@ __device__ inline Vec3 deepLayers(AObject** objects, const uint32_t objectsCount
     }
 
     Vec3 pixel;
-    for (int8_t i=(depth - 2); i>= 0; i--)
+    for (int8_t i=(depth - 2); i>=0; i--)
     {
         pixel = objectEmissions[i] + objectColors[i].mult(pixel);
     }
@@ -91,7 +91,7 @@ __device__ inline Vec3 deepLayers(AObject** objects, const uint32_t objectsCount
     return pixel;
 }
 
-__device__ inline Vec3 secondLayer(AObject** objects, const uint32_t objectsCount, Ray ray, uint8_t& depth,
+__device__ inline Vec3 secondLayer(AObject** objects, const uint32_t objectsCount, const Ray& ray, uint8_t& depth,
     const uint32_t maxDepth, curandState& state)
 {
     const auto hitData = getHitObjectAndDistance(objects, objectsCount, ray);
@@ -117,8 +117,8 @@ __device__ inline Vec3 secondLayer(AObject** objects, const uint32_t objectsCoun
     return object->getEmission() + object->getColor().mult(backData);
 }
 
-__device__ inline Vec3 firstLayer(AObject** objects, const uint32_t objectsCount, Ray ray, const uint32_t maxDepth,
-    curandState& state)
+__device__ inline Vec3 firstLayer(AObject** objects, const uint32_t objectsCount, const Ray& ray,
+    const uint32_t maxDepth, curandState& state)
 {
     uint8_t depth = 0;
     const auto hitData = getHitObjectAndDistance(objects, objectsCount, ray);
@@ -148,7 +148,8 @@ __device__ inline Vec3 firstLayer(AObject** objects, const uint32_t objectsCount
 }
 }  // namespace
 
-__global__ void cudaMain(Vec3* samples, AObject** objects, SceneConstants* constants, PixelData* pixel)
+__global__ void cudaMain(Vec3* samples, AObject** objects, SceneConstants* constants, PixelData* pixel,
+    curandState *devState)
 {
     __shared__ AObject* sharedObjects[MAX_OBJECT_COUNT];
     const auto id = threadIdx.x;
@@ -169,23 +170,17 @@ __global__ void cudaMain(Vec3* samples, AObject** objects, SceneConstants* const
     }
     __syncthreads();
 
-    curandState state;
-    auto seed = threadIdx.x + blockIdx.x * blockDim.x;
-    curand_init(123456, seed, 0, &state);
-
     const auto range = calculateCoordinates(id, constants->samples_);
-
     for (auto i=range.start_; i<range.stop_; i++)
     {
-        const auto xFactor = tent_filter(state);
-        const auto zFactor = tent_filter(state);
+        const auto xFactor = tent_filter(*devState);
+        const auto zFactor = tent_filter(*devState);
         const auto tentFilter = constants->vecX_*xFactor + constants->vecZ_*zFactor;
 
         const auto origin = constants->center_ + constants->vecX_*pixel->stepX_ + constants->vecZ_*pixel->stepZ_
             + tentFilter;
-
         samples[i] = firstLayer(sharedObjects, constants->objectCount_,
-            Ray(origin + constants->direction_ * VIEWPORT_DISTANCE, pixel->gaze_), constants->maxDepth_, state);
+            Ray(origin + constants->direction_ * VIEWPORT_DISTANCE, pixel->gaze_), constants->maxDepth_, *devState);
     }
 }
 

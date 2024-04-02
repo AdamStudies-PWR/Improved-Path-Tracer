@@ -23,8 +23,8 @@ private:
     void renderGPU(const uint32_t z, scene::objects::AObject** devObjects, SceneConstants* devConstants,
         const containers::Vec3& vecZ);
     containers::Vec3 startKernel(scene::objects::AObject** devObjects, containers::Vec3* devSamples,
-        SceneConstants* devConstants, PixelData* devPixelData, const containers::Vec3& vecZ, const uint32_t pixelX,
-        const uint32_t pixelZ);
+        PixelData* devPixelData, SceneConstants* devConstants, curandState* devState, const containers::Vec3& vecZ,
+        const uint32_t pixelX, const uint32_t pixelZ);
 
     scene::SceneData& sceneData_;
     const uint8_t maxDepth_;
