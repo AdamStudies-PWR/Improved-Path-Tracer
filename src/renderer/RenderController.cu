@@ -47,9 +47,15 @@ __global__ void cudaCreateObjects(AObject** objects, ObjectData* objectsData)
     }
 }
 
-__global__ void cudaInitRandomGenerator(curandState* state, const uint32_t seed)
+std::vector<uint32_t> prepareRandomSeends(const uint32_t ammount)
 {
-    curand_init(123456, seed, 0, state);
+    std::vector<uint32_t> seeds;
+    for (uint32_t i=0; i<ammount; i++)
+    {
+        seeds.push_back(rand());
+    }
+
+    return seeds;
 }
 
 }  // namespace
@@ -113,25 +119,19 @@ void RenderController::renderGPU(const uint32_t z, AObject** devObjects, SceneCo
     cudaMalloc((void**)&devPixelData, sizeof(PixelData));
     cudaErrorCheck("Allocate pixel data");
 
-    curandState* devState;
-    cudaMalloc((void**)&devState, sizeof(curandState));
-    cudaInitRandomGenerator <<<1, 1>>> (devState, rand());
-    cudaErrorCheck("Init random generator");
-
     for (uint32_t x=0; x<sceneData_.getWidth(); x++)
     {
         const auto index = z * sceneData_.getWidth() + x;
-        image_[index] = startKernel(devObjects, devSamples, devPixelData, devConstants, devState, vecZ, x, z);
+        image_[index] = startKernel(devObjects, devSamples, devPixelData, devConstants, vecZ, x, z);
     }
 
     cudaFree(devSamples);
     cudaFree(devPixelData);
-    cudaFree(devState);
     cudaErrorCheck("Free samples and pixel data arrays");
 }
 
 Vec3 RenderController::startKernel(AObject** devObjects, Vec3* devSamples, PixelData* devPixelData,
-    SceneConstants* devConstants, curandState* devState, const Vec3& vecZ, const uint32_t pixelX, const uint32_t pixelZ)
+    SceneConstants* devConstants, const Vec3& vecZ, const uint32_t pixelX, const uint32_t pixelZ)
 {
     const auto vecX = sceneData_.getCamera().orientation_;
     const auto center = sceneData_.getCamera().origin_;
@@ -157,7 +157,14 @@ Vec3 RenderController::startKernel(AObject** devObjects, Vec3* devSamples, Pixel
     cudaErrorCheck("Zero sample array");
 
     const auto numThreads = (samples_ <= THREAD_LIMIT) ? samples_ : THREAD_LIMIT;
-    cudaMain <<<1, numThreads>>> (devSamples, devObjects, devConstants, devPixelData, devState);
+
+    uint32_t* devSeeds;
+    cudaMalloc((void**)&devSeeds, sizeof(uint32_t) * numThreads);
+    cudaMemcpy(devSeeds, prepareRandomSeends(numThreads).data(), sizeof(uint32_t) * numThreads,
+        cudaMemcpyHostToDevice);
+    cudaErrorCheck("Prepare random seeds");
+
+    cudaMain <<<1, numThreads>>> (devSamples, devObjects, devConstants, devPixelData, devSeeds);
     cudaErrorCheck("Main kernel");
 
     Vec3* samplesPtr = (Vec3*)malloc(sizeof(Vec3) * samples_);
@@ -171,6 +178,7 @@ Vec3 RenderController::startKernel(AObject** devObjects, Vec3* devSamples, Pixel
     }
 
     free(samplesPtr);
+    cudaFree(devSeeds);
 
     pixel.xx_ = pixel.xx_/samples_;
     pixel.yy_ = pixel.yy_/samples_;

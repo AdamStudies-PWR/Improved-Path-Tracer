@@ -148,8 +148,7 @@ __device__ inline Vec3 firstLayer(AObject** objects, const uint32_t objectsCount
 }
 }  // namespace
 
-__global__ void cudaMain(Vec3* samples, AObject** objects, SceneConstants* constants, PixelData* pixel,
-    curandState *devState)
+__global__ void cudaMain(Vec3* samples, AObject** objects, SceneConstants* constants, PixelData* pixel, uint32_t* seeds)
 {
     __shared__ AObject* sharedObjects[MAX_OBJECT_COUNT];
     const auto id = threadIdx.x;
@@ -170,17 +169,20 @@ __global__ void cudaMain(Vec3* samples, AObject** objects, SceneConstants* const
     }
     __syncthreads();
 
+    curandState state;
+    curand_init(123456, seeds[id], 0, &state);
+
     const auto range = calculateCoordinates(id, constants->samples_);
     for (auto i=range.start_; i<range.stop_; i++)
     {
-        const auto xFactor = tent_filter(*devState);
-        const auto zFactor = tent_filter(*devState);
+        const auto xFactor = tent_filter(state);
+        const auto zFactor = tent_filter(state);
         const auto tentFilter = constants->vecX_*xFactor + constants->vecZ_*zFactor;
 
         const auto origin = constants->center_ + constants->vecX_*pixel->stepX_ + constants->vecZ_*pixel->stepZ_
             + tentFilter;
         samples[i] = firstLayer(sharedObjects, constants->objectCount_,
-            Ray(origin + constants->direction_ * VIEWPORT_DISTANCE, pixel->gaze_), constants->maxDepth_, *devState);
+            Ray(origin + constants->direction_ * VIEWPORT_DISTANCE, pixel->gaze_), constants->maxDepth_, state);
     }
 }
 
