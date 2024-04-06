@@ -183,7 +183,7 @@ __device__ inline Vec3 probePixel(AObject** objects, const uint32_t pixelX, cons
 }
 }  // namespace
 
-__global__ void cudaMain(Vec3* row, AObject** objects, SceneConstants* constants, uint32_t z)
+__global__ void cudaMain(Vec3* row, AObject** objects, SceneConstants* constants, uint32_t* seeds, uint32_t z)
 {
     __shared__ AObject* sharedObjects[MAX_OBJECT_COUNT];
     const auto id = threadIdx.x;
@@ -205,11 +205,9 @@ __global__ void cudaMain(Vec3* row, AObject** objects, SceneConstants* constants
     __syncthreads();
 
     curandState state;
-    auto seed = threadIdx.x + blockIdx.x * blockDim.x;
-    curand_init(123456, seed, 0, &state);
+    curand_init(123456, seeds[id], 0, &state);
 
     const auto range = caculateRange(id, constants->width_);
-
     for (uint32_t x=range.start_; x<range.stop_; x++)
     {
         row[x] = probePixel(sharedObjects, x, z, constants->vecX_, constants->vecZ_, constants->center_,
