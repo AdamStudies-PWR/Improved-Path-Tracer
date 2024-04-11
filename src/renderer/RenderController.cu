@@ -121,6 +121,8 @@ void RenderController::renderGPU(const uint32_t z, AObject** devObjects, SceneCo
 void RenderController::startKernel(Vec3* devRow, AObject** devObjects, SceneConstants* devConstants, const uint32_t z)
 {
     const auto numThreads = (sceneData_.getWidth() <= THREAD_LIMIT) ? sceneData_.getWidth() : THREAD_LIMIT;
+    auto numBlocks = sceneData_.getWidth() / numThreads + ((sceneData_.getWidth() % numThreads > 0) ? 1 : 0);
+    numBlocks = (numBlocks <= BLOCK_LIMIT) ? numBlocks : BLOCK_LIMIT;
 
     uint32_t* devSeeds;
     cudaMalloc((void**)&devSeeds, sizeof(uint32_t) * numThreads);
@@ -128,7 +130,7 @@ void RenderController::startKernel(Vec3* devRow, AObject** devObjects, SceneCons
         cudaMemcpyHostToDevice);
     cudaErrorCheck("Prepare random seeds");
 
-    cudaMain <<<1, numThreads>>> (devRow, devObjects, devConstants, devSeeds, z);
+    cudaMain <<<numBlocks, numThreads>>> (devRow, devObjects, devConstants, devSeeds, z);
     cudaErrorCheck("Main kernel");
 
     Vec3* rowPtr = (Vec3*)malloc(sizeof(Vec3) * sceneData_.getWidth());
