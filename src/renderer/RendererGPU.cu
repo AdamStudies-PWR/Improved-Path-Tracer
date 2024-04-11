@@ -26,7 +26,6 @@ using namespace scene;
 using namespace scene::objects;
 using namespace utils;
 
-const uint32_t MAX_OBJECT_COUNT = 100;
 const uint16_t VIEWPORT_DISTANCE = 140;
 const double INF = 1e20;
 
@@ -150,24 +149,7 @@ __device__ inline Vec3 firstLayer(AObject** objects, const uint32_t objectsCount
 
 __global__ void cudaMain(Vec3* samples, AObject** objects, SceneConstants* constants, PixelData* pixel, uint32_t* seeds)
 {
-    __shared__ AObject* sharedObjects[MAX_OBJECT_COUNT];
     const auto id = threadIdx.x;
-
-    const auto limit = (THREAD_LIMIT < constants->samples_) ? THREAD_LIMIT : constants->samples_;
-    if (id < constants->objectCount_)
-    {
-        auto assignedObjects = constants->objectCount_/limit;
-        const auto overflow = constants->objectCount_ % limit;
-        const auto startingPoint = id * assignedObjects + ((id < overflow) ? id : overflow);
-        assignedObjects = assignedObjects + ((id < overflow) ? 1 : 0);
-        const auto target = startingPoint + assignedObjects;
-
-        for (auto ii = startingPoint; ii < target; ii++)
-        {
-            sharedObjects[ii] = objects[ii];
-        }
-    }
-    __syncthreads();
 
     curandState state;
     curand_init(123456, seeds[id], 0, &state);
@@ -181,7 +163,7 @@ __global__ void cudaMain(Vec3* samples, AObject** objects, SceneConstants* const
 
         const auto origin = constants->center_ + constants->vecX_*pixel->stepX_ + constants->vecZ_*pixel->stepZ_
             + tentFilter;
-        samples[i] = firstLayer(sharedObjects, constants->objectCount_,
+        samples[i] = firstLayer(objects, constants->objectCount_,
             Ray(origin + constants->direction_ * VIEWPORT_DISTANCE, pixel->gaze_), constants->maxDepth_, state);
     }
 }
