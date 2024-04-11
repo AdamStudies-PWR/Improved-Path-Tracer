@@ -25,7 +25,6 @@ using namespace scene;
 using namespace scene::objects;
 using namespace utils;
 
-const uint32_t MAX_OBJECT_COUNT = 100;
 const uint16_t VIEWPORT_DISTANCE = 140;
 const float FOV_SCALE = 0.0009;
 const double INF = 1e20;
@@ -185,24 +184,7 @@ __device__ inline Vec3 probePixel(AObject** objects, const uint32_t pixelX, cons
 
 __global__ void cudaMain(Vec3* row, AObject** objects, SceneConstants* constants, uint32_t z)
 {
-    __shared__ AObject* sharedObjects[MAX_OBJECT_COUNT];
     const auto id = threadIdx.x;
-
-    const auto limit = (THREAD_LIMIT < constants->width_) ? THREAD_LIMIT : constants->width_;
-    if (id < constants->objectCount_)
-    {
-        auto assignedObjects = constants->objectCount_/limit;
-        const auto overflow = constants->objectCount_ % limit;
-        const auto startingPoint = id * assignedObjects + ((id < overflow) ? id : overflow);
-        assignedObjects = assignedObjects + ((id < overflow) ? 1 : 0);
-        const auto target = startingPoint + assignedObjects;
-
-        for (auto ii = startingPoint; ii < target; ii++)
-        {
-            sharedObjects[ii] = objects[ii];
-        }
-    }
-    __syncthreads();
 
     curandState state;
     auto seed = threadIdx.x + blockIdx.x * blockDim.x;
@@ -212,7 +194,7 @@ __global__ void cudaMain(Vec3* row, AObject** objects, SceneConstants* constants
 
     for (uint32_t x=range.start_; x<range.stop_; x++)
     {
-        row[x] = probePixel(sharedObjects, x, z, constants->vecX_, constants->vecZ_, constants->center_,
+        row[x] = probePixel(objects, x, z, constants->vecX_, constants->vecZ_, constants->center_,
             constants->direction_, constants->width_, constants->height_, constants->samples_, constants->objectCount_,
             constants->maxDepth_, state);
     }
