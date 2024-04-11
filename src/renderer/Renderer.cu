@@ -25,7 +25,6 @@ using namespace scene;
 using namespace scene::objects;
 using namespace utils;
 
-const uint32_t MAX_OBJECT_COUNT = 100;
 const float FOV_SCALE = 0.0009;
 const uint16_t VIEWPORT_DISTANCE = 140;
 const double INF = 1e20;
@@ -236,26 +235,9 @@ __global__ void cudaMain(Vec3* image, AObject** objects, Camera* camera, Vec3* v
         printf("\rRendering %.2f%%", (float)counter);
     }
 
-    __shared__ AObject* sharedObjects[MAX_OBJECT_COUNT];
-    const auto id = threadIdx.x;
-    if (id < imageProperties->objectCount_)
-    {
-        auto assignedObjects = imageProperties->objectCount_/THREAD_SIZE;
-        const auto overflow = imageProperties->objectCount_ % THREAD_SIZE;
-        const auto startingPoint = id * assignedObjects + ((id < overflow) ? id : overflow);
-        assignedObjects = assignedObjects + ((id < overflow) ? 1 : 0);
-        const auto target = startingPoint + assignedObjects;
-
-        for (auto ii = startingPoint; ii < target; ii++)
-        {
-            sharedObjects[ii] = objects[ii];
-        }
-    }
-    __syncthreads();
-
     Renderer render = Renderer(imageProperties->samples_, imageProperties->width_, imageProperties->height_,
         imageProperties->maxDepth_, imageProperties->objectCount_);
-    render.start(image, sharedObjects, camera, vecZ);
+    render.start(image, objects, camera, vecZ);
 }
 
 }  // namespace tracer::render
