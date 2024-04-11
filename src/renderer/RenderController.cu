@@ -43,6 +43,17 @@ __global__ void cudaCreateObjects(AObject** objects, ObjectData* objectsData)
             objectsData[threadIdx.x].reflectionType_);
     }
 }
+
+std::vector<uint32_t> prepareRandomSeends(const uint32_t ammount)
+{
+    std::vector<uint32_t> seeds;
+    for (uint32_t i=0; i<ammount; i++)
+    {
+        seeds.push_back(rand());
+    }
+
+    return seeds;
+}
 }  // namespace
 
 RenderController::RenderController(SceneData& sceneData, const uint32_t samples, const uint8_t maxDepth)
@@ -110,7 +121,14 @@ void RenderController::renderGPU(const uint32_t z, AObject** devObjects, SceneCo
 void RenderController::startKernel(Vec3* devRow, AObject** devObjects, SceneConstants* devConstants, const uint32_t z)
 {
     const auto numThreads = (sceneData_.getWidth() <= THREAD_LIMIT) ? sceneData_.getWidth() : THREAD_LIMIT;
-    cudaMain <<<1, numThreads>>> (devRow, devObjects, devConstants, z);
+
+    uint32_t* devSeeds;
+    cudaMalloc((void**)&devSeeds, sizeof(uint32_t) * numThreads);
+    cudaMemcpy(devSeeds, prepareRandomSeends(numThreads).data(), sizeof(uint32_t) * numThreads,
+        cudaMemcpyHostToDevice);
+    cudaErrorCheck("Prepare random seeds");
+
+    cudaMain <<<1, numThreads>>> (devRow, devObjects, devConstants, devSeeds, z);
     cudaErrorCheck("Main kernel");
 
     Vec3* rowPtr = (Vec3*)malloc(sizeof(Vec3) * sceneData_.getWidth());

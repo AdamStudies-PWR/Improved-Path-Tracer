@@ -152,7 +152,7 @@ __device__ inline Vec3 probePixel(AObject** objects, const uint32_t pixelX, cons
     const uint32_t samples, const uint32_t objectsCount, const uint32_t maxDepth, curandState& state)
 {
     auto correctionX = (width % 2 == 0) ? 0.5 : 0.0;
-    auto correctionZ = (width % 2 == 0) ? 0.5 : 0.0;
+    auto correctionZ = (height % 2 == 0) ? 0.5 : 0.0;
     double stepX = (pixelX < width/2)
         ? width/2 - pixelX - correctionX
         : ((double)width/2 - pixelX - 1.0) + ((correctionX == 0.0) ? 1.0 : correctionX);
@@ -182,16 +182,14 @@ __device__ inline Vec3 probePixel(AObject** objects, const uint32_t pixelX, cons
 }
 }  // namespace
 
-__global__ void cudaMain(Vec3* row, AObject** objects, SceneConstants* constants, uint32_t z)
+__global__ void cudaMain(Vec3* row, AObject** objects, SceneConstants* constants, uint32_t* seeds, uint32_t z)
 {
     const auto id = threadIdx.x;
 
     curandState state;
-    auto seed = threadIdx.x + blockIdx.x * blockDim.x;
-    curand_init(123456, seed, 0, &state);
+    curand_init(123456, seeds[id], 0, &state);
 
     const auto range = caculateRange(id, constants->width_);
-
     for (uint32_t x=range.start_; x<range.stop_; x++)
     {
         row[x] = probePixel(objects, x, z, constants->vecX_, constants->vecZ_, constants->center_,
