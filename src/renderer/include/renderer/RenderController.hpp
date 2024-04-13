@@ -27,7 +27,6 @@ private:
         const uint32_t pixelZ);
 
     scene::SceneData& sceneData_;
-    uint32_t counter_;
     std::vector<containers::Vec3> image_;
     const uint8_t maxDepth_;
     const uint32_t samples_;

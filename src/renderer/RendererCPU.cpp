@@ -20,9 +20,9 @@ void renderCPU(const uint32_t height, std::function<void(const uint32_t)> gpuCal
     {
         gpuCallback(z);
         counter++;
-        //fprintf(stdout, "\rRendering %.2f%%", ((float)counter/(height)*100));
+        fprintf(stdout, "\rRendering %.2f%%", ((float)counter/(height)*100));
     }
-    // fflush(stdout);
+    fflush(stdout);
 }
 
 }  // namespace tracer::renderer

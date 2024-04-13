@@ -62,7 +62,6 @@ std::vector<uint32_t> prepareRandomSeends(const uint32_t ammount)
 
 RenderController::RenderController(SceneData& sceneData, const uint32_t samples, const uint8_t maxDepth)
     : sceneData_(sceneData)
-    , counter_(0)
     , image_(std::vector<Vec3> (sceneData_.getWidth() * sceneData_.getHeight()))
     , maxDepth_(maxDepth)
     , samples_(samples)
@@ -125,9 +124,6 @@ void RenderController::renderGPU(const uint32_t z, AObject** devObjects, SceneCo
     {
         const auto index = z * sceneData_.getWidth() + x;
         image_[index] = startKernel(devObjects, devSamples, devPixelData, devConstants, vecZ, x, z);
-        counter_++;
-        fprintf(stdout, "\rRendering %.2f%%", ((float)counter_/(total)*100));
-        fflush(stdout);
     }
 
     cudaFree(devSamples);
