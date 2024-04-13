@@ -15,14 +15,14 @@ void renderCPU(const uint32_t height, std::function<void(const uint32_t)> gpuCal
     fprintf(stdout, "Rendering %.2f%%", (float)counter);
     fflush(stdout);
 
-    #pragma omp parallel for
+    #pragma omp parallel for num_threads(height)
     for (uint32_t z = 0; z < height; z++)
     {
         gpuCallback(z);
         counter++;
-        fprintf(stdout, "\rRendering %.2f%%", ((float)counter/(height)*100));
+        //fprintf(stdout, "\rRendering %.2f%%", ((float)counter/(height)*100));
     }
-    fflush(stdout);
+    // fflush(stdout);
 }
 
 }  // namespace tracer::renderer

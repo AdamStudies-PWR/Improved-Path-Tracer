@@ -29,10 +29,16 @@ using namespace utils;
 const uint16_t VIEWPORT_DISTANCE = 140;
 const double INF = 1e20;
 
-__device__ inline LoopRange calculateCoordinates(const uint32_t id, const uint32_t samples)
+__device__ inline LoopRange calculateRange(const uint32_t id, const uint32_t samples)
 {
-    auto range = samples / THREAD_LIMIT;
-    const auto overflow = samples % THREAD_LIMIT;
+    const auto total = THREAD_LIMIT * BLOCK_LIMIT;
+    if (total >= samples)
+    {
+        return LoopRange(id, id + 1);
+    }
+
+    auto range = samples / total;
+    const auto overflow = samples % total;
     const auto start = id * range + ((id < overflow) ? id : overflow);
     range = range + ((id < overflow) ? 1 : 0);
 
@@ -149,12 +155,16 @@ __device__ inline Vec3 firstLayer(AObject** objects, const uint32_t objectsCount
 
 __global__ void cudaMain(Vec3* samples, AObject** objects, SceneConstants* constants, PixelData* pixel, uint32_t* seeds)
 {
-    const auto id = threadIdx.x;
+    const auto id = blockIdx.x * THREAD_LIMIT + threadIdx.x;
+    const auto range = calculateRange(id, constants->samples_);
+    if (range.start_ >= constants->samples_)
+    {
+        return;
+    }
 
     curandState state;
     curand_init(123456, seeds[id], 0, &state);
 
-    const auto range = calculateCoordinates(id, constants->samples_);
     for (auto i=range.start_; i<range.stop_; i++)
     {
         const auto xFactor = tent_filter(state);
