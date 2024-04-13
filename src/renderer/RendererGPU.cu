@@ -29,20 +29,19 @@ const uint16_t VIEWPORT_DISTANCE = 140;
 const float FOV_SCALE = 0.0009;
 const double INF = 1e20;
 
-__device__ inline LoopRange caculateRange(const uint32_t id, const uint32_t bId, const uint32_t width)
+__device__ inline LoopRange calculateRange(const uint32_t id, const uint32_t width)
 {
     const auto total = THREAD_LIMIT * BLOCK_LIMIT;
-    const auto loc = bId * THREAD_LIMIT + id;
 
     if (total > width)
     {
-        return LoopRange(loc, loc + 1);
+        return LoopRange(id, id + 1);
     }
 
     auto range = width / total;
     const auto overflow = width % total;
-    const auto start = loc * range + ((loc < overflow) ? loc : overflow);
-    range = range + ((loc < overflow) ? 1 : 0);
+    const auto start = id * range + ((id < overflow) ? id : overflow);
+    range = range + ((id < overflow) ? 1 : 0);
 
     return LoopRange(start, start + range);
 }
@@ -192,8 +191,8 @@ __device__ inline Vec3 probePixel(AObject** objects, const uint32_t pixelX, cons
 
 __global__ void cudaMain(Vec3* row, AObject** objects, SceneConstants* constants, uint32_t* seeds, const uint32_t z)
 {
-    const auto id = threadIdx.x;
-    const auto range = caculateRange(id, blockIdx.x, constants->width_);
+    const auto id = blockIdx.x * THREAD_LIMIT + threadIdx.x;
+    const auto range = calculateRange(id, constants->width_);
     if (range.start_ >= constants->width_)
     {
         return;

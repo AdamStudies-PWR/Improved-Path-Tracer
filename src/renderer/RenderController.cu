@@ -125,8 +125,8 @@ void RenderController::startKernel(Vec3* devRow, AObject** devObjects, SceneCons
     numBlocks = (numBlocks <= BLOCK_LIMIT) ? numBlocks : BLOCK_LIMIT;
 
     uint32_t* devSeeds;
-    cudaMalloc((void**)&devSeeds, sizeof(uint32_t) * numThreads);
-    cudaMemcpy(devSeeds, prepareRandomSeends(numThreads).data(), sizeof(uint32_t) * numThreads,
+    cudaMalloc((void**)&devSeeds, sizeof(uint32_t) * numThreads * numBlocks);
+    cudaMemcpy(devSeeds, prepareRandomSeends(numThreads * numBlocks).data(), sizeof(uint32_t) * numThreads * numBlocks,
         cudaMemcpyHostToDevice);
     cudaErrorCheck("Prepare random seeds");
 
