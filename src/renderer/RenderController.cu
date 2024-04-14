@@ -61,16 +61,18 @@ std::vector<uint32_t> prepareRandomSeends(const uint32_t ammount)
 }  // namespace
 
 RenderController::RenderController(SceneData& sceneData, const uint32_t samples, const uint8_t maxDepth)
-    : sceneData_(sceneData)
-    , image_(std::vector<Vec3> (sceneData_.getWidth() * sceneData_.getHeight()))
-    , maxDepth_(maxDepth)
+    : camera_(sceneData.getCamera())
+    , height_(sceneData.getHeight())
     , samples_(samples)
+    , width_(sceneData.getWidth())
+    , maxDepth_(maxDepth)
+    , correctionX_((width_ % 2 == 0) ? 0.5 : 0.0)
+    , correctionZ_((height_ % 2 == 0) ? 0.5 : 0.0)
+    , image_(std::vector<Vec3> (width_ * height_))
 {}
 
-std::vector<containers::Vec3> RenderController::start()
+std::vector<containers::Vec3> RenderController::start(const std::vector<ObjectData>& objectDataVec)
 {
-    auto objectDataVec = sceneData_.getObjectsData();
-
     AObject** devObjects;
     cudaMalloc((void**)&devObjects, sizeof(AObject) * objectDataVec.size());
     cudaErrorCheck("Copy object blueprint data");
@@ -86,11 +88,10 @@ std::vector<containers::Vec3> RenderController::start()
     cudaFree(devData);
     cudaErrorCheck("Clear object blueprint data");
 
-    auto camera = sceneData_.getCamera();
-    const Vec3 vecZ = (camera.direction_%camera.orientation_).norm();
+    const Vec3 vecZ = (camera_.direction_%camera_.orientation_).norm();
 
     SceneConstants* devConstants;
-    const auto constants = SceneConstants(camera.orientation_, vecZ, camera.origin_, camera.direction_, samples_,
+    const auto constants = SceneConstants(camera_.orientation_, vecZ, camera_.origin_, camera_.direction_, samples_,
         maxDepth_, objectDataVec.size());
     cudaMalloc((void**)&devConstants, sizeof(SceneConstants));
     cudaMemcpy(devConstants, &constants, sizeof(SceneConstants), cudaMemcpyHostToDevice);
@@ -101,7 +102,7 @@ std::vector<containers::Vec3> RenderController::start()
         renderGPU(z, devObjects, devConstants, vecZ);
     };
 
-    renderCPU(sceneData_.getHeight(), callback);
+    renderCPU(height_, callback);
 
     cudaDeviceReset();
     cudaErrorCheck("Reset device");
@@ -119,43 +120,41 @@ void RenderController::renderGPU(const uint32_t z, AObject** devObjects, SceneCo
     cudaMalloc((void**)&devPixelData, sizeof(PixelData));
     cudaErrorCheck("Allocate pixel data");
 
-    auto total = sceneData_.getHeight() * sceneData_.getWidth();
-    for (uint32_t x=0; x<sceneData_.getWidth(); x++)
+    Vec3* samplesPtr = (Vec3*)malloc(sizeof(Vec3) * samples_);
+
+    // auto total = height_ * width_;
+    for (uint32_t x = 0; x < 128/*width_*/; x++)
     {
-        const auto index = z * sceneData_.getWidth() + x;
-        image_[index] = startKernel(devObjects, devSamples, devPixelData, devConstants, vecZ, x, z);
+        const auto index = z * width_ + x;
+        image_[index] = startKernel(devObjects, devSamples, samplesPtr, devPixelData, devConstants, vecZ, x, z);
+        // return;
     }
 
     cudaFree(devSamples);
     cudaFree(devPixelData);
     cudaErrorCheck("Free samples and pixel data arrays");
+
+    free(samplesPtr);
 }
 
-Vec3 RenderController::startKernel(AObject** devObjects, Vec3* devSamples, PixelData* devPixelData,
+Vec3 RenderController::startKernel(AObject** devObjects, Vec3* devSamples, Vec3* samplesPtr, PixelData* devPixelData,
     SceneConstants* devConstants, const Vec3& vecZ, const uint32_t pixelX, const uint32_t pixelZ)
 {
-    const auto vecX = sceneData_.getCamera().orientation_;
-    const auto center = sceneData_.getCamera().origin_;
-    const auto direction = sceneData_.getCamera().direction_;
+    const auto vecX = camera_.orientation_;
+    const auto direction = camera_.direction_;
 
-    auto correctionX = (sceneData_.getWidth() % 2 == 0) ? 0.5 : 0.0;
-    auto correctionZ = (sceneData_.getHeight() % 2 == 0) ? 0.5 : 0.0;
-    double stepX = (pixelX < sceneData_.getWidth()/2)
-        ? sceneData_.getWidth()/2 - pixelX - correctionX
-        : ((double)sceneData_.getWidth()/2 - pixelX - 1.0) + ((correctionX == 0.0) ? 1.0 : correctionX);
-    double stepZ = (pixelZ < sceneData_.getHeight()/2)
-        ? sceneData_.getHeight()/2 - pixelZ - correctionZ
-        : ((double)sceneData_.getHeight()/2 - pixelZ - 1.0) + ((correctionZ == 0.0) ? 1.0 : correctionZ);
+    double stepX = (pixelX < width_/2)
+        ? width_/2 - pixelX - correctionX_
+        : ((double)width_/2 - pixelX - 1.0) + ((correctionX_ == 0.0) ? 1.0 : correctionX_);
+    double stepZ = (pixelZ < height_/2)
+        ? height_/2 - pixelZ - correctionZ_
+        : ((double)height_/2 - pixelZ - 1.0) + ((correctionZ_ == 0.0) ? 1.0 : correctionZ_);
 
     const auto gaze = (direction + vecX*stepX*FOV_SCALE + vecZ*stepZ*FOV_SCALE).norm();
 
     const auto pixelData = PixelData(stepX, stepZ, gaze);
-
     cudaMemcpy(devPixelData, &pixelData, sizeof(PixelData), cudaMemcpyHostToDevice);
     cudaErrorCheck("Allocate and copy pixel data");
-
-    cudaMemset(devSamples, 0, sizeof(Vec3) * samples_);
-    cudaErrorCheck("Zero sample array");
 
     const auto numThreads = (samples_ <= THREAD_LIMIT) ? samples_ : THREAD_LIMIT;
     auto numBlocks = samples_ / numThreads + ((samples_ % numThreads) ? 1 : 0);
@@ -170,7 +169,6 @@ Vec3 RenderController::startKernel(AObject** devObjects, Vec3* devSamples, Pixel
     cudaMain <<<numBlocks, numThreads>>> (devSamples, devObjects, devConstants, devPixelData, devSeeds);
     cudaErrorCheck("Main kernel");
 
-    Vec3* samplesPtr = (Vec3*)malloc(sizeof(Vec3) * samples_);
     cudaMemcpy(samplesPtr, devSamples, sizeof(Vec3) * samples_, cudaMemcpyDeviceToHost);
     cudaErrorCheck("Copy samples from device");
 
@@ -180,7 +178,6 @@ Vec3 RenderController::startKernel(AObject** devObjects, Vec3* devSamples, Pixel
         pixel = pixel + samplesPtr[i];
     }
 
-    free(samplesPtr);
     cudaFree(devSeeds);
 
     pixel.xx_ = pixel.xx_/samples_;

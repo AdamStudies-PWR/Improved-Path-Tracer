@@ -40,8 +40,8 @@ int main(int argc, char* argv[])
 
     auto controller = std::make_shared<RenderController>(sceneData, inputParser.getSamplingRate(),
         inputParser.getMaxDepth());
-    const auto wrappedRender = [controller]() -> const std::vector<Vec3> {
-        return controller->start();
+    const auto wrappedRender = [controller, sceneData]() -> const std::vector<Vec3> {
+        return controller->start(sceneData.getObjectsData());
     };
     const auto image = measure(std::move(wrappedRender));
 
