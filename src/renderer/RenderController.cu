@@ -68,11 +68,16 @@ RenderController::RenderController(SceneData& sceneData, const uint32_t samples,
     , maxDepth_(maxDepth)
     , correctionX_((width_ % 2 == 0) ? 0.5 : 0.0)
     , correctionZ_((height_ % 2 == 0) ? 0.5 : 0.0)
-    , image_(std::vector<Vec3> (width_ * height_))
+    , counter_(0)
+    , total_(width_ * height_)
+    , image_(std::vector<Vec3>(total_))
 {}
 
 std::vector<containers::Vec3> RenderController::start(const std::vector<ObjectData>& objectDataVec)
 {
+    fprintf(stdout, "Rendering %.2f%%", (float)counter_);
+    fflush(stdout);
+
     AObject** devObjects;
     cudaMalloc((void**)&devObjects, sizeof(AObject) * objectDataVec.size());
     cudaErrorCheck("Copy object blueprint data");
@@ -104,6 +109,9 @@ std::vector<containers::Vec3> RenderController::start(const std::vector<ObjectDa
 
     renderCPU(height_, callback);
 
+    fprintf(stdout, "\rRendering %.2f%%", ((float)counter_/total_*100));
+    fflush(stdout);
+
     cudaDeviceReset();
     cudaErrorCheck("Reset device");
 
@@ -122,13 +130,17 @@ void RenderController::renderGPU(const uint32_t z, AObject** devObjects, SceneCo
 
     Vec3* samplesPtr = (Vec3*)malloc(sizeof(Vec3) * samples_);
 
-    // auto total = height_ * width_;
-    for (uint32_t x = 0; x < 128/*width_*/; x++)
+    for (uint32_t x = 0; x < width_; x++)
     {
         const auto index = z * width_ + x;
         image_[index] = startKernel(devObjects, devSamples, samplesPtr, devPixelData, devConstants, vecZ, x, z);
-        // return;
+        if (x % 100 == 0)
+        {
+            fprintf(stdout, "\rRendering %.2f%%", ((float)counter_/total_*100));
+        }
+        counter_++;
     }
+    fprintf(stdout, "\rRendering %.2f%%", ((float)counter_/total_*100));
 
     cudaFree(devSamples);
     cudaFree(devPixelData);

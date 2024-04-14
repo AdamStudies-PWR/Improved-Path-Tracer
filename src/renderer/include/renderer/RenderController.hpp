@@ -34,6 +34,8 @@ private:
     const uint8_t maxDepth_;
     const float correctionX_;
     const float correctionZ_;
+    unsigned counter_;
+    const uint32_t total_;
     std::vector<containers::Vec3> image_;
 };
 
