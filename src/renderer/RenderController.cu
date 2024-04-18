@@ -122,7 +122,7 @@ void RenderController::renderGPU(const uint32_t z, AObject** devObjects, SceneCo
 {
     Vec3* devSamples;
     cudaMalloc((void**)&devSamples, sizeof(Vec3) * samples_);
-    cudaErrorCheck("Set image array");
+    cudaErrorCheck("Allocate samples");
 
     PixelData* devPixelData;
     cudaMalloc((void**)&devPixelData, sizeof(PixelData));
@@ -140,7 +140,6 @@ void RenderController::renderGPU(const uint32_t z, AObject** devObjects, SceneCo
         }
         counter_++;
     }
-    fprintf(stdout, "\rRendering %.2f%%", ((float)counter_/total_*100));
 
     cudaFree(devSamples);
     cudaFree(devPixelData);
