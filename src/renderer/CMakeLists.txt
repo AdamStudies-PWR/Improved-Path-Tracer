@@ -3,6 +3,7 @@ project(tracer-renderer)
 set(SOURCES
     helpers/ImageData.cpp
     helpers/Range.cu
+    helpers/RenderData.cu
     RenderController.cu
     Renderer.cu
 )

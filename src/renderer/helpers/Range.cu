@@ -12,10 +12,10 @@ struct Range
         , endZ_(endZ)
     {}
 
-    uint32_t startX_;
-    uint32_t startZ_;
-    uint32_t endX_;
-    uint32_t endZ_;
+    const uint32_t startX_;
+    const uint32_t startZ_;
+    const uint32_t endX_;
+    const uint32_t endZ_;
 };
 
 }  // namespace tracer::renderer
