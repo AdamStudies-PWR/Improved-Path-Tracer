@@ -30,7 +30,7 @@ public:
         double b = op.dot(ray.direction_);
         double delta = b*b - op.dot(op) + radius_*radius_;
 
-        if (delta < 0) return 0;
+        if (delta < MARGIN) return 0.0;
         else delta = sqrt(delta);
 
         return ((intersection = -b - delta) > MARGIN)
