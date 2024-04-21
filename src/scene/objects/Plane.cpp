@@ -51,7 +51,7 @@ double Plane::intersect(const Ray& ray) const
     if (bottom == 0.0) return 0.0;
 
     auto distance = top/bottom;
-    if (distance <= 0.0) return 0.0;
+    if (distance <= MARGIN) return 0.0;
 
     const auto impact = ray.origin_ + (ray.direction_ * distance);
     return checkIfInBounds(impact) ? distance : 0.0;
