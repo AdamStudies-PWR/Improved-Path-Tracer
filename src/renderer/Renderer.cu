@@ -67,18 +67,74 @@ __device__ inline HitData getHitObjectAndDistance(AObject** objects, const conta
     return HitData(index, distance);
 }
 
- __device__ inline Vec3 deepLayers(const RenderData& data, Ray ray, uint8_t depth)
+__device__ inline Vec3 findLight(const RenderData& data, const AObject* lastObject, const Ray& ray,
+    const Vec3& intersection)
+{
+    const bool isNormalNegative = (lastObject->getNormal(intersection, ray.direction_) < 0);
+    double distance = INF;
+    int32_t smallest = -1;
+    Vec3 target;
+    Vec3 direction;
+
+    for (uint32_t i = 0; i < data.lightCount_; i++)
+    {
+        auto extremes = data.lights_[i]->getExtremes();
+        for (uint8_t j = 0; j < data.lights_[i]->getExtremesCount(); j++)
+        {
+            auto toLight = intersection.distance(extremes[j]);
+            if (toLight < distance)
+            {
+                direction = (intersection - target).norm();
+                if ((lastObject->getNormal(intersection, direction * -1) < 0) == isNormalNegative)
+                {
+                    target = extremes[j];
+                    smallest = i;
+                    distance = toLight;
+                }
+            }
+        }
+    }
+
+    if (smallest == -1)
+    {
+        return Vec3(1, 0, 0);
+    }
+
+    const auto propHitData = getHitObjectAndDistance(data.props_, Ray(intersection, direction), data.propCount_);
+    if (propHitData.distance_ < distance)
+    {
+        //printf("NO BUENO\n");
+        return Vec3(1, 0, 0);
+    }
+
+    //printf("Light bonus\n");
+    //const auto light = data.lights_[smallest];
+    return Vec3(0, 1, 0);
+    //return light->getEmission() + light->getColor().mult(Vec3());
+}
+
+__device__ inline Vec3 deepLayers(const RenderData& data, Ray ray, uint8_t depth)
 {
     Vec3* objectEmissions = new Vec3[data.maxDepth_ - 2];
     Vec3* objectColors = new Vec3[data.maxDepth_ - 2];
 
     for (; depth < data.maxDepth_; depth++)
     {
-        const auto hitData = getHitObjectAndDistance(data.objects_, ray, data.objectCount_);
-        if (hitData.index_ == -1) break;
+        const auto propHitData = getHitObjectAndDistance(data.props_, ray, data.propCount_);
+        const auto lightHitData = getHitObjectAndDistance(data.lights_, ray, data.lightCount_);
+        if (propHitData.index_ == -1 && lightHitData.index_ == -1) break;
 
-        const auto& object = data.objects_[hitData.index_];
-        const auto intersection = ray.origin_ + ray.direction_ * hitData.distance_;
+        if (lightHitData.distance_ < propHitData.distance_)
+        {
+            const auto light = data.lights_[lightHitData.index_];
+            objectEmissions[depth - 2] = light->getEmission();
+            objectColors[depth - 2] = light->getColor();
+            depth++;
+            break;
+        }
+
+        const auto& object = data.props_[propHitData.index_];
+        const auto intersection = ray.origin_ + ray.direction_ * propHitData.distance_;
         const auto reflected = object->calculateReflections(intersection, ray.direction_, data.state_, depth);
         ray = reflected.ray_;
 
@@ -86,7 +142,7 @@ __device__ inline HitData getHitObjectAndDistance(AObject** objects, const conta
         objectColors[depth - 2] = object->getColor();
     }
 
-    Vec3 pixel;
+    Vec3 pixel = Vec3();
     for (int8_t i=(depth - 2); i>= 0; i--)
     {
         pixel = objectEmissions[i] + objectColors[i].mult(pixel);
@@ -100,11 +156,21 @@ __device__ inline HitData getHitObjectAndDistance(AObject** objects, const conta
 
 __device__ inline Vec3 secondLayer(const RenderData& data, Ray ray, uint8_t& depth)
 {
-    const auto hitData = getHitObjectAndDistance(data.objects_, ray, data.objectCount_);
-    if (hitData.index_ == -1) return Vec3();
+    const auto propHitData = getHitObjectAndDistance(data.props_, ray, data.propCount_);
+    const auto lightHitData = getHitObjectAndDistance(data.lights_, ray, data.lightCount_);
+    if (propHitData.index_ == -1 && lightHitData.index_ == -1)
+    {
+        return Vec3();
+    }
 
-    const auto& object = data.objects_[hitData.index_];
-    const auto intersection = ray.origin_ + ray.direction_ * hitData.distance_;
+    if (lightHitData.distance_ < propHitData.distance_)
+    {
+        const auto light = data.lights_[lightHitData.index_];
+        return light->getEmission() + light->getColor().mult(Vec3());
+    }
+
+    const auto& object = data.props_[propHitData.index_];
+    const auto intersection = ray.origin_ + ray.direction_ * propHitData.distance_;
     const auto reflected = object->calculateReflections(intersection, ray.direction_, data.state_, depth);
 
     depth++;
@@ -115,20 +181,29 @@ __device__ inline Vec3 secondLayer(const RenderData& data, Ray ray, uint8_t& dep
         backData = backData + deepLayers(data, reflected.secondRay_, depth) * reflected.secondPower_;
     }
 
-    return object->getEmission() + object->getColor().mult(backData);
+    return findLight(data, object, ray, intersection);
+
+    // return object->getEmission() + object->getColor().mult(backData);
 }
 
 __device__ inline Vec3 firstLayer(const RenderData& data, Ray ray)
 {
     uint8_t depth = 0;
-    const auto hitData = getHitObjectAndDistance(data.objects_, ray, data.objectCount_);
-    if (hitData.index_ == -1)
+    const auto propHitData = getHitObjectAndDistance(data.props_, ray, data.propCount_);
+    const auto lightHitData = getHitObjectAndDistance(data.lights_, ray, data.lightCount_);
+    if (propHitData.index_ == -1 && lightHitData.index_ == -1)
     {
         return Vec3();
     }
 
-    const auto& object = data.objects_[hitData.index_];
-    const auto intersection = ray.origin_ + ray.direction_ * hitData.distance_;
+    if (lightHitData.distance_ < propHitData.distance_)
+    {
+        const auto light = data.lights_[lightHitData.index_];
+        return light->getEmission() + light->getColor().mult(Vec3());
+    }
+
+    const auto& object = data.props_[propHitData.index_];
+    const auto intersection = ray.origin_ + ray.direction_ * propHitData.distance_;
     const auto reflected = object->calculateReflections(intersection, ray.direction_, data.state_, depth);
 
     depth++;
@@ -144,44 +219,45 @@ __device__ inline Vec3 firstLayer(const RenderData& data, Ray ray)
 
 __device__ inline Vec3 samplePixel(const RenderData& data, const Camera* camera, ImageData* imageProperties,
     const Vec3* vecZ, const uint32_t pixelX, const uint32_t pixelZ)
+{
+    const auto vecX = camera->orientation_;
+    const auto width = imageProperties->width_;
+    const auto height = imageProperties->height_;
+
+    auto correctionX = (width % 2 == 0) ? 0.5 : 0.0;
+    auto correctionZ = (width % 2 == 0) ? 0.5 : 0.0;
+    double stepX = (pixelX < width/2)
+        ? width/2 - pixelX - correctionX
+        : ((double)width/2 - pixelX - 1.0) + ((correctionX == 0.0) ? 1.0 : correctionX);
+    double stepZ = (pixelZ < height/2)
+        ? height/2 - pixelZ - correctionZ
+        : ((double)height/2 - pixelZ - 1.0) + ((correctionZ == 0.0) ? 1.0 : correctionZ);
+
+    const auto gaze = (camera->direction_ + vecX*stepX*FOV_SCALE + (*vecZ)*stepZ*FOV_SCALE).norm();
+
+    Vec3 pixel = Vec3();
+    for (uint32_t i = 0;  i < imageProperties->samples_; i++)
     {
-        const auto vecX = camera->orientation_;
-        const auto width = imageProperties->width_;
-        const auto height = imageProperties->height_;
+        // Tent filter
+        const auto xFactor = tent_filter(data.state_);
+        const auto zFactor = tent_filter(data.state_);
+        const auto tentFilter = vecX*xFactor + (*vecZ)*zFactor;
+        // Tent filter
 
-        auto correctionX = (width % 2 == 0) ? 0.5 : 0.0;
-        auto correctionZ = (width % 2 == 0) ? 0.5 : 0.0;
-        double stepX = (pixelX < width/2)
-            ? width/2 - pixelX - correctionX
-            : ((double)width/2 - pixelX - 1.0) + ((correctionX == 0.0) ? 1.0 : correctionX);
-        double stepZ = (pixelZ < height/2)
-            ? height/2 - pixelZ - correctionZ
-            : ((double)height/2 - pixelZ - 1.0) + ((correctionZ == 0.0) ? 1.0 : correctionZ);
-
-        const auto gaze = (camera->direction_ + vecX*stepX*FOV_SCALE + (*vecZ)*stepZ*FOV_SCALE).norm();
-
-        Vec3 pixel = Vec3();
-        for (uint32_t i = 0;  i < imageProperties->samples_; i++)
-        {
-            // Tent filter
-            const auto xFactor = tent_filter(data.state_);
-            const auto zFactor = tent_filter(data.state_);
-            const auto tentFilter = vecX*xFactor + (*vecZ)*zFactor;
-            // Tent filter
-
-            const auto origin = camera->origin_ + vecX*stepX + (*vecZ)*stepZ + tentFilter;
-            pixel = pixel + firstLayer(data, Ray(origin + camera->direction_ * VIEWPORT_DISTANCE, gaze));
-        }
-
-        pixel.xx_ = pixel.xx_/imageProperties->samples_;
-        pixel.yy_ = pixel.yy_/imageProperties->samples_;
-        pixel.zz_ = pixel.zz_/imageProperties->samples_;
-
-        return pixel;
+        const auto origin = camera->origin_ + vecX*stepX + (*vecZ)*stepZ + tentFilter;
+        pixel = pixel + firstLayer(data, Ray(origin + camera->direction_ * VIEWPORT_DISTANCE, gaze));
     }
+
+    pixel.xx_ = pixel.xx_/imageProperties->samples_;
+    pixel.yy_ = pixel.yy_/imageProperties->samples_;
+    pixel.zz_ = pixel.zz_/imageProperties->samples_;
+
+    return pixel;
+}
 }  // namespace
 
-__global__ void cudaMain(Vec3* image, AObject** objects, Camera* camera, Vec3* vecZ, ImageData* imageProperties)
+__global__ void cudaMain(Vec3* image, AObject** props, AObject** lights, Camera* camera, Vec3* vecZ,
+    ImageData* imageProperties)
 {
     if (blockIdx.x == 0 and threadIdx.x == 0)
     {
@@ -192,7 +268,8 @@ __global__ void cudaMain(Vec3* image, AObject** objects, Camera* camera, Vec3* v
     auto seed = threadIdx.x + blockIdx.x * blockDim.x;
     curand_init(123456, seed, 0, &state);
 
-    RenderData data {objects, imageProperties->objectCount_, imageProperties->maxDepth_, state};
+    RenderData data {props, lights, imageProperties->propCount_, imageProperties->lightCount_,
+        imageProperties->maxDepth_, state};
 
     const auto totalPixels = imageProperties->width_ * imageProperties->height_;
     const auto range = calculateRange(threadIdx.x, blockIdx.x, imageProperties->width_, imageProperties->height_);

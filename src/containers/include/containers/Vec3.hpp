@@ -71,7 +71,7 @@ struct Vec3
         return Vec3(yy_*vec2.zz_ - zz_*vec2.yy_, zz_*vec2.xx_ - xx_*vec2.zz_, xx_*vec2.yy_ - yy_*vec2.xx_);
     }
 
-    __device__ bool operator== (const Vec3& vec2) const
+    __host__ __device__ bool operator== (const Vec3& vec2) const
     {
         return xx_ == vec2.xx_ and yy_ == vec2.yy_ and zz_ == vec2.zz_;
     }

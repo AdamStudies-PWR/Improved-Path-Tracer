@@ -14,11 +14,11 @@ enum EObjectType
 
 struct ObjectData
 {
-    ObjectData(const EObjectType type, double radius, containers::Vec3 position, containers::Vec3 emission,
-        containers::Vec3 color, objects::EReflectionType reflectionType);
-
-    ObjectData(const EObjectType type, containers::Vec3 north, containers::Vec3 east, containers::Vec3 position,
+    ObjectData(const EObjectType type, double radius, containers::Vec3 position,
         containers::Vec3 emission, containers::Vec3 color, objects::EReflectionType reflectionType);
+
+    ObjectData(const EObjectType type, containers::Vec3 north, containers::Vec3 east,
+        containers::Vec3 position, containers::Vec3 emission, containers::Vec3 color, objects::EReflectionType reflectionType);
 
     const EObjectType objectType_;
     const double radius_;

@@ -84,9 +84,15 @@ bool SceneData::initScene()
         return false;
     }
 
-    if (objectsData_.empty())
+    if (propsData_.empty())
     {
-        std::cout << "Object list empty! Cannot build scene" << std::endl;
+        std::cout << "Empty objects! Cannot build scene" << std::endl;
+        return false;
+    }
+
+    if (lightsData_.empty())
+    {
+        std::cout << "No light sources! Cannot build scene" << std::endl;
         return false;
     }
 
@@ -98,7 +104,8 @@ bool SceneData::initScene()
 objects::Camera SceneData::getCamera() const { return camera_; }
 uint32_t SceneData::getWidth() const { return width_; }
 uint32_t SceneData::getHeight() const { return height_; }
-std::vector<ObjectData> SceneData::getObjectsData() const { return objectsData_; }
+std::vector<ObjectData> SceneData::getLightsData() const { return lightsData_; }
+std::vector<ObjectData> SceneData::getPropsData() const { return propsData_; }
 
 bool SceneData::loadBasicSceneData(const json& jsonData)
 {
@@ -192,10 +199,15 @@ bool SceneData::addSpehere(const json& sphereData)
     const auto color = sphereData["color"];
     const auto emission = sphereData["emission"];
 
+    const auto emissionVec = Vec3(emission["xx"], emission["yy"], emission["zz"]);
+    const auto isLightSource = not (emissionVec == Vec3());
     auto sphere = ObjectData(SphereData, sphereData["radius"], Vec3(position["xx"], position["yy"], position["zz"]),
-                             Vec3(emission["xx"], emission["yy"], emission["zz"]),
-                             Vec3(color["xx"], color["yy"], color["zz"]), EReflectionType(sphereData["reflection"]));
-    objectsData_.push_back(sphere);
+                             emissionVec, Vec3(color["xx"], color["yy"], color["zz"]),
+                             EReflectionType(sphereData["reflection"]));
+
+
+    if (isLightSource) lightsData_.push_back(sphere);
+    else propsData_.push_back(sphere);
 
     return true;
 }
@@ -214,12 +226,15 @@ bool SceneData::addPlane(const json& planeData)
     const auto color = planeData["color"];
     const auto emission = planeData["emission"];
 
+    const auto emissionVec = Vec3(emission["xx"], emission["yy"], emission["zz"]);
+    const auto isLightSource = not (emissionVec == Vec3());
     auto plane = ObjectData(PlaneData, Vec3(north["xx"], north["yy"], north["zz"]),
                             Vec3(east["xx"], east["yy"], east["zz"]),
-                            Vec3(position["xx"], position["yy"], position["zz"]),
-                            Vec3(emission["xx"], emission["yy"], emission["zz"]),
+                            Vec3(position["xx"], position["yy"], position["zz"]), emissionVec,
                             Vec3(color["xx"], color["yy"], color["zz"]), EReflectionType(planeData["reflection"]));
-    objectsData_.push_back(plane);
+
+    if (isLightSource) lightsData_.push_back(plane);
+    else propsData_.push_back(plane);
 
     return true;
 }

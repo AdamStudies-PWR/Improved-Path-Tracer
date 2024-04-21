@@ -12,15 +12,30 @@ namespace
 {
 using namespace containers;
 using namespace utils;
+
+const uint8_t SPHERE_EXTREMS = 6;
 }  // namespace
 
 class Sphere : public AObject
 {
 public:
     __device__ Sphere(double radius, Vec3 position, Vec3 emission, Vec3 color, EReflectionType reflection)
-        : AObject(position, emission, color, reflection)
+        : AObject(position, emission, color, reflection, SPHERE_EXTREMS)
         , radius_(radius)
-    {}
+    {
+        extremes_ = (Vec3*)malloc(sizeof(Vec3) * SPHERE_EXTREMS);
+        extremes_[0] = position_ + Vec3(1, 0, 0) * radius_;
+        extremes_[1] = position_ - Vec3(1, 0, 0) * radius_;
+        extremes_[2] = position_ - Vec3(0, 1, 0) * radius_;
+        extremes_[3] = position_ + Vec3(0, 1, 0) * radius_;
+        extremes_[4] = position_ - Vec3(0, 0, 1) * radius_;
+        extremes_[5] = position_ - Vec3(0, 0, 1) * radius_;
+    }
+
+    __device__ ~Sphere()
+    {
+        free(extremes_);
+    }
 
     __device__ double intersect(const Ray& ray) const override
     {
@@ -53,6 +68,12 @@ public:
         }
 
         return {};
+    }
+
+    __device__ double getNormal(const Vec3& intersection, const Vec3& incoming) const override
+    {
+        const auto rawNormal = (intersection - position_).norm();
+        return incoming.dot(rawNormal);
     }
 
 private:

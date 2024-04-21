@@ -9,8 +9,8 @@ namespace
 using namespace containers;
 }  // namespace
 
-ObjectData::ObjectData(const EObjectType objectType, double radius, Vec3 position, Vec3 emission, Vec3 color,
-    EReflectionType reflectionType)
+ObjectData::ObjectData(const EObjectType objectType, double radius, Vec3 position,
+    Vec3 emission, Vec3 color, EReflectionType reflectionType)
     : objectType_(objectType)
     , radius_(radius)
     , north_(Vec3())
@@ -21,8 +21,8 @@ ObjectData::ObjectData(const EObjectType objectType, double radius, Vec3 positio
     , reflectionType_(reflectionType)
 {}
 
-ObjectData::ObjectData(const EObjectType objectType, Vec3 north, Vec3 east, Vec3 position, Vec3 emission, Vec3 color,
-    EReflectionType reflectionType)
+ObjectData::ObjectData(const EObjectType objectType, Vec3 north, Vec3 east, Vec3 position,
+    Vec3 emission, Vec3 color, EReflectionType reflectionType)
     : objectType_(objectType)
     , radius_(0.0)
     , north_(north)

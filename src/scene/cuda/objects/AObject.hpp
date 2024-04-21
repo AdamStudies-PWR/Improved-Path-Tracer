@@ -63,21 +63,26 @@ __device__ Vec3 calculateRefreactive(const Vec3& incoming, const Vec3& normal)
 class AObject
 {
 public:
-    __device__ AObject(Vec3 position, Vec3 emission, Vec3 color, EReflectionType reflection)
+    __device__ AObject(Vec3 position, Vec3 emission, Vec3 color, EReflectionType reflection,
+            const uint8_t extremesCount)
         : color_(color)
         , emission_(emission)
         , position_(position)
         , reflection_(reflection)
+        , extremesCount_(extremesCount)
     {}
 
     __device__ virtual double intersect(const Ray& ray) const = 0;
     __device__ virtual RayData calculateReflections(const Vec3& intersection, const Vec3& incoming, curandState& state,
         const uint8_t depth) const = 0;
+    __device__ virtual double getNormal(const Vec3& intersection, const Vec3& incoming) const = 0;
 
     __device__ Vec3 getEmission() const { return emission_; }
     __device__ Vec3 getColor() const { return color_; }
     __device__ Vec3 getPosition() const { return position_; }
     __device__ EReflectionType getReflectionType() const { return reflection_; }
+    __device__ uint32_t getExtremesCount() const { return extremesCount_; }
+    __device__ Vec3* getExtremes() const { return extremes_; }
 
 protected:
     __device__ RayData handleSpecular(const Vec3& intersection, const Vec3& incoming, const Vec3& normal,
@@ -138,6 +143,8 @@ protected:
     Vec3 emission_;
     Vec3 position_;
     EReflectionType reflection_;
+    uint8_t extremesCount_;
+    Vec3* extremes_;
 };
 
 }  // namespace tracer::scene::objects

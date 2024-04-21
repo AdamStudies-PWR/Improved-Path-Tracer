@@ -52,22 +52,40 @@ RenderContoller::RenderContoller(SceneData& sceneData, const uint32_t samples, c
 
 std::vector<containers::Vec3> RenderContoller::start()
 {
-    auto objectDataVec = sceneData_.getObjectsData();
+    auto propsDataVec = sceneData_.getPropsData();
+    auto lightsDataVec = sceneData_.getLightsData();
+    const auto propsSize = sizeof(AObject) * propsDataVec.size();
+    const auto lightsSize = sizeof(AObject) * lightsDataVec.size();
 
-    AObject** devObjects;
-    cudaMalloc((void**)&devObjects, sizeof(AObject) * objectDataVec.size());
-    cudaErrorCheck("Copy object blueprint data");
+    ObjectData* devPropsData;
+    cudaMalloc((void**)&devPropsData, sizeof(ObjectData) * propsDataVec.size());
+    cudaMemcpy(devPropsData, propsDataVec.data(), sizeof(ObjectData) * propsDataVec.size(), cudaMemcpyHostToDevice);
+    cudaErrorCheck("Allocate memory for props data");
 
-    ObjectData* devData;
-    cudaMalloc((void**)&devData, sizeof(ObjectData) * objectDataVec.size());
-    cudaMemcpy(devData, objectDataVec.data(), sizeof(ObjectData) * objectDataVec.size(), cudaMemcpyHostToDevice);
-    cudaErrorCheck("Allocate memory for objects");
+    AObject** devProps;
+    cudaMalloc((void**)&devProps, propsSize);
+    cudaErrorCheck("Allocate props data");
 
-    cudaCreateObjects <<<1, objectDataVec.size()>>> (devObjects, devData);
+    cudaCreateObjects <<<1, propsDataVec.size()>>> (devProps, devPropsData);
     cudaErrorCheck("cudaCreateObjects kernel");
 
-    cudaFree(devData);
-    cudaErrorCheck("Clear object blueprint data");
+    cudaFree(devPropsData);
+    cudaErrorCheck("Clear props blueprint data");
+
+    ObjectData* devLightsData;
+    cudaMalloc((void**)&devLightsData, sizeof(ObjectData) * lightsDataVec.size());
+    cudaMemcpy(devLightsData, lightsDataVec.data(), sizeof(ObjectData) * lightsDataVec.size(), cudaMemcpyHostToDevice);
+    cudaErrorCheck("Allocate memory for lights data");
+
+    AObject** devLights;
+    cudaMalloc((void**)&devLights, lightsSize);
+    cudaErrorCheck("Allocate light sources data");
+
+    cudaCreateObjects <<<1, lightsDataVec.size()>>> (devLights, devLightsData);
+    cudaErrorCheck("cudaCreateObjects kernel");
+
+    cudaFree(devLightsData);
+    cudaErrorCheck("Clear lights blueprint data");
 
     auto camera = sceneData_.getCamera();
     Camera* devCamera;
@@ -82,7 +100,7 @@ std::vector<containers::Vec3> RenderContoller::start()
 
     ImageData* devImageData;
     const auto imageProperties = ImageData(sceneData_.getWidth(), sceneData_.getHeight(), samples_, maxDepth_,
-        objectDataVec.size());
+        propsDataVec.size(), lightsDataVec.size());
     cudaMalloc((void**)&devImageData, sizeof(ImageData));
     cudaMemcpy(devImageData, &imageProperties, sizeof(ImageData), cudaMemcpyHostToDevice);
     cudaErrorCheck("Copy image properties data");
@@ -96,12 +114,12 @@ std::vector<containers::Vec3> RenderContoller::start()
     const auto numThreads = (sceneData_.getWidth() <= THREAD_SIZE) ? sceneData_.getWidth() : THREAD_SIZE;
     const auto numBlocks = (sceneData_.getHeight() <= BLOCK_SIZE) ? sceneData_.getHeight() : BLOCK_SIZE;
 
-    cudaMain <<<numBlocks, numThreads>>> (devImage, devObjects, devCamera, devVecZ, devImageData);
+    cudaMain <<<numBlocks, numThreads>>> (devImage, devProps, devLights, devCamera, devVecZ, devImageData);
     cudaErrorCheck("cudaMain kernel");
 
     Vec3* imagePtr = (Vec3*)malloc(imageSize);
     cudaMemcpy(imagePtr, devImage, imageSize, cudaMemcpyDeviceToHost);
-    cudaErrorCheck("Copy to device");
+    cudaErrorCheck("Copy from device");
 
     cudaDeviceReset();
     cudaErrorCheck("Reset device");
