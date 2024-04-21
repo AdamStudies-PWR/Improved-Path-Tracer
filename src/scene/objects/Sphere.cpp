@@ -31,7 +31,7 @@ double Sphere::intersect(const Ray& ray) const
     double b = op.dot(ray.direction_);
     double delta = b*b - op.dot(op) + radius_*radius_;
 
-    if (delta < MARGIN) return 0;
+    if (delta < 0) return 0;
     else delta = sqrt(delta);
 
     return ((intersection = -b - delta)) > MARGIN
