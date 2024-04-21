@@ -17,7 +17,7 @@ namespace tracer::containers
 
 struct Vec3
 {
-    __host__ __device__ Vec3(double xx=0, double yy=0, double zz=0)
+    __host__ __device__ Vec3(double xx=0.0, double yy=0.0, double zz=0.0)
         : xx_(xx)
         , yy_(yy)
         , zz_(zz)

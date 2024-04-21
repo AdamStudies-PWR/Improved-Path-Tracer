@@ -26,9 +26,9 @@ public:
         extremes_ = (Vec3*)malloc(sizeof(Vec3) * SPHERE_EXTREMS);
         extremes_[0] = position_ + Vec3(1, 0, 0) * radius_;
         extremes_[1] = position_ - Vec3(1, 0, 0) * radius_;
-        extremes_[2] = position_ - Vec3(0, 1, 0) * radius_;
-        extremes_[3] = position_ + Vec3(0, 1, 0) * radius_;
-        extremes_[4] = position_ - Vec3(0, 0, 1) * radius_;
+        extremes_[2] = position_ + Vec3(0, 1, 0) * radius_;
+        extremes_[3] = position_ - Vec3(0, 1, 0) * radius_;
+        extremes_[4] = position_ + Vec3(0, 0, 1) * radius_;
         extremes_[5] = position_ - Vec3(0, 0, 1) * radius_;
     }
 
@@ -45,7 +45,7 @@ public:
         double b = op.dot(ray.direction_);
         double delta = b*b - op.dot(op) + radius_*radius_;
 
-        if (delta < 0) return 0;
+        if (delta < MARGIN) return 0.0;
         else delta = sqrt(delta);
 
         return ((intersection = -b - delta) > MARGIN)
