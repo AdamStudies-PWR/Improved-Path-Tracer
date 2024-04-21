@@ -4,8 +4,7 @@ import subprocess
 EXECUTABLE = "./tracer"
 
 DEPTHS = [10]
-# SAMPLES = [40, 80, 200, 400, 1000, 2000, 5000]
-SAMPLES = [40]
+SAMPLES = [40, 80, 200, 400, 1000, 2000, 5000]
 SCENES = ["scenes/maze.json", "scenes/mirrors.json", "scenes/spheres.json"]
 
 if not os.path.exists("tracer"):
