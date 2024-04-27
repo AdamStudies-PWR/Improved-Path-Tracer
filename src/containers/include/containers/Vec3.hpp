@@ -65,6 +65,11 @@ struct Vec3
         return Vec3(xx_ * number, yy_ * number, zz_ * number);
     }
 
+    __device__ Vec3 operator/ (double number) const
+    {
+        return Vec3(xx_ / number, yy_ / number, zz_ / number);
+    }
+
     // Iloczyn wektorowy
     __host__ __device__ Vec3 operator% (Vec3& vec2)
     {

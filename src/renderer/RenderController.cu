@@ -42,6 +42,19 @@ __global__ void cudaCreateObjects(AObject** objects, ObjectData* objectsData)
             objectsData[threadIdx.x].reflectionType_);
     }
 }
+
+__global__ void cudaSortLights(AObject** props, uint32_t propsCount, AObject** lights)
+{
+    Vec3 avgPosition = Vec3();
+    for (uint32_t i = 0; i < propsCount; i++)
+    {
+        avgPosition = avgPosition + props[i]->getPosition();
+    }
+    avgPosition = avgPosition / propsCount;
+
+    lights[threadIdx.x]->sortExtremes(avgPosition);
+}
+
 }  // namespace
 
 RenderContoller::RenderContoller(SceneData& sceneData, const uint32_t samples, const uint8_t maxDepth)
@@ -87,6 +100,9 @@ std::vector<containers::Vec3> RenderContoller::start()
     cudaFree(devLightsData);
     cudaErrorCheck("Clear lights blueprint data");
 
+    cudaSortLights <<<1, lightsDataVec.size()>>> (devProps, propsDataVec.size(), devLights);
+    cudaErrorCheck("cuda sort lightsources");
+
     auto camera = sceneData_.getCamera();
     Camera* devCamera;
     cudaMalloc((void**)&devCamera, sizeof(Camera));
@@ -114,7 +130,7 @@ std::vector<containers::Vec3> RenderContoller::start()
     const auto numThreads = (sceneData_.getWidth() <= THREAD_SIZE) ? sceneData_.getWidth() : THREAD_SIZE;
     const auto numBlocks = (sceneData_.getHeight() <= BLOCK_SIZE) ? sceneData_.getHeight() : BLOCK_SIZE;
 
-    cudaMain <<</*1, 1*/numBlocks, numThreads>>> (devImage, devProps, devLights, devCamera, devVecZ, devImageData);
+    cudaMain <<<numBlocks, numThreads>>> (devImage, devProps, devLights, devCamera, devVecZ, devImageData);
     cudaErrorCheck("cudaMain kernel");
 
     Vec3* imagePtr = (Vec3*)malloc(imageSize);

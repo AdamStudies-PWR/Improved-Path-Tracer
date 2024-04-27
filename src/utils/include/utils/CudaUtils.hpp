@@ -21,5 +21,4 @@ __device__ double tent_filter(auto& state)
     return one_one(state);
 }
 
-
 }  // namespace tracer::utils

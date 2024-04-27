@@ -3,6 +3,7 @@
 #include "math.h"
 
 #include "Constants.hpp"
+#include "Helpers.hpp"
 
 
 namespace tracer::scene::objects
@@ -74,6 +75,11 @@ public:
     {
         const auto rawNormal = (intersection - position_).norm();
         return incoming.dot(rawNormal);
+    }
+
+    __device__ virtual void sortExtremes(const Vec3& refPoint) const override
+    {
+        helpers::quickSort(extremes_, refPoint, SPHERE_EXTREMS);
     }
 
 private:

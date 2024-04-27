@@ -46,8 +46,6 @@ __device__ inline Range calculateRange(const uint32_t idX, const uint32_t idZ, c
     heightAssigned = heightAssigned + ((idZ < heightOverflow) ? 1 : 0);
 
     return Range(startWidth, startHeight, (startWidth + widthAssigned), (startHeight + heightAssigned));
-
-    //return Range(50, 200, 52, 202);
 }
 
 __device__ inline HitData getHitObjectAndDistance(AObject** objects, const containers::Ray& ray,
@@ -61,7 +59,6 @@ __device__ inline HitData getHitObjectAndDistance(AObject** objects, const conta
         auto temp = objects[i]->intersect(ray);
         if (temp && temp < distance)
         {
-            // printf("DBG !!!!!!!!! Applying temp: %lf\n", temp);
             distance = temp;
             index = i;
         }
@@ -74,59 +71,42 @@ __device__ inline Vec3 findLight(const RenderData& data, const AObject* lastObje
     const Vec3& intersection)
 {
     const bool isNormalNegative = (lastObject->getNormal(intersection, ray.direction_) < 0);
-    auto loc = lastObject->getPosition();
-    // printf("Last hit object X: %f, Y: %f, Z: %f\n", loc.xx_, loc.zz_, loc.yy_);
-    // printf("Normal is: %d\n", isNormalNegative);
-    double distance = INF;
-    int32_t smallest = -1;
-    Vec3 target;
-    Vec3 direction;
+    double minDistance = INF;
+    int32_t lightId = -1;
 
     for (uint32_t i = 0; i < data.lightCount_; i++)
     {
-        // printf("Processing lightsource %d\n", i);
-        auto extremes = data.lights_[i]->getExtremes();
+        const auto extremes = data.lights_[i]->getExtremes();
         for (uint8_t j = 0; j < data.lights_[i]->getExtremesCount(); j++)
         {
-            // printf("Extreme X:%f, Y:%f. Z:%f\n", extremes[j].xx_, extremes[j].yy_, extremes[j].zz_);
-            auto toLight = intersection.distance(extremes[j]);
-            // printf("Distance to light is: %f\n", toLight);
-            if (toLight < distance)
+            const auto distance = intersection.distance(extremes[j]);
+            if (distance < minDistance)
             {
-                // printf("New distance is smaller then: %f\n", distance);
-                target = extremes[j];
-                direction = (target - intersection).norm();
+                const auto target = extremes[j];
+                const auto direction = (target - intersection).norm();
                 if ((lastObject->getNormal(intersection, direction * -1) < 0) == isNormalNegative)
                 {
-                    // printf("New distance will be applied\n");
-                    smallest = i;
-                    distance = toLight;
+                    const auto propHitData =
+                        getHitObjectAndDistance(data.props_, Ray(intersection, direction), data.propCount_);
+                    if (propHitData.distance_ < distance && propHitData.distance_ > 0.0)
+                    {
+                        continue;
+                    }
+
+                    lightId = i;
+                    minDistance = distance;
                 }
             }
         }
     }
 
-    if (smallest == -1)
+    if (lightId == -1)
     {
-        // printf("Did not find valid light!\n");
-        return Vec3(1, 0, 0);
+        return Vec3();
     }
 
-    const auto propHitData = getHitObjectAndDistance(data.props_, Ray(intersection, direction), data.propCount_);
-    if (propHitData.distance_ < distance && propHitData.distance_ > 0.0)
-    {
-        // printf("Ray blocked by object %d, distance: %f\n", propHitData.index_, propHitData.distance_);
-        auto obj = data.props_[propHitData.index_]->getPosition();
-        // printf("X: %f, Y: %f, Z: %f\n", obj.xx_, obj.yy_, obj.zz_);
-        // printf("NO BUENO\n");
-        return Vec3(1, 0, 0);
-    }
-
-    // printf("Light bonus\n");
-    // const auto light = data.lights_[smallest];
-    // printf("Light source hit!\n");
-    return Vec3(0, 1, 0);
-    //return light->getEmission() + light->getColor().mult(Vec3());
+    const auto light = data.lights_[lightId];
+    return light->getEmission() + light->getColor().mult(Vec3());
 }
 
 __device__ inline Vec3 deepLayers(const RenderData& data, Ray ray, uint8_t depth)
@@ -154,7 +134,7 @@ __device__ inline Vec3 deepLayers(const RenderData& data, Ray ray, uint8_t depth
         const auto reflected = object->calculateReflections(intersection, ray.direction_, data.state_, depth);
         ray = reflected.ray_;
 
-        objectEmissions[depth - 2] = object->getEmission();
+        objectEmissions[depth - 2] = Vec3();
         objectColors[depth - 2] = object->getColor();
     }
 
@@ -197,9 +177,7 @@ __device__ inline Vec3 secondLayer(const RenderData& data, Ray ray, uint8_t& dep
         backData = backData + deepLayers(data, reflected.secondRay_, depth) * reflected.secondPower_;
     }
 
-    // return findLight(data, object, ray, intersection);
-
-    return object->getEmission() + object->getColor().mult(backData);
+    return object->getColor().mult(backData);
 }
 
 __device__ inline Vec3 firstLayer(const RenderData& data, Ray ray)
@@ -209,7 +187,6 @@ __device__ inline Vec3 firstLayer(const RenderData& data, Ray ray)
     const auto lightHitData = getHitObjectAndDistance(data.lights_, ray, data.lightCount_);
     if (propHitData.index_ == -1 && lightHitData.index_ == -1)
     {
-        //return Vec3(0, 0, 1);
         return Vec3();
     }
 
@@ -231,10 +208,11 @@ __device__ inline Vec3 firstLayer(const RenderData& data, Ray ray)
         backData = backData + secondLayer(data, reflected.secondRay_, depth) * reflected.secondPower_;
     }
 
-    // return findLight(data, object, ray, intersection);
-    // return secondLayer(data, reflected.ray_, depth);
-
-    return object->getEmission() + object->getColor().mult(backData);
+    if (backData == Vec3())
+    {
+        backData = findLight(data, object, ray, intersection) * 0.005;
+    }
+    return object->getColor().mult(backData);
 }
 
 __device__ inline Vec3 samplePixel(const RenderData& data, const Camera* camera, ImageData* imageProperties,
@@ -297,11 +275,9 @@ __global__ void cudaMain(Vec3* image, AObject** props, AObject** lights, Camera*
     {
         for (uint32_t x = range.startX_; x < range.endX_; x++)
         {
-            // printf("Now prcessing pixel (%d, %d)\n", x, z);
             const auto index = z * imageProperties->width_ + x;
             image[index] = samplePixel(data, camera, imageProperties, vecZ, x, z);
             atomicAdd(&counter, 1);
-            // printf("\n\n");
         }
         printf("\rRendering %.2f%%", ((float)counter/(totalPixels)*100));
     }

@@ -3,6 +3,7 @@
 #include "math.h"
 
 #include "Constants.hpp"
+#include "Helpers.hpp"
 
 
 namespace tracer::scene::objects
@@ -99,6 +100,11 @@ public:
     __device__ double getNormal(const Vec3&, const Vec3& incoming) const override
     {
         return incoming.dot(planeVector_);
+    }
+
+    __device__ virtual void sortExtremes(const Vec3& refPoint) const override
+    {
+        helpers::quickSort(extremes_, refPoint, PLANE_EXTREMS);
     }
 
 private:
