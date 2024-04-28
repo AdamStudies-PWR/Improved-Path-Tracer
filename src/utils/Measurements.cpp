@@ -1,6 +1,7 @@
 #include "utils/Measurements.hpp"
 
 #include <chrono>
+#include <fstream>
 #include <iostream>
 #include <string>
 
@@ -15,6 +16,7 @@ using namespace containers;
 const uint32_t HOUR_RATIO = 3600000;
 const uint32_t MINUTES_RATIO = 60000;
 const uint32_t SECONDS_RATIO = 1000;
+const std::string BENCHMARK_FILE = "benchmark.txt";
 
 std::string convertTimeUnitToString(uint32_t number)
 {
@@ -37,16 +39,32 @@ std::string getTimeString(uint64_t milliseconds)
 
     return hourString + ":" + minutesString + ":" + secondsString + "." + std::to_string(milliseconds);
 }
+
+void saveBenchmark(const std::string& id, const std::string time)
+{
+    std::fstream file;
+    file.open(BENCHMARK_FILE, std::fstream::in | std::fstream::out | std::fstream::app);
+
+    if (not file)
+    {
+        file.open(BENCHMARK_FILE,  std::fstream::in | std::fstream::out | std::fstream::trunc);
+    }
+
+    file << id << ";" << time << ";";
+    file.close();
+}
 }  // namespace
 
-const std::vector<Vec3> measure(std::function<std::vector<Vec3>()> testable)
+const std::vector<Vec3> measure(const std::string& id, std::function<std::vector<Vec3>()> testable)
 {
     std::cout << "Begining render..." << std::endl;
     auto start = high_resolution_clock::now();
     const auto image = testable();
     auto stop = high_resolution_clock::now();
     std::cout << " - Done" << std::endl;
-    std::cout << "Render took: " << getTimeString(duration_cast<milliseconds>(stop - start).count()) << std::endl;;
+    const auto time = getTimeString(duration_cast<milliseconds>(stop - start).count());
+    std::cout << "Render took: " << time << std::endl;;
+    saveBenchmark(id, time);
 
     return image;
 }
