@@ -33,6 +33,7 @@ Renderer::Renderer(SceneData& sceneData, const uint32_t samples, const uint8_t m
 
 std::vector<Vec3> Renderer::render()
 {
+    fprintf(stdout, "\rRendering %.2f%%", 0.0);
     std::vector<Vec3> image (sceneData_.getWidth() * sceneData_.getHeight());
 
     auto camera = sceneData_.getCamera();
@@ -42,7 +43,6 @@ std::vector<Vec3> Renderer::render()
     #pragma omp parallel for
     for (uint32_t z=0; z<sceneData_.getHeight(); z++)
     {
-        fprintf(stdout, "\rRendering %.2f%%", (counter * 100.)/(sceneData_.getHeight() - 1));
         #pragma omp parallel for
         for (uint32_t x=0; x<sceneData_.getWidth(); x++)
         {
@@ -50,6 +50,7 @@ std::vector<Vec3> Renderer::render()
             image[index] = samplePixel(camera.orientation_, vecZ, x, z);
         }
         counter++;
+        fprintf(stdout, "\rRendering %.2f%%", (counter * 100.0)/sceneData_.getHeight());
     }
 
     return image;
