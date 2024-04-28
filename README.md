@@ -50,6 +50,7 @@ To specify scene parametres (only works in single test mode) use parametres:
 
 Results will be appended to the benchmark.txt file.
 
+**Important** Runing test_automation.py will remove existing benchmark.txt file!
 
 ## Requirements
 ImageMagic needs to be installed from source using: https://softcreatr.github.io/imei/
