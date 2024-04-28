@@ -13,3 +13,6 @@ build
 
 # Massif
 massif.out.*
+
+# Benchamrk data
+benchmark.txt
