@@ -38,12 +38,16 @@ int main(int argc, char* argv[])
         return 0;
     }
 
+    std::ostringstream filename;
+    filename << inputParser.getSceneName() << "D" << +inputParser.getMaxDepth() << "S"
+        << +inputParser.getSamplingRate();
+
     auto controller = std::make_shared<RenderContoller>(sceneData, inputParser.getSamplingRate(),
         inputParser.getMaxDepth());
     const auto wrappedRender = [controller]() -> const std::vector<Vec3> {
         return controller->start();
     };
-    const auto image = measure(std::move(wrappedRender));
+    const auto image = measure(filename.str(), std::move(wrappedRender));
 
     cudaError_t maybeError = cudaGetLastError();
     if (maybeError != cudaSuccess)
@@ -51,9 +55,6 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    std::ostringstream filename;
-    filename << inputParser.getSceneName() << "D" << +inputParser.getMaxDepth() << "S"
-        << +inputParser.getSamplingRate();
     saveImage(image, sceneData.getHeight(), sceneData.getWidth(), filename.str());
 
     return 0;

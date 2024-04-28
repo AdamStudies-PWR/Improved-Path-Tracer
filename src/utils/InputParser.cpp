@@ -254,7 +254,7 @@ void InputParser::printHelpMessage()
               << "It must be between " << MIN_SAMPLES << " and " << MAX_SAMPLES << std::endl;
     std::cout << "\t [OPTIONAL] -d=number or --depth=number - Specifies max number of reflections per ray. "
               << "It must be between " << (int)MIN_DEPTH << " and " << (int)MAX_DEPTH << std::endl;
-    std::cout << "[path_to_scene] - specifies path to json file with scene data. It is mandatory." << std::endl;
+    std::cout << "[path_to_scene] - Specifies path to json file with scene data. It is mandatory." << std::endl;
 }
 
 }  // namespace tracer::utils

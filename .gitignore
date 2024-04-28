@@ -13,3 +13,6 @@ build
 
 # log files
 *.csv
+
+# Benchamrk data
+benchmark.txt
