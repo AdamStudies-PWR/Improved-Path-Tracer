@@ -31,16 +31,17 @@ int main(int argc, char* argv[])
         return 0;
     }
 
+    std::ostringstream filename;
+    filename << inputParser.getSceneName() << "D" << +inputParser.getMaxDepth() << "S"
+        << +inputParser.getSamplingRate();
+
     auto renderer = std::make_shared<Renderer>(sceneData, inputParser.getSamplingRate(),
         inputParser.getMaxDepth());
     const auto wrappedRender = [renderer]() -> const std::vector<Vec3> {
         return renderer->render();
     };
-    const auto image = measure(std::move(wrappedRender));
+    const auto image = measure(filename.str(), std::move(wrappedRender));
 
-    std::ostringstream filename;
-    filename << inputParser.getSceneName() << "D" << +inputParser.getMaxDepth() << "S"
-        << +inputParser.getSamplingRate();
     saveImage(image, sceneData.getHeight(), sceneData.getWidth(), filename.str());
 
     return 0;
