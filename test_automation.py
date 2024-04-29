@@ -30,7 +30,7 @@ def to_mebibytes(kibibytes) -> str:
 
 
 def get_gpu_usage(output) -> str:
-    max_mem = 0
+    max_mem = 0.0
 
     output = str(output)
     arr = output.split("\\n")
@@ -40,12 +40,13 @@ def get_gpu_usage(output) -> str:
         data = element.split(", ")
         if data[0] == EXECUTABLE:
             try:
+                data[1] = data[1].replace(" MiB", "")
                 used = float(data[1])
                 if used > max_mem:
                     max_mem = used
             except ValueError:
                 pass
-    return "0"
+    return str(max_mem)
 
 
 
