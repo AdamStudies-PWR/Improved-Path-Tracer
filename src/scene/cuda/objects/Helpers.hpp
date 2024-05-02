@@ -14,7 +14,7 @@ namespace tracer::scene::objects::helpers
 
 namespace
 {
-__device__ void swap(double* distances, containers::Vec3* array, const uint8_t e1, const uint8_t e2)
+__device__ inline void swap(double* distances, containers::Vec3* array, const uint8_t e1, const uint8_t e2)
 {
     const auto tempDistance = distances[e1];
     distances[e1] = distances[e2];
@@ -25,7 +25,7 @@ __device__ void swap(double* distances, containers::Vec3* array, const uint8_t e
     array[e2] = tempVec3;
 }
 
-__device__ uint8_t partition(double* distances, containers::Vec3* array, uint8_t low, const uint8_t high)
+__device__ inline uint8_t partition(double* distances, containers::Vec3* array, uint8_t low, const uint8_t high)
 {
     double value = distances[high];
     uint8_t i = low - 1;
@@ -44,7 +44,7 @@ __device__ uint8_t partition(double* distances, containers::Vec3* array, uint8_t
 }
 }  // namespace
 
-__device__ void quickSort(containers::Vec3* array, const containers::Vec3& refPoint, uint8_t elements)
+__device__ inline void quickSort(containers::Vec3* array, const containers::Vec3& refPoint, uint8_t elements)
 {
     double* distances = new double[elements]();
     for (uint8_t i = 0; i < elements; i++)

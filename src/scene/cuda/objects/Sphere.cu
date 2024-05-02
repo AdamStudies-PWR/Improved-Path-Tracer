@@ -82,6 +82,14 @@ public:
         helpers::quickSort(extremes_, refPoint, SPHERE_EXTREMS);
     }
 
+    __device__ double getAngle(const Vec3& intersection, const Vec3& incoming) const override
+    {
+        const auto rawNormal = (intersection - position_).norm();
+        const auto normal = incoming.dot(rawNormal) < 0 ? rawNormal * -1 : rawNormal;
+        const auto cos = normal.dot(incoming) / (normal.length() * incoming.length());
+        return(M_PI_2 - acos(cos));
+    }
+
 private:
     double radius_;
 };

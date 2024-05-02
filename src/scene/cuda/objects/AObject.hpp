@@ -77,6 +77,7 @@ public:
         const uint8_t depth) const = 0;
     __device__ virtual double getNormal(const Vec3& intersection, const Vec3& incoming) const = 0;
     __device__ virtual void sortExtremes(const Vec3& refPoint) const = 0;
+    __device__ virtual double getAngle(const Vec3& intersection, const Vec3& incoming) const = 0;
 
     __device__ Vec3 getEmission() const { return emission_; }
     __device__ Vec3 getColor() const { return color_; }

@@ -123,6 +123,14 @@ private:
         return true;
     }
 
+    __device__ double getAngle(const Vec3& intersection, const Vec3& incoming) const override
+    {
+        const auto normal = (incoming.dot(planeVector_) < 0 ? planeVector_ * -1 : planeVector_) * -1;
+        const auto cos = normal.dot(incoming) / (normal.length() * incoming.length());
+        return(M_PI_2 - acos(cos));
+    }
+
+
     Vec3 bottomLeft_;
     Vec3 bottomRight_;
     Vec3 planeVector_;

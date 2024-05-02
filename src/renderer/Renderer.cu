@@ -74,6 +74,8 @@ __device__ inline Vec3 findLight(const RenderData& data, const AObject* lastObje
     double minDistance = INF;
     int32_t lightId = -1;
 
+    Vec3 direction;
+    Vec3 target;
     for (uint32_t i = 0; i < data.lightCount_; i++)
     {
         const auto extremes = data.lights_[i]->getExtremes();
@@ -82,8 +84,8 @@ __device__ inline Vec3 findLight(const RenderData& data, const AObject* lastObje
             const auto distance = intersection.distance(extremes[j]);
             if (distance < minDistance)
             {
-                const auto target = extremes[j];
-                const auto direction = (target - intersection).norm();
+                target = extremes[j];
+                direction = (target - intersection).norm();
                 if ((lastObject->getNormal(intersection, direction * -1) < 0) == isNormalNegative)
                 {
                     const auto propHitData =
@@ -95,6 +97,7 @@ __device__ inline Vec3 findLight(const RenderData& data, const AObject* lastObje
 
                     lightId = i;
                     minDistance = distance;
+                    break;
                 }
             }
         }
@@ -106,7 +109,14 @@ __device__ inline Vec3 findLight(const RenderData& data, const AObject* lastObje
     }
 
     const auto light = data.lights_[lightId];
-    return light->getEmission() + light->getColor().mult(Vec3());
+    const auto angle = light->getAngle(target, direction);
+    auto lightFactor = angle/M_PI_2;
+    lightFactor = (lightFactor > 0.05) ? 0.05 : lightFactor;
+    lightFactor = lightFactor/10;
+
+    const auto temp = (light->getEmission() * lightFactor) + (light->getColor() * lightFactor).mult(Vec3());
+    //printf("Factor is: %f, Returning: %f, %f, %f\n", lightFactor, temp.xx_, temp.yy_, temp.zz_);
+    return temp;
 }
 
 __device__ inline Vec3 deepLayers(const RenderData& data, Ray ray, uint8_t depth)
@@ -123,8 +133,10 @@ __device__ inline Vec3 deepLayers(const RenderData& data, Ray ray, uint8_t depth
         if (lightHitData.distance_ < propHitData.distance_)
         {
             const auto light = data.lights_[lightHitData.index_];
-            objectEmissions[depth - 2] = light->getEmission();
-            objectColors[depth - 2] = light->getColor();
+            auto scale = (1 - (0.05 * depth));
+            scale = (scale >= 0.1) ? scale : 0.1;
+            objectEmissions[depth - 2] = light->getEmission() * scale;
+            objectColors[depth - 2] = light->getColor() * scale;
             depth++;
             break;
         }
@@ -162,7 +174,7 @@ __device__ inline Vec3 secondLayer(const RenderData& data, Ray ray, uint8_t& dep
     if (lightHitData.distance_ < propHitData.distance_)
     {
         const auto light = data.lights_[lightHitData.index_];
-        return light->getEmission() + light->getColor().mult(Vec3());
+        return (light->getEmission() + light->getColor().mult(Vec3())) * 0.95;
     }
 
     const auto& object = data.props_[propHitData.index_];
@@ -210,7 +222,7 @@ __device__ inline Vec3 firstLayer(const RenderData& data, Ray ray)
 
     if (backData == Vec3())
     {
-        backData = findLight(data, object, ray, intersection) * 0.005;
+        backData = findLight(data, object, ray, intersection)/** 0.005*/;
     }
     return object->getColor().mult(backData);
 }
