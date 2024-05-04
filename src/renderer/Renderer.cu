@@ -48,7 +48,6 @@ __device__ inline Range calculateRange(const uint32_t idX, const uint32_t idZ, c
     heightAssigned = heightAssigned + ((idZ < heightOverflow) ? 1 : 0);
 
     return Range(startWidth, startHeight, (startWidth + widthAssigned), (startHeight + heightAssigned));
-    //return Range(50, 700, 60, 710);
 }
 
 __device__ inline HitData getHitObjectAndDistance(AObject** objects, const containers::Ray& ray,
@@ -114,8 +113,6 @@ __device__ inline Vec3 findLight(const RenderData& data, const AObject* lastObje
     const auto light = data.lights_[lightId];
     const auto lightAngle = light->getAngle(target, direction);
     const auto lightFactor = lightAngle/M_PI_2;
-    // lightFactor = (lightFactor > 0.05) ? 0.05 : lightFactor;
-    // lightFactor = lightFactor/10;
     const auto objectAngle = lastObject->getAngle(intersection, (direction * -1));
     const auto objectFactor = objectAngle/M_PI_2;
     const auto viewAngle = lastObject->getAngle(intersection, ray.direction_);
@@ -129,12 +126,9 @@ __device__ inline Vec3 findLight(const RenderData& data, const AObject* lastObje
         case Specular: factor = ((factor < 0.0) ? factor * -1 : factor) * 0.035; break;
     }
 
-    //printf("Object factor is: %f, Light factor is: %f\n", objectFactor, lightFactor);
-    //printf("Total factor is: %f\n", factor);
     factor = (factor > 0.05) ? 0.05 : factor;
-    //factor = factor * 0.1;
     const auto temp = (light->getEmission() * factor) + (light->getColor() * factor).mult(Vec3());
-    //printf("Factor is: %f, Returning: %f, %f, %f\n", lightFactor, temp.xx_, temp.yy_, temp.zz_);
+
     return temp;
 }
 
@@ -170,7 +164,7 @@ __device__ inline Vec3 deepLayers(const RenderData& data, Ray ray, uint8_t depth
     }
 
     Vec3 pixel = Vec3();
-    for (int8_t i=(depth - 2); i>= 0; i--)
+    for (int8_t i=(depth - 3); i>= 0; i--)
     {
         pixel = objectEmissions[i] + objectColors[i].mult(pixel);
     }
