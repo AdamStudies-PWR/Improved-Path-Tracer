@@ -199,7 +199,7 @@ private:
         }
 
         Vec3 pixel;
-        for (int8_t i=(depth - 2); i>= 0; i--)
+        for (int8_t i=(depth - 3); i>= 0; i--)
         {
             pixel = objectEmissions[i] + objectColors[i].mult(pixel);
         }
