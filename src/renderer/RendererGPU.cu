@@ -86,7 +86,7 @@ __device__ inline Vec3 deepLayers(AObject** objects, const uint32_t objectsCount
     }
 
     Vec3 pixel;
-    for (int8_t i=(depth - 2); i>= 0; i--)
+    for (int8_t i=(depth - 3); i>= 0; i--)
     {
         pixel = objectEmissions[i] + objectColors[i].mult(pixel);
     }
