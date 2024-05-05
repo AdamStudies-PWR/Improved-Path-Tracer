@@ -28,17 +28,13 @@ struct PlaneEquastion
     double D_;
 };
 
-__device__ double distanceToBorder(const Vec3& origin, const Vec3& border, const Vec3& impact)
+__device__ inline double distanceToBorder(const Vec3& start, Vec3 vec, const Vec3& impact, const double& length)
 {
-    const auto refPoint = impact - origin;
-    const auto top = border.xx_ * refPoint.xx_ + border.yy_ * refPoint.yy_ + border.zz_ * refPoint.zz_;
-    const auto bottom = pow(border.xx_, 2) + pow(border.yy_, 2) + pow(border.zz_, 2);
-
-    if (bottom == 0.0) return 0.0;
-
-    const auto distance = top / bottom;
-    return (origin + border * distance).distance(impact);
+    Vec3 toImpact = start - impact;
+    const auto top = (vec % toImpact).length();
+    return top / length;
 }
+
 }  // namespace
 
 class Plane : public AObject
@@ -53,13 +49,18 @@ public:
             + (planeVector_.zz_ * position_.zz_));
         equastion_ = {planeVector_.xx_, planeVector_.yy_, planeVector_.zz_, D};
 
-        bottomRight_ = position_ + (north * -1) + east;
-        bottomLeft_ = position_ + (north * -1) + (east * -1);
-        topLeft_ = position_ + north + (east * -1);
-        topRight_ = position_ + north + east;
+        const auto bottomRight = position_ + (north * -1) + east;
+        const auto bottomLeft = position_ + (north * -1) + (east * -1);
+        const auto topLeft = position_ + north + (east * -1);
+        const auto topRight = position_ + north + east;
 
-        distanceHorizontal_ = bottomLeft_.distance(bottomRight_);
-        distanceVertical_ = bottomLeft_.distance(topLeft_);
+        rightSide_ = {bottomRight, topRight - bottomRight};
+        leftSide_ = {bottomLeft, topLeft - bottomLeft};
+        topSide_ = {topRight, topLeft - topRight};
+        bottomSide_ = {bottomRight, bottomLeft - bottomRight};
+
+        distanceHorizontal_ = bottomLeft.distance(bottomRight);
+        distanceVertical_ = bottomLeft.distance(topLeft);
     }
 
     __device__ double intersect(const Ray& ray) const override
@@ -101,27 +102,29 @@ public:
 private:
     __device__ bool checkIfInBounds(const Vec3& impact) const
     {
-        auto vertical = distanceToBorder(bottomLeft_, (bottomLeft_ - bottomRight_).norm(), impact);
+        auto vertical = distanceToBorder(topSide_.origin_, topSide_.direction_, impact, distanceHorizontal_);
         if (distanceVertical_ - vertical < -MARGIN) return false;
-        vertical = vertical + distanceToBorder(topLeft_, (topLeft_ - topRight_).norm(), impact);
+        vertical = vertical + distanceToBorder(bottomSide_.origin_, bottomSide_.direction_, impact,
+            distanceHorizontal_);
         if (distanceVertical_  - vertical < -MARGIN or distanceVertical_  - vertical > MARGIN) return false;
 
-        auto horizontal = distanceToBorder(bottomLeft_, (bottomLeft_ - topLeft_).norm(), impact);
+        auto horizontal = distanceToBorder(leftSide_.origin_, leftSide_.direction_, impact, distanceVertical_);
         if (distanceHorizontal_ - horizontal < -MARGIN) return false;
-        horizontal = horizontal + distanceToBorder(bottomRight_, (bottomRight_ - topRight_).norm(), impact);
+        horizontal = horizontal + distanceToBorder(rightSide_.origin_, rightSide_.direction_, impact,
+            distanceVertical_);
         if (distanceHorizontal_ - horizontal < -MARGIN or distanceHorizontal_ - horizontal > MARGIN) return false;
 
         return true;
     }
 
     PlaneEquastion equastion_;
-    Vec3 bottomLeft_;
-    Vec3 bottomRight_;
     Vec3 planeVector_;
-    Vec3 topLeft_;
-    Vec3 topRight_;
     double distanceHorizontal_;
     double distanceVertical_;
+    Ray rightSide_;
+    Ray leftSide_;
+    Ray topSide_;
+    Ray bottomSide_;
 };
 
 }  // namespace tracer::scene::objects
