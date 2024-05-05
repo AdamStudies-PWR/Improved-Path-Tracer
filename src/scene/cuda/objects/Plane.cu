@@ -13,6 +13,21 @@ namespace
 using namespace containers;
 using namespace utils;
 
+struct PlaneEquastion
+{
+    __device__ PlaneEquastion(const double A=0.0, const double B=0.0, const double C=0.0, const double D=0.0)
+        : A_(A)
+        , B_(B)
+        , C_(C)
+        , D_(D)
+    {}
+
+    double A_;
+    double B_;
+    double C_;
+    double D_;
+};
+
 __device__ double distanceToBorder(const Vec3& origin, const Vec3& border, const Vec3& impact)
 {
     const auto refPoint = impact - origin;
@@ -29,11 +44,14 @@ __device__ double distanceToBorder(const Vec3& origin, const Vec3& border, const
 class Plane : public AObject
 {
 public:
-    __host__ __device__ Plane(Vec3 north, Vec3 east, Vec3 position, Vec3 emission, Vec3 color,
+    __device__ Plane(Vec3 north, Vec3 east, Vec3 position, Vec3 emission, Vec3 color,
         EReflectionType reflection)
         : AObject(position, emission, color, reflection)
     {
         planeVector_ = (north % east).norm();
+        const auto D = -((planeVector_.xx_ * position_.xx_) + (planeVector_.yy_ * position_.yy_)
+            + (planeVector_.zz_ * position_.zz_));
+        equastion_ = {planeVector_.xx_, planeVector_.yy_, planeVector_.zz_, D};
 
         bottomRight_ = position_ + (north * -1) + east;
         bottomLeft_ = position_ + (north * -1) + (east * -1);
@@ -46,14 +64,12 @@ public:
 
     __device__ double intersect(const Ray& ray) const override
     {
-        const auto refPoint = position_ - ray.origin_;
-        const auto top = planeVector_.xx_ * refPoint.xx_ + planeVector_.yy_ * refPoint.yy_
-            + planeVector_.zz_ * refPoint.zz_;
-        const auto bottom = planeVector_.xx_ * ray.direction_.xx_ + planeVector_.yy_ * ray.direction_.yy_
-            + planeVector_.zz_ * ray.direction_.zz_;
-
+        const auto bottom = ray.direction_.xx_ * equastion_.A_ + ray.direction_.yy_ * equastion_.B_
+            + ray.direction_.zz_ * equastion_.C_;
         if (bottom == 0.0) return 0.0;
 
+        const auto top = -(equastion_.D_ + equastion_.A_ * ray.origin_.xx_ + equastion_.B_ * ray.origin_.yy_
+            + equastion_.C_ * ray.origin_.zz_);
         auto distance = top/bottom;
         if (distance <= MARGIN) return 0.0;
 
@@ -98,6 +114,7 @@ private:
         return true;
     }
 
+    PlaneEquastion equastion_;
     Vec3 bottomLeft_;
     Vec3 bottomRight_;
     Vec3 planeVector_;
