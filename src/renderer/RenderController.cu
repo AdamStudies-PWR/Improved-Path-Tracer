@@ -131,6 +131,7 @@ std::vector<containers::Vec3> RenderContoller::start()
     const auto numBlocks = (sceneData_.getHeight() <= BLOCK_SIZE) ? sceneData_.getHeight() : BLOCK_SIZE;
 
     cudaMain <<<numBlocks, numThreads>>> (devImage, devProps, devLights, devCamera, devVecZ, devImageData);
+    //cudaMain <<<1, 1>>> (devImage, devProps, devLights, devCamera, devVecZ, devImageData);
     cudaErrorCheck("cudaMain kernel");
 
     Vec3* imagePtr = (Vec3*)malloc(imageSize);

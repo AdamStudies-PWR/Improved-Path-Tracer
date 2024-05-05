@@ -73,18 +73,21 @@ __device__ inline Vec3 findLight(const RenderData& data, const AObject* lastObje
     const Vec3& intersection)
 {
     const bool isNormalNegative = (lastObject->getNormal(intersection, ray.direction_) < 0);
-    double minDistance = INF;
-    int32_t lightId = -1;
 
-    Vec3 direction;
-    Vec3 target;
+    Vec3 emission = Vec3();
+    Vec3 color = Vec3();
+
     for (uint32_t i = 0; i < data.lightCount_; i++)
     {
+        int32_t lightId = -1;
+        Vec3 direction;
+        Vec3 target;
+
         const auto extremes = data.lights_[i]->getExtremes();
         for (uint8_t j = 0; j < data.lights_[i]->getExtremesCount(); j++)
         {
             const auto distance = intersection.distance(extremes[j]);
-            if (distance < minDistance)
+            if (distance < INF)
             {
                 target = extremes[j];
                 direction = (target - intersection).norm();
@@ -98,41 +101,50 @@ __device__ inline Vec3 findLight(const RenderData& data, const AObject* lastObje
                     }
 
                     lightId = i;
-                    minDistance = distance;
                     break;
                 }
             }
         }
+
+        if (lightId == -1)
+        {
+            continue;
+        }
+
+        const auto light = data.lights_[lightId];
+
+        const auto lightAngle = light->getAngle(target, direction);
+        const auto lightFactor = lightAngle/M_PI_2;
+        const auto objectAngle = lastObject->getAngle(intersection, (direction * -1));
+        const auto objectFactor = objectAngle/M_PI_2;
+        auto factor = lightFactor * objectFactor;
+        factor = (factor < 0.0) ? factor * -1 : factor;
+
+        color = color + light->getColor();
+        emission = emission + light->getEmission() * factor;;
     }
 
-    if (lightId == -1)
+    if (emission == Vec3())
     {
         return Vec3();
     }
 
-    const auto light = data.lights_[lightId];
-    const auto lightAngle = light->getAngle(target, direction);
-    const auto lightFactor = lightAngle/M_PI_2;
-    const auto objectAngle = lastObject->getAngle(intersection, (direction * -1));
-    const auto objectFactor = objectAngle/M_PI_2;
     const auto viewAngle = lastObject->getAngle(intersection, ray.direction_);
-    const auto viewFactor = viewAngle/M_2_PI;
-    auto factor = lightFactor * objectFactor * viewFactor;
+    auto viewFactor = viewAngle/M_2_PI;
+    viewFactor = (viewFactor < 0.0) ? viewFactor * -1 : viewFactor;
 
     switch (lastObject->getReflectionType())
     {
-        case Diffuse: factor = ((factor < 0.0) ? factor * -1 : factor) * 0.1; break;
-        case Refractive: factor = ((factor < 0.0) ? factor * -1 : factor) * 0.025; break;
-        case Specular: factor = ((factor < 0.0) ? factor * -1 : factor) * 0.035; break;
+        case Diffuse: viewFactor = ((viewFactor < 0.0) ? viewFactor * -1 : viewFactor) * 0.8; break;
+        case Refractive: viewFactor = ((viewFactor < 0.0) ? viewFactor * -1 : viewFactor) * 0.02; break;
+        case Specular: viewFactor = ((viewFactor < 0.0) ? viewFactor * -1 : viewFactor) * 0.1; break;
     }
 
-    factor = (factor > 0.05) ? 0.05 : factor;
-    const auto temp = (light->getEmission() * factor) + (light->getColor() * factor).mult(Vec3());
-
-    return temp;
+    viewFactor = (viewFactor > 0.05) ? 0.05 : viewFactor;
+    return (emission * viewFactor) + color.mult(Vec3());
 }
 
-__device__ inline Vec3 deepLayers(const RenderData& data, Ray ray, uint8_t depth)
+__device__ inline Vec3 deepLayers(const RenderData& data, Ray ray, uint8_t depth, bool wasDiffuse)
 {
     Vec3* objectEmissions = new Vec3[data.maxDepth_ - 2];
     Vec3* objectColors = new Vec3[data.maxDepth_ - 2];
@@ -146,21 +158,27 @@ __device__ inline Vec3 deepLayers(const RenderData& data, Ray ray, uint8_t depth
         if (lightHitData.distance_ < propHitData.distance_)
         {
             const auto light = data.lights_[lightHitData.index_];
-            auto scale = (1 - (0.05 * depth));
-            scale = (scale >= 0.1) ? scale : 0.1;
-            objectEmissions[depth - 2] = light->getEmission() * scale;
-            objectColors[depth - 2] = light->getColor() * scale;
+            objectEmissions[depth - 2] = light->getEmission();
+            objectColors[depth - 2] = light->getColor();
             depth++;
             break;
         }
 
         const auto& object = data.props_[propHitData.index_];
         const auto intersection = ray.origin_ + ray.direction_ * propHitData.distance_;
+        Vec3 pixel = findLight(data, object, ray, intersection);
+        objectEmissions[depth - 2] = pixel;
+        objectColors[depth - 2] = object->getColor();
+        auto isDiffuse = (object->getReflectionType() == Diffuse);
+        if (wasDiffuse and isDiffuse)
+        {
+            depth++;
+            break;
+        }
+
+        wasDiffuse = isDiffuse;
         const auto reflected = object->calculateReflections(intersection, ray.direction_, data.state_, depth);
         ray = reflected.ray_;
-
-        objectEmissions[depth - 2] = Vec3();
-        objectColors[depth - 2] = object->getColor();
     }
 
     Vec3 pixel = Vec3();
@@ -175,7 +193,7 @@ __device__ inline Vec3 deepLayers(const RenderData& data, Ray ray, uint8_t depth
     return pixel;
 }
 
-__device__ inline Vec3 secondLayer(const RenderData& data, Ray ray, uint8_t& depth, const bool addLight)
+__device__ inline Vec3 secondLayer(const RenderData& data, Ray ray, uint8_t& depth, bool wasDiffuse)
 {
     const auto propHitData = getHitObjectAndDistance(data.props_, ray, data.propCount_);
     const auto lightHitData = getHitObjectAndDistance(data.lights_, ray, data.lightCount_);
@@ -187,27 +205,27 @@ __device__ inline Vec3 secondLayer(const RenderData& data, Ray ray, uint8_t& dep
     if (lightHitData.distance_ < propHitData.distance_)
     {
         const auto light = data.lights_[lightHitData.index_];
-        return (light->getEmission() + light->getColor().mult(Vec3())) * 0.95;
+        return (light->getEmission() + light->getColor().mult(Vec3()));
     }
 
     const auto& object = data.props_[propHitData.index_];
     const auto intersection = ray.origin_ + ray.direction_ * propHitData.distance_;
-    const auto reflected = object->calculateReflections(intersection, ray.direction_, data.state_, depth);
+    Vec3 pixel = findLight(data, object, ray, intersection);
+    auto isDiffuse = (object->getReflectionType() == Diffuse);
+    if (wasDiffuse and isDiffuse and not (pixel == Vec3()))
+    {
+        return object->getColor().mult(pixel);
+    }
 
+    const auto reflected = object->calculateReflections(intersection, ray.direction_, data.state_, depth);
     depth++;
-    Vec3 backData;
-    backData = deepLayers(data, reflected.ray_, depth) * reflected.power_;
+    pixel = pixel + deepLayers(data, reflected.ray_, depth, isDiffuse) * reflected.power_;
     if (reflected.useSecond_)
     {
-        backData = backData + deepLayers(data, reflected.secondRay_, depth) * reflected.secondPower_;
+        pixel = pixel + deepLayers(data, reflected.secondRay_, depth, isDiffuse) * reflected.secondPower_;
     }
 
-    if (backData == Vec3() and addLight)
-    {
-        backData = findLight(data, object, ray, intersection) * 0.6;
-    }
-
-    return object->getColor().mult(backData);
+    return object->getColor().mult(pixel);
 }
 
 __device__ inline Vec3 firstLayer(const RenderData& data, Ray ray)
@@ -231,24 +249,15 @@ __device__ inline Vec3 firstLayer(const RenderData& data, Ray ray)
     const auto reflected = object->calculateReflections(intersection, ray.direction_, data.state_, depth);
 
     depth++;
-    Vec3 backData;
-    const auto addLight = (object->getReflectionType() == Refractive or object->getReflectionType() == Specular);
-    backData = secondLayer(data, reflected.ray_, depth, addLight) * reflected.power_;
+    auto isDiffuse = (object->getReflectionType() == Diffuse);
+    Vec3 pixel = findLight(data, object, ray, intersection);
+    pixel = pixel + secondLayer(data, reflected.ray_, depth, isDiffuse) * reflected.power_;
     if (reflected.useSecond_)
     {
-        backData = backData + secondLayer(data, reflected.secondRay_, depth, false) * reflected.secondPower_;
+        pixel = pixel + secondLayer(data, reflected.secondRay_, depth, isDiffuse) * reflected.secondPower_;
     }
 
-    if (backData == Vec3())
-    {
-        backData = findLight(data, object, ray, intersection);
-    }
-    else if (addLight)
-    {
-        backData = backData + findLight(data, object, ray, intersection);
-    }
-
-    return object->getColor().mult(backData);
+    return object->getColor().mult(pixel);
 }
 
 __device__ inline Vec3 samplePixel(const RenderData& data, const Camera* camera, ImageData* imageProperties,
