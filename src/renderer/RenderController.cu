@@ -93,8 +93,9 @@ std::vector<containers::Vec3> RenderContoller::start()
     cudaMemset(devImage, 0, imageSize);
     cudaErrorCheck("Set image array");
 
-    const auto numThreads = (sceneData_.getWidth() <= BLOCK_SIZE) ? sceneData_.getWidth() : BLOCK_SIZE;
+    const auto numThreads = (sceneData_.getWidth() <= THREAD_SIZE) ? sceneData_.getWidth() : THREAD_SIZE;
     const auto numBlocks = (sceneData_.getHeight() <= BLOCK_SIZE) ? sceneData_.getHeight() : BLOCK_SIZE;
+
     cudaMain <<<numBlocks, numThreads>>> (devImage, devObjects, devCamera, devVecZ, devImageData);
     cudaErrorCheck("cudaMain kernel");
 
