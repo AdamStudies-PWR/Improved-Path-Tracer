@@ -71,7 +71,10 @@ __device__ inline HitData getHitObjectAndDistance(AObject** objects, const conta
 
 __device__ inline Vec3 clampVector(const Vec3& vec, const double max)
 {
-    return Vec3((vec.xx_ > max ? max : vec.xx_), (vec.yy_ > max ? max : vec.yy_), (vec.zz_ > max ? max : vec.zz_));
+    auto highest = (vec.xx_ > vec.yy_) ? vec.xx_ : vec.yy_;
+    highest = (highest > vec.zz_) ? highest: vec.zz_;
+    auto newVec = Vec3(vec.xx_/highest, vec.yy_/highest, vec.zz_/highest);
+    return newVec * max;
 }
 
 __device__ inline Vec3 findLight(const RenderData& data, const AObject* lastObject, const Ray& ray,
@@ -235,7 +238,7 @@ __device__ inline Vec3 firstLayer(const RenderData& data, Ray ray)
         backData = backData + secondLayer(data, reflected.secondRay_, depth, false) * reflected.secondPower_;
     }
 
-    if (backData == Vec3())
+    if (backData == Vec3() and not addLight)
     {
         backData = findLight(data, object, ray, intersection);
     }
