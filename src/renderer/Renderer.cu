@@ -75,6 +75,7 @@ __device__ inline Vec3 clampVector(const Vec3& vec, const double max)
     highest = (highest > vec.zz_) ? highest: vec.zz_;
     auto newVec = Vec3(vec.xx_/highest, vec.yy_/highest, vec.zz_/highest);
     return newVec * max;
+    return vec;
 }
 
 __device__ inline Vec3 findLight(const RenderData& data, const AObject* lastObject, const Ray& ray,
@@ -123,11 +124,10 @@ __device__ inline Vec3 findLight(const RenderData& data, const AObject* lastObje
     const auto lightFactor = lightAngle/M_PI_2;
     const auto objectAngle = lastObject->getAngle(intersection, (direction * -1));
     const auto objectFactor = objectAngle/M_PI_2;
-    const auto viewAngle = lastObject->getAngle(intersection, ray.direction_);
-    const auto viewFactor = viewAngle/M_2_PI;
-    auto factor = lightFactor * objectFactor * viewFactor;
+    auto factor = lightFactor * objectFactor;
+    factor = (factor < 0.0) ? factor * -1 : factor;
 
-    const auto emission = clampVector(light->getEmission(), 2.0);
+    const auto emission = clampVector(light->getEmission(), 1.5);
     return (emission * factor) + (light->getColor()).mult(Vec3());
 }
 
@@ -203,7 +203,7 @@ __device__ inline Vec3 secondLayer(const RenderData& data, Ray ray, uint8_t& dep
 
     if (backData == Vec3() and addLight)
     {
-        backData = findLight(data, object, ray, intersection) * 0.6;
+        backData = findLight(data, object, ray, intersection) * 0.9;
     }
 
     return object->getColor().mult(backData);
