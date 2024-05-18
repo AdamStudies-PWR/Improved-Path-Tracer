@@ -121,7 +121,7 @@ __device__ inline Vec3 findLight(const RenderData& data, const AObject* lastObje
         factor = (factor < 0.0) ? factor * -1 : factor;
 
         color = color + light->getColor();
-        emission = emission + light->getEmission() * factor;;
+        emission = emission + (light->getEmission() * factor);
     }
 
     if (emission == Vec3())
@@ -129,22 +129,20 @@ __device__ inline Vec3 findLight(const RenderData& data, const AObject* lastObje
         return Vec3();
     }
 
-    const auto viewAngle = lastObject->getAngle(intersection, ray.direction_);
-    auto viewFactor = viewAngle/M_2_PI;
-    viewFactor = (viewFactor < 0.0) ? viewFactor * -1 : viewFactor;
-
-    switch (lastObject->getReflectionType())
+    auto materialFactor = 1.0;
+    if (lastObject->getReflectionType() == Refractive)
     {
-        case Diffuse: viewFactor = ((viewFactor < 0.0) ? viewFactor * -1 : viewFactor) * 0.8; break;
-        case Refractive: viewFactor = ((viewFactor < 0.0) ? viewFactor * -1 : viewFactor) * 0.02; break;
-        case Specular: viewFactor = ((viewFactor < 0.0) ? viewFactor * -1 : viewFactor) * 0.1; break;
+        materialFactor = materialFactor * 0.08;
+    }
+    else if (lastObject->getReflectionType() == Refractive)
+    {
+        materialFactor = materialFactor * 0.4;
     }
 
-    viewFactor = (viewFactor > 0.05) ? 0.05 : viewFactor;
-    return (emission * viewFactor) + color.mult(Vec3());
+    return (emission * materialFactor) + color.mult(Vec3());
 }
 
-__device__ inline Vec3 deepLayers(const RenderData& data, Ray ray, uint8_t depth, bool wasDiffuse)
+__device__ inline Vec3 deepLayers(const RenderData& data, Ray ray, uint8_t depth, EReflectionType previosType)
 {
     Vec3* objectEmissions = new Vec3[data.maxDepth_ - 2];
     Vec3* objectColors = new Vec3[data.maxDepth_ - 2];
@@ -158,7 +156,7 @@ __device__ inline Vec3 deepLayers(const RenderData& data, Ray ray, uint8_t depth
         if (lightHitData.distance_ < propHitData.distance_)
         {
             const auto light = data.lights_[lightHitData.index_];
-            objectEmissions[depth - 2] = light->getEmission();
+            objectEmissions[depth - 2] = light->getEmission() * 1.5;
             objectColors[depth - 2] = light->getColor();
             depth++;
             break;
@@ -169,14 +167,13 @@ __device__ inline Vec3 deepLayers(const RenderData& data, Ray ray, uint8_t depth
         Vec3 pixel = findLight(data, object, ray, intersection);
         objectEmissions[depth - 2] = pixel;
         objectColors[depth - 2] = object->getColor();
-        auto isDiffuse = (object->getReflectionType() == Diffuse);
-        if (wasDiffuse and isDiffuse)
+        if ((previosType == Diffuse) and (object->getReflectionType() == Diffuse))
         {
             depth++;
             break;
         }
 
-        wasDiffuse = isDiffuse;
+        previosType = object->getReflectionType();
         const auto reflected = object->calculateReflections(intersection, ray.direction_, data.state_, depth);
         ray = reflected.ray_;
     }
@@ -193,7 +190,8 @@ __device__ inline Vec3 deepLayers(const RenderData& data, Ray ray, uint8_t depth
     return pixel;
 }
 
-__device__ inline Vec3 secondLayer(const RenderData& data, Ray ray, uint8_t& depth, bool wasDiffuse)
+__device__ inline Vec3 secondLayer(const RenderData& data, Ray ray, uint8_t& depth, const EReflectionType& previosType,
+    const bool isLight)
 {
     const auto propHitData = getHitObjectAndDistance(data.props_, ray, data.propCount_);
     const auto lightHitData = getHitObjectAndDistance(data.lights_, ray, data.lightCount_);
@@ -204,25 +202,29 @@ __device__ inline Vec3 secondLayer(const RenderData& data, Ray ray, uint8_t& dep
 
     if (lightHitData.distance_ < propHitData.distance_)
     {
+        const auto mult = (previosType != Diffuse) ? 40: 1;
         const auto light = data.lights_[lightHitData.index_];
-        return (light->getEmission() + light->getColor().mult(Vec3()));
+        return light->getEmission() + light->getColor().mult(Vec3()) * mult;
     }
 
     const auto& object = data.props_[propHitData.index_];
     const auto intersection = ray.origin_ + ray.direction_ * propHitData.distance_;
     Vec3 pixel = findLight(data, object, ray, intersection);
-    auto isDiffuse = (object->getReflectionType() == Diffuse);
-    if (wasDiffuse and isDiffuse and not (pixel == Vec3()))
+    if ((previosType == Diffuse) and (object->getReflectionType() == Diffuse) and not (pixel == Vec3()))
     {
         return object->getColor().mult(pixel);
     }
 
     const auto reflected = object->calculateReflections(intersection, ray.direction_, data.state_, depth);
     depth++;
-    pixel = pixel + deepLayers(data, reflected.ray_, depth, isDiffuse) * reflected.power_;
+    auto glassBonus =
+        ((object->getReflectionType() != Diffuse) and (previosType == Diffuse) and not isLight) ? 1.75 : 1;
+    pixel = pixel + deepLayers(data, reflected.ray_, depth, object->getReflectionType()) * reflected.power_
+        * glassBonus;
     if (reflected.useSecond_)
     {
-        pixel = pixel + deepLayers(data, reflected.secondRay_, depth, isDiffuse) * reflected.secondPower_;
+        pixel = pixel + deepLayers(data, reflected.secondRay_, depth, object->getReflectionType())
+            * reflected.secondPower_;
     }
 
     return object->getColor().mult(pixel);
@@ -241,7 +243,7 @@ __device__ inline Vec3 firstLayer(const RenderData& data, Ray ray)
     if (lightHitData.distance_ < propHitData.distance_)
     {
         const auto light = data.lights_[lightHitData.index_];
-        return light->getEmission() + light->getColor().mult(Vec3());
+        return (light->getEmission() + light->getColor().mult(Vec3())) * 10;
     }
 
     const auto& object = data.props_[propHitData.index_];
@@ -249,12 +251,13 @@ __device__ inline Vec3 firstLayer(const RenderData& data, Ray ray)
     const auto reflected = object->calculateReflections(intersection, ray.direction_, data.state_, depth);
 
     depth++;
-    auto isDiffuse = (object->getReflectionType() == Diffuse);
     Vec3 pixel = findLight(data, object, ray, intersection);
-    pixel = pixel + secondLayer(data, reflected.ray_, depth, isDiffuse) * reflected.power_;
+    bool foundLight = (pixel != Vec3());
+    pixel = pixel + secondLayer(data, reflected.ray_, depth, object->getReflectionType(), foundLight) * reflected.power_;
     if (reflected.useSecond_)
     {
-        pixel = pixel + secondLayer(data, reflected.secondRay_, depth, isDiffuse) * reflected.secondPower_;
+        pixel = pixel + secondLayer(data, reflected.secondRay_, depth, object->getReflectionType(), foundLight)
+            * reflected.secondPower_;
     }
 
     return object->getColor().mult(pixel);

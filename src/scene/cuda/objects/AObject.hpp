@@ -91,7 +91,7 @@ protected:
         curandState& state, const uint8_t depth) const
     {
         auto specular = calculateSpecular(incoming, normal);
-        return {Ray(intersection, specular), 0.9};
+        return {Ray(intersection, specular), 0.8};
     }
 
     __device__ RayData handleDiffuse(const Vec3& intersection, const Vec3& normal, curandState& state) const
@@ -114,7 +114,7 @@ protected:
 
         if (depth < 2)
         {
-            return {Ray(intersection, refractive), 0.855, Ray(intersection, specular), 0.045, true};
+            return {Ray(intersection, refractive), 0.855, Ray(intersection, specular), 0.05, true};
         }
 
         if (curand_uniform_double(&state) > 0.9)

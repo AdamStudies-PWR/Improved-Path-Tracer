@@ -27,19 +27,27 @@ void cudaErrorCheck(const std::string& message)
     }
 }
 
+__device__ inline Vec3 clampVector(const Vec3& vec, const double max)
+{
+    auto highest = (vec.xx_ > vec.yy_) ? vec.xx_ : vec.yy_;
+    highest = (highest > vec.zz_) ? highest: vec.zz_;
+    auto newVec = Vec3(vec.xx_/highest, vec.yy_/highest, vec.zz_/highest);
+    return newVec * max;
+}
+
 __global__ void cudaCreateObjects(AObject** objects, ObjectData* objectsData)
 {
     if (objectsData[threadIdx.x].objectType_ == SphereData)
     {
         objects[threadIdx.x] = new Sphere(objectsData[threadIdx.x].radius_, objectsData[threadIdx.x].position_,
-            objectsData[threadIdx.x].emission_, objectsData[threadIdx.x].color_,
+            clampVector(objectsData[threadIdx.x].emission_, 1.5), objectsData[threadIdx.x].color_,
             objectsData[threadIdx.x].reflectionType_);
     }
     else if (objectsData[threadIdx.x].objectType_ == PlaneData)
     {
         objects[threadIdx.x] = new Plane(objectsData[threadIdx.x].north_, objectsData[threadIdx.x].east_,
-            objectsData[threadIdx.x].position_, objectsData[threadIdx.x].emission_, objectsData[threadIdx.x].color_,
-            objectsData[threadIdx.x].reflectionType_);
+            objectsData[threadIdx.x].position_, clampVector(objectsData[threadIdx.x].emission_, 1.5),
+            objectsData[threadIdx.x].color_, objectsData[threadIdx.x].reflectionType_);
     }
 }
 
@@ -131,7 +139,6 @@ std::vector<containers::Vec3> RenderContoller::start()
     const auto numBlocks = (sceneData_.getHeight() <= BLOCK_SIZE) ? sceneData_.getHeight() : BLOCK_SIZE;
 
     cudaMain <<<numBlocks, numThreads>>> (devImage, devProps, devLights, devCamera, devVecZ, devImageData);
-    //cudaMain <<<1, 1>>> (devImage, devProps, devLights, devCamera, devVecZ, devImageData);
     cudaErrorCheck("cudaMain kernel");
 
     Vec3* imagePtr = (Vec3*)malloc(imageSize);
