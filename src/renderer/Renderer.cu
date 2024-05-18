@@ -167,7 +167,7 @@ __device__ inline Vec3 deepLayers(const RenderData& data, Ray ray, uint8_t depth
         Vec3 pixel = findLight(data, object, ray, intersection);
         objectEmissions[depth - 2] = pixel;
         objectColors[depth - 2] = object->getColor();
-        if ((previosType == Diffuse) and (object->getReflectionType() == Diffuse))
+        if ((previosType == Diffuse) and (object->getReflectionType() == Diffuse) and not (pixel == Vec3()))
         {
             depth++;
             break;
