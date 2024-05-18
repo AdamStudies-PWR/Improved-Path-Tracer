@@ -69,6 +69,11 @@ __device__ inline HitData getHitObjectAndDistance(AObject** objects, const conta
     return HitData(index, distance);
 }
 
+__device__ inline Vec3 clampVector(const Vec3& vec, const double max)
+{
+    return Vec3((vec.xx_ > max ? max : vec.xx_), (vec.yy_ > max ? max : vec.yy_), (vec.zz_ > max ? max : vec.zz_));
+}
+
 __device__ inline Vec3 findLight(const RenderData& data, const AObject* lastObject, const Ray& ray,
     const Vec3& intersection)
 {
@@ -119,17 +124,8 @@ __device__ inline Vec3 findLight(const RenderData& data, const AObject* lastObje
     const auto viewFactor = viewAngle/M_2_PI;
     auto factor = lightFactor * objectFactor * viewFactor;
 
-    switch (lastObject->getReflectionType())
-    {
-        case Diffuse: factor = ((factor < 0.0) ? factor * -1 : factor) * 0.1; break;
-        case Refractive: factor = ((factor < 0.0) ? factor * -1 : factor) * 0.025; break;
-        case Specular: factor = ((factor < 0.0) ? factor * -1 : factor) * 0.035; break;
-    }
-
-    factor = (factor > 0.05) ? 0.05 : factor;
-    const auto temp = (light->getEmission() * factor) + (light->getColor() * factor).mult(Vec3());
-
-    return temp;
+    const auto emission = clampVector(light->getEmission(), 2.0);
+    return (emission * factor) + (light->getColor()).mult(Vec3());
 }
 
 __device__ inline Vec3 deepLayers(const RenderData& data, Ray ray, uint8_t depth)
@@ -242,10 +238,6 @@ __device__ inline Vec3 firstLayer(const RenderData& data, Ray ray)
     if (backData == Vec3())
     {
         backData = findLight(data, object, ray, intersection);
-    }
-    else if (addLight)
-    {
-        backData = backData + findLight(data, object, ray, intersection);
     }
 
     return object->getColor().mult(backData);
