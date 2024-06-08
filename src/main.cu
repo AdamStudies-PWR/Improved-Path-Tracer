@@ -42,7 +42,7 @@ int main(int argc, char* argv[])
     filename << inputParser.getSceneName() << "D" << +inputParser.getMaxDepth() << "S"
         << +inputParser.getSamplingRate();
 
-    auto controller = std::make_shared<RenderContoller>(sceneData, inputParser.getSamplingRate(),
+    auto controller = std::make_shared<RenderController>(sceneData, inputParser.getSamplingRate(),
         inputParser.getMaxDepth());
     const auto wrappedRender = [controller]() -> const std::vector<Vec3> {
         return controller->start();
